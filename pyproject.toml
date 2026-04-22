@@ -100,7 +100,7 @@ doctest_optionflags = [
 ]
 
 [tool.wads.ci]
-project_name = ""
+project_name = "xa"
 
 [tool.wads.ci.commands]
 pre_test = []
