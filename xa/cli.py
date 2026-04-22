@@ -588,22 +588,35 @@ def pick_cmd(
         sys.exit(1)
 
 
+_LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}
+
+
 def serve_cmd(
     host: str = "127.0.0.1",
     port: int = 8010,
     mount: str = "",
     username: "Optional[str]" = None,
     password: "Optional[str]" = None,
+    password_env: "Optional[str]" = None,
     captcha: bool = False,
+    i_know_its_insecure: bool = False,
 ) -> None:
     """Run the xa HTTP service (requires the ``xa[service]`` extra).
 
-    :param host: Bind host.
+    **Secure by default.** Refuses to bind to a non-loopback interface
+    without HTTP Basic credentials. Override this guardrail with
+    ``--i-know-its-insecure`` only in locked-down deployments (e.g.
+    behind an mTLS-terminating proxy).
+
+    :param host: Bind host. ``127.0.0.1`` by default — only this machine.
     :param port: Bind port.
     :param mount: Optional mount prefix (e.g. ``/api/xa``).
-    :param username: HTTP Basic username; if omitted, no auth is enforced.
-    :param password: HTTP Basic password (required if username is given).
-    :param captcha: Enable captcha-gated deletes.
+    :param username: HTTP Basic username.
+    :param password: HTTP Basic password. Prefer ``--password-env``.
+    :param password_env: Name of env var to read the password from (recommended).
+    :param captcha: Enable captcha-gated deletes. Strongly recommended for
+        any non-loopback deployment.
+    :param i_know_its_insecure: Skip the public-bind-without-auth safety check.
     """
     try:
         import uvicorn
@@ -617,13 +630,60 @@ def serve_cmd(
 
     from xa import service as svc
 
-    auth_dep = svc.allow_all
-    if username:
+    # Resolve password: env var > --password.
+    if password_env and not password:
+        password = os.environ.get(password_env)
         if not password:
             print(
-                "error: --password required when --username is given", file=sys.stderr
+                f"error: --password-env {password_env!r} is unset in env",
+                file=sys.stderr,
             )
             sys.exit(1)
+
+    is_public = host not in _LOOPBACK_HOSTS
+
+    # Safety: refuse to bind publicly without auth.
+    if is_public and not username and not i_know_its_insecure:
+        print(
+            "error: refusing to bind to a non-loopback interface "
+            f"({host!r}) without --username/--password.\n"
+            "       Anyone who can reach this port could spawn arbitrary\n"
+            "       shell commands via Claude Code sessions on this host.\n"
+            "\n"
+            "       Fix (recommended): add credentials + captcha.\n"
+            "         xa gen-secret                  # use for password + XA_CAPTCHA_KEY\n"
+            "         export XA_PASSWORD='<paste>'\n"
+            "         export XA_CAPTCHA_KEY='<paste>'\n"
+            "         xa serve --host 0.0.0.0 --port 8010 \\\n"
+            "           --username me --password-env XA_PASSWORD --captcha\n"
+            "\n"
+            "       Put a TLS-terminating reverse proxy (Caddy / nginx) in\n"
+            "       front of this port — HTTP Basic without TLS is a password\n"
+            "       sent in plaintext on every request.\n"
+            "\n"
+            "       Bypass (only when an outer layer already gates access,\n"
+            "       e.g. mTLS in the reverse proxy): --i-know-its-insecure",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    if is_public and not captcha:
+        print(
+            "warn: binding publicly without --captcha. Destructive endpoints\n"
+            "      (DELETE /sessions/{name}) will not be captcha-gated. Add\n"
+            "      --captcha unless you really don't need it.",
+            file=sys.stderr,
+        )
+
+    if username and not password:
+        print(
+            "error: --password (or --password-env) required when --username is given",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    auth_dep = svc.allow_all
+    if username:
         auth_dep = svc.make_basic_auth(username, password)
 
     captcha_obj = None
@@ -633,13 +693,17 @@ def serve_cmd(
             import secrets
 
             key = secrets.token_hex(32)
-            print("warn: XA_CAPTCHA_KEY not set; using ephemeral key", file=sys.stderr)
+            print(
+                "warn: XA_CAPTCHA_KEY not set; using an ephemeral key.\n"
+                "      Outstanding captcha tokens will invalidate on restart.\n"
+                "      For persistent tokens: export XA_CAPTCHA_KEY=$(xa gen-secret)",
+                file=sys.stderr,
+            )
         captcha_obj = svc.Captcha(key=key)
 
     api = svc.build_api(auth=auth_dep, captcha=captcha_obj)
 
     if mount:
-        # Wrap in an outer app so the API lives under /mount/...
         outer = FastAPI()
         outer.mount(mount, api)
         app = outer
@@ -647,6 +711,18 @@ def serve_cmd(
         app = api
 
     uvicorn.run(app, host=host, port=port)
+
+
+def gen_secret_cmd(length: int = 32) -> None:
+    """Print a cryptographically strong random hex secret.
+
+    Useful for ``XA_PASSWORD``, ``XA_CAPTCHA_KEY``, bearer tokens. Output
+    is to stdout with a trailing newline; pipe it into anything.
+
+    :param length: Byte length of the secret (hex output is 2x this).
+    """
+    import secrets
+    print(secrets.token_hex(length))
 
 
 def archive_forensics_cmd(archive_id: str) -> None:
@@ -699,6 +775,7 @@ kill_cmd.__name__ = "kill"
 serve_cmd.__name__ = "serve"
 sync_cmd.__name__ = "sync"
 pick_cmd.__name__ = "pick"
+gen_secret_cmd.__name__ = "gen-secret"
 
 archive_list_cmd.__name__ = "list"
 archive_log_cmd.__name__ = "log"
@@ -714,6 +791,7 @@ _top_funcs = [
     serve_cmd,
     sync_cmd,
     pick_cmd,
+    gen_secret_cmd,
 ]
 _archive_funcs = [archive_list_cmd, archive_log_cmd, archive_forensics_cmd]
 

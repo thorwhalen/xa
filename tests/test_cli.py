@@ -68,6 +68,62 @@ def test_info_missing(fake_home: Path) -> None:
     assert "no session" in r.stderr.lower()
 
 
+def test_gen_secret_is_hex_and_right_length(fake_home: Path) -> None:
+    r = _run(["gen-secret"], env_home=fake_home)
+    assert r.returncode == 0
+    out = r.stdout.strip()
+    assert len(out) == 64  # default 32 bytes → 64 hex chars
+    int(out, 16)  # must parse
+
+
+def test_gen_secret_honors_length(fake_home: Path) -> None:
+    r = _run(["gen-secret", "--length", "16"], env_home=fake_home)
+    assert r.returncode == 0 and len(r.stdout.strip()) == 32
+
+
+def test_serve_refuses_public_bind_without_auth(fake_home: Path) -> None:
+    """The hard guardrail: --host 0.0.0.0 without --username is rejected."""
+    r = _run(["serve", "--host", "0.0.0.0", "--port", "18010"], env_home=fake_home)
+    assert r.returncode == 2
+    assert "refusing to bind" in r.stderr.lower()
+    # Help text should point the user at the fix.
+    assert "gen-secret" in r.stderr
+    assert "--captcha" in r.stderr
+
+
+def test_serve_allows_loopback_without_auth(monkeypatch) -> None:
+    """127.0.0.1 is fine without auth (only reachable by this machine).
+
+    Runs in-process with uvicorn.run stubbed so we don't actually bind.
+    """
+    import uvicorn
+    from xa import cli as xa_cli
+
+    called = {}
+
+    def fake_run(app, host, port):
+        called["host"] = host
+        called["port"] = port
+
+    monkeypatch.setattr(uvicorn, "run", fake_run)
+    xa_cli.serve_cmd(host="127.0.0.1", port=18010)
+    assert called == {"host": "127.0.0.1", "port": 18010}
+
+
+def test_serve_bypass_with_insecure_flag(monkeypatch) -> None:
+    """--i-know-its-insecure lets the public-bind-without-auth through."""
+    import uvicorn
+    from xa import cli as xa_cli
+
+    called = {}
+    monkeypatch.setattr(
+        uvicorn, "run",
+        lambda app, host, port: called.update(host=host, port=port),
+    )
+    xa_cli.serve_cmd(host="0.0.0.0", port=18010, i_know_its_insecure=True)
+    assert called == {"host": "0.0.0.0", "port": 18010}
+
+
 def test_history_with_search(tmp_path: Path) -> None:
     home = tmp_path / ".claude"
     home.mkdir()
