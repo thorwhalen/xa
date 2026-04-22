@@ -1,0 +1,4 @@
+xa.hosts
+========
+.. automodule:: xa.hosts
+   :members:

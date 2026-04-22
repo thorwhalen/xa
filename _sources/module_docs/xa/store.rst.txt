@@ -1,0 +1,4 @@
+xa.store
+========
+.. automodule:: xa.store
+   :members:

@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.claude_fs &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="xa.cli" href="cli.html" />
+    <link rel="prev" title="xa.claude_cli" href="claude_cli.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">xa.claude_fs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.HistoryEntry"><code class="docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.TranscriptForensics"><code class="docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.TranscriptMeta"><code class="docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.encode_project_slug"><code class="docutils literal notranslate"><span class="pre">encode_project_slug()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.history_iter"><code class="docutils literal notranslate"><span class="pre">history_iter()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.iter_ephemeral_sessions"><code class="docutils literal notranslate"><span class="pre">iter_ephemeral_sessions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.iter_project_slugs"><code class="docutils literal notranslate"><span class="pre">iter_project_slugs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.iter_transcript_events"><code class="docutils literal notranslate"><span class="pre">iter_transcript_events()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.iter_transcript_files"><code class="docutils literal notranslate"><span class="pre">iter_transcript_files()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.parse_project_slug"><code class="docutils literal notranslate"><span class="pre">parse_project_slug()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.read_ephemeral_session"><code class="docutils literal notranslate"><span class="pre">read_ephemeral_session()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.transcript_forensics"><code class="docutils literal notranslate"><span class="pre">transcript_forensics()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.transcript_metadata"><code class="docutils literal notranslate"><span class="pre">transcript_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.transcript_path"><code class="docutils literal notranslate"><span class="pre">transcript_path()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">xa.claude_fs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/xa/claude_fs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xa.claude_fs">
+<span id="xa-claude-fs"></span><h1>xa.claude_fs<a class="headerlink" href="#module-xa.claude_fs" title="Link to this heading"></a></h1>
+<p>Pure filesystem view of <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code>.</p>
+<p>This layer reads Claude Code’s on-disk state and nothing else: no tmux, no
+subprocess, no network. It is the substrate every higher layer of <code class="docutils literal notranslate"><span class="pre">xa</span></code>
+reads from.</p>
+<p>What lives under <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code> (as of Claude Code 2.x):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">projects/&lt;slug&gt;/&lt;uuid&gt;.jsonl</span></code> — one file per session, full transcript.
+<code class="docutils literal notranslate"><span class="pre">&lt;slug&gt;</span></code> is the cwd with <code class="docutils literal notranslate"><span class="pre">/</span></code> replaced by <code class="docutils literal notranslate"><span class="pre">-</span></code> (leading <code class="docutils literal notranslate"><span class="pre">-</span></code> kept).
+<code class="docutils literal notranslate"><span class="pre">&lt;uuid&gt;</span></code> is the Claude <code class="docutils literal notranslate"><span class="pre">sessionId</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sessions/&lt;pid&gt;.json</span></code> — per-process ephemeral metadata while a
+<code class="docutils literal notranslate"><span class="pre">claude</span></code> process is alive. Holds <code class="docutils literal notranslate"><span class="pre">pid</span></code>, <code class="docutils literal notranslate"><span class="pre">sessionId</span></code>,
+<code class="docutils literal notranslate"><span class="pre">bridgeSessionId</span></code>, <code class="docutils literal notranslate"><span class="pre">cwd</span></code>, <code class="docutils literal notranslate"><span class="pre">startedAt</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code>. Deleted when
+the process exits.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">history.jsonl</span></code> — global append-only log of every prompt sent. Each
+line carries <code class="docutils literal notranslate"><span class="pre">sessionId</span></code> + <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sessions-index.json</span></code> — summary index (not yet consumed here).</p></li>
+</ul>
+<p>All functions are read-only. All paths default to <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code> but accept
+a <code class="docutils literal notranslate"><span class="pre">claude_home</span></code> override (set <code class="docutils literal notranslate"><span class="pre">XA_CLAUDE_HOME</span></code> in the env to point at a
+fixture tree during testing).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.claude_fs.HistoryEntry">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">HistoryEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pasted_contents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/claude_fs.html#HistoryEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.HistoryEntry" title="Link to this definition"></a></dt>
+<dd><p>One line from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.claude_fs.TranscriptForensics">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">TranscriptForensics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transcript_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_command</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_exit_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_result_tail</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_assistant_text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_interrupted</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/claude_fs.html#TranscriptForensics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.TranscriptForensics" title="Link to this definition"></a></dt>
+<dd><p>Postmortem facts extracted by walking a transcript from the end.</p>
+<p><code class="docutils literal notranslate"><span class="pre">user_interrupted</span></code> is the raw marker presence — it is <strong>ambiguous</strong>
+(also fires on phone-standby bridge drops), so do not derive user intent
+from it alone. Callers should corroborate against pane-log tails.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.claude_fs.TranscriptMeta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">TranscriptMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_user_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forked_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modified</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/claude_fs.html#TranscriptMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.TranscriptMeta" title="Link to this definition"></a></dt>
+<dd><p>Summary of a transcript JSONL, cheap enough to compute for listings.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.encode_project_slug">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">encode_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#encode_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.encode_project_slug" title="Link to this definition"></a></dt>
+<dd><p>Encode a cwd into the <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug form.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">&#39;/root/py/proj/tt/glossa&#39;</span><span class="p">)</span>
+<span class="go">&#39;-root-py-proj-tt-glossa&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="go">&#39;-&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.history_iter">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">history_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#xa.claude_fs.HistoryEntry" title="xa.claude_fs.HistoryEntry"><span class="pre">HistoryEntry</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#history_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.history_iter" title="Link to this definition"></a></dt>
+<dd><p>Yield entries from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code> in file order (oldest first).</p>
+<p>Useful for cross-project full-text prompt search without loading
+every transcript.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.iter_ephemeral_sessions">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">iter_ephemeral_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#iter_ephemeral_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.iter_ephemeral_sessions" title="Link to this definition"></a></dt>
+<dd><p>Yield all live ephemeral session dicts.</p>
+<p>A session file disappears when claude exits, so this reflects
+momentary state only.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.iter_project_slugs">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">iter_project_slugs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#iter_project_slugs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.iter_project_slugs" title="Link to this definition"></a></dt>
+<dd><p>Yield slugs (directory names) under <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.iter_transcript_events">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">iter_transcript_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#iter_transcript_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.iter_transcript_events" title="Link to this definition"></a></dt>
+<dd><p>Yield every event from a transcript JSONL.</p>
+<p>Lines that fail to parse are silently skipped — transcripts are
+append-only on a live process, so the tail can be partial.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.iter_transcript_files">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">iter_transcript_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#iter_transcript_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.iter_transcript_files" title="Link to this definition"></a></dt>
+<dd><p>Yield transcript JSONL paths, optionally restricted to one project.</p>
+<p>Only files whose stem is a valid UUID are yielded — this filters out
+the <code class="docutils literal notranslate"><span class="pre">memory/</span></code> subfolder and other non-session artefacts Claude Code
+stores alongside transcripts.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.parse_project_slug">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">parse_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slug</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#parse_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.parse_project_slug" title="Link to this definition"></a></dt>
+<dd><p>Decode a <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug back to a cwd.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">&#39;-root-py-proj-tt-glossa&#39;</span><span class="p">)</span>
+<span class="go">&#39;/root/py/proj/tt/glossa&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">&#39;-Users-thorwhalen-tw-server&#39;</span><span class="p">)</span>
+<span class="go">&#39;/Users/thorwhalen/tw/server&#39;</span>
+</pre></div>
+</div>
+<p>NB: This transform is lossy — a cwd with literal <code class="docutils literal notranslate"><span class="pre">-</span></code> in segment names
+round-trips to a different slug. Claude Code itself has the same
+limitation, so we accept it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.read_ephemeral_session">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">read_ephemeral_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#read_ephemeral_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.read_ephemeral_session" title="Link to this definition"></a></dt>
+<dd><p>Read the per-process session file for <code class="docutils literal notranslate"><span class="pre">pid</span></code> if present.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.transcript_forensics">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">transcript_forensics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#xa.claude_fs.TranscriptForensics" title="xa.claude_fs.TranscriptForensics"><span class="pre">TranscriptForensics</span></a></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#transcript_forensics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.transcript_forensics" title="Link to this definition"></a></dt>
+<dd><p>Extract postmortem-relevant facts from the tail of a transcript.</p>
+<p>Walks from the <em>end</em> of the file so we find the most recent
+<code class="docutils literal notranslate"><span class="pre">tool_use</span></code> / <code class="docutils literal notranslate"><span class="pre">tool_result</span></code> / assistant <code class="docutils literal notranslate"><span class="pre">text</span></code> without reparsing
+the whole transcript.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.transcript_metadata">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">transcript_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#xa.claude_fs.TranscriptMeta" title="xa.claude_fs.TranscriptMeta"><span class="pre">TranscriptMeta</span></a></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#transcript_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.transcript_metadata" title="Link to this definition"></a></dt>
+<dd><p>Summarise a transcript without holding it all in memory.</p>
+<p>Walks forward, counting turns and capturing the first user message /
+summary / custom title / fork pointer / cwd / sessionId. Stops reading
+content fields once it has what it needs, but still counts turns to
+the end. For very large transcripts, callers who only need counts
+should use <code class="docutils literal notranslate"><span class="pre">iter_transcript_events</span></code> directly.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.transcript_path">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">transcript_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#transcript_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.transcript_path" title="Link to this definition"></a></dt>
+<dd><p>Return the transcript path for <code class="docutils literal notranslate"><span class="pre">(cwd,</span> <span class="pre">session_id)</span></code> if it exists.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">home</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">td</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="n">home</span> <span class="o">/</span> <span class="s1">&#39;projects&#39;</span> <span class="o">/</span> <span class="s1">&#39;-foo-bar&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">f</span> <span class="o">=</span> <span class="n">home</span> <span class="o">/</span> <span class="s1">&#39;projects&#39;</span> <span class="o">/</span> <span class="s1">&#39;-foo-bar&#39;</span> <span class="o">/</span> <span class="s1">&#39;aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jsonl&#39;</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">p</span> <span class="o">=</span> <span class="n">transcript_path</span><span class="p">(</span><span class="s1">&#39;/foo/bar&#39;</span><span class="p">,</span> <span class="s1">&#39;aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee&#39;</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">home</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">p</span> <span class="o">==</span> <span class="n">f</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="claude_cli.html" class="btn btn-neutral float-left" title="xa.claude_cli" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cli.html" class="btn btn-neutral float-right" title="xa.cli" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

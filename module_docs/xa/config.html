@@ -1,0 +1,176 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.config &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="xa.hosts" href="hosts.html" />
+    <link rel="prev" title="xa.cli" href="cli.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">xa.cli</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">xa.config</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#xa.config.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.config.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.config.load_hosts"><code class="docutils literal notranslate"><span class="pre">load_hosts()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">xa.config</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/xa/config.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xa.config">
+<span id="xa-config"></span><h1>xa.config<a class="headerlink" href="#module-xa.config" title="Link to this heading"></a></h1>
+<p>TOML config loader for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p>
+<p>Resolves a host registry and settings from <code class="docutils literal notranslate"><span class="pre">~/.config/xa/config.toml</span></code>
+(respecting <code class="docutils literal notranslate"><span class="pre">$XDG_CONFIG_HOME</span></code>). Override the path via <code class="docutils literal notranslate"><span class="pre">$XA_CONFIG</span></code>.</p>
+<p>Example:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[settings]</span>
+<span class="n">cache_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;~/.cache/xa/remotes&quot;</span>
+<span class="n">stale_threshold_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3600</span>
+
+<span class="k">[hosts.local]</span>
+<span class="n">kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;local&quot;</span>
+
+<span class="k">[hosts.devbox]</span>
+<span class="n">kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ssh&quot;</span>
+<span class="n">host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;devbox&quot;</span>
+
+<span class="k">[hosts.phone_mirror]</span>
+<span class="n">kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http&quot;</span>
+<span class="n">base_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://apps.example.com/api/xa&quot;</span>
+<span class="n">auth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;basic&quot;</span>
+<span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;me&quot;</span>
+<span class="n">password_env</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;XA_PHONE_PASSWORD&quot;</span><span class="w">   </span><span class="c1"># value read from env, not stored in TOML</span>
+</pre></div>
+</div>
+<p>The registry exposed by <a class="reference internal" href="#xa.config.load_hosts" title="xa.config.load_hosts"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_hosts()</span></code></a> is <code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">Host}</span></code> and can be
+passed directly to <a class="reference internal" href="sessions.html#xa.sessions.list_sessions" title="xa.sessions.list_sessions"><code class="xref py py-func docutils literal notranslate"><span class="pre">xa.sessions.list_sessions()</span></code></a>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.config.Settings">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xa.config.</span></span><span class="sig-name descname"><span class="pre">Settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'Path'</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stale_threshold_sec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'int'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="s"><span class="pre">'str'</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/config.html#Settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.config.Settings" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.config.load">
+<span class="sig-prename descclassname"><span class="pre">xa.config.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#xa.config.Settings" title="xa.config.Settings"><span class="pre">Settings</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/config.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.config.load" title="Link to this definition"></a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">(settings,</span> <span class="pre">hosts_registry)</span></code> from a config file.</p>
+<p>Missing file → <code class="docutils literal notranslate"><span class="pre">(defaults,</span> <span class="pre">{&quot;local&quot;:</span> <span class="pre">LocalHost()})</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.config.load_hosts">
+<span class="sig-prename descclassname"><span class="pre">xa.config.</span></span><span class="sig-name descname"><span class="pre">load_hosts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../_modules/xa/config.html#load_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.config.load_hosts" title="Link to this definition"></a></dt>
+<dd><p>Shortcut: just the host registry.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cli.html" class="btn btn-neutral float-left" title="xa.cli" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hosts.html" class="btn btn-neutral float-right" title="xa.hosts" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

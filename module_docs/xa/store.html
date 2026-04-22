@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.store &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="xa.tmux" href="tmux.html" />
+    <link rel="prev" title="xa.sessions" href="sessions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sessions.html">xa.sessions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">xa.store</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#xa.store.FileStore"><code class="docutils literal notranslate"><span class="pre">FileStore</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#xa.store.FileStore.path_for"><code class="docutils literal notranslate"><span class="pre">FileStore.path_for()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.store.JsonLinesStore"><code class="docutils literal notranslate"><span class="pre">JsonLinesStore</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.store.default_events_store"><code class="docutils literal notranslate"><span class="pre">default_events_store()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.store.default_pane_store"><code class="docutils literal notranslate"><span class="pre">default_pane_store()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">xa.store</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/xa/store.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xa.store">
+<span id="xa-store"></span><h1>xa.store<a class="headerlink" href="#module-xa.store" title="Link to this heading"></a></h1>
+<p>Minimal key-value and append-log storage.</p>
+<p>This is deliberately thin and stdlib-only — enough to back <code class="docutils literal notranslate"><span class="pre">xa.archive</span></code>’s
+event log and per-session pane captures without pulling in <code class="docutils literal notranslate"><span class="pre">dol</span></code>. Two
+types:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">JsonLinesStore</span></code> — append-only JSONL. Iterable, multi-writer safe on
+POSIX (one line == one atomic <code class="docutils literal notranslate"><span class="pre">write</span></code>), no random access.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FileStore</span></code> — dict-like view over a directory of flat files. Keys
+must match a strict allowlist regex so callers can’t escape <code class="docutils literal notranslate"><span class="pre">root</span></code>.</p></li>
+</ul>
+<p>Later phases may swap these for <code class="docutils literal notranslate"><span class="pre">dol</span></code> equivalents without changing
+the archive API.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.store.FileStore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">FileStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/store.html#FileStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.FileStore" title="Link to this definition"></a></dt>
+<dd><p>Directory of files, accessed by key.</p>
+<p>Values are <code class="docutils literal notranslate"><span class="pre">bytes</span></code>. Keys must match <code class="docutils literal notranslate"><span class="pre">[A-Za-z0-9_.-]+</span></code> — this
+rejects path traversal attempts like <code class="docutils literal notranslate"><span class="pre">../etc/passwd</span></code>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.store.FileStore.path_for">
+<span class="sig-name descname"><span class="pre">path_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../../_modules/xa/store.html#FileStore.path_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.FileStore.path_for" title="Link to this definition"></a></dt>
+<dd><p>Public path accessor (for callers that need to hand the path to tmux).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.store.JsonLinesStore">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">JsonLinesStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/store.html#JsonLinesStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.JsonLinesStore" title="Link to this definition"></a></dt>
+<dd><p>Append-only JSONL file with an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> reader.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">s</span> <span class="o">=</span> <span class="n">JsonLinesStore</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">td</span><span class="p">)</span> <span class="o">/</span> <span class="s1">&#39;log.jsonl&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="gp">... </span>    <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.store.default_events_store">
+<span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">default_events_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#xa.store.JsonLinesStore" title="xa.store.JsonLinesStore"><span class="pre">JsonLinesStore</span></a></span></span><a class="reference internal" href="../../_modules/xa/store.html#default_events_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.default_events_store" title="Link to this definition"></a></dt>
+<dd><p>The event log at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/events.jsonl</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.store.default_pane_store">
+<span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">default_pane_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#xa.store.FileStore" title="xa.store.FileStore"><span class="pre">FileStore</span></a></span></span><a class="reference internal" href="../../_modules/xa/store.html#default_pane_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.default_pane_store" title="Link to this definition"></a></dt>
+<dd><p>Per-session pane logs at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/panes/&lt;id&gt;.log</span></code>.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sessions.html" class="btn btn-neutral float-left" title="xa.sessions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tmux.html" class="btn btn-neutral float-right" title="xa.tmux" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

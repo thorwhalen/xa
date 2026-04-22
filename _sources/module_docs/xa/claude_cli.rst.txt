@@ -1,0 +1,4 @@
+xa.claude_cli
+=============
+.. automodule:: xa.claude_cli
+   :members:

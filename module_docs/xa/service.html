@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.service &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="xa.sessions" href="sessions.html" />
+    <link rel="prev" title="xa.hosts.ssh" href="hosts/ssh.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">xa.service</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#xa.service.Captcha"><code class="docutils literal notranslate"><span class="pre">Captcha</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#xa.service.Captcha.issue"><code class="docutils literal notranslate"><span class="pre">Captcha.issue()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.service.allow_all"><code class="docutils literal notranslate"><span class="pre">allow_all()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.service.build_api"><code class="docutils literal notranslate"><span class="pre">build_api()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.service.make_basic_auth"><code class="docutils literal notranslate"><span class="pre">make_basic_auth()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">xa.service</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/xa/service.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xa.service">
+<span id="xa-service"></span><h1>xa.service<a class="headerlink" href="#module-xa.service" title="Link to this heading"></a></h1>
+<p>FastAPI service for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">build_api(...)</span></code> returns a mountable <code class="docutils literal notranslate"><span class="pre">FastAPI</span></code> app that reimplements
+the <code class="docutils literal notranslate"><span class="pre">edualc</span></code> route surface on top of the <code class="docutils literal notranslate"><span class="pre">xa</span></code> primitives. The service
+is deliberately a function (not a module that imports-and-runs) so it can
+be embedded into larger hosts (enlace / tw_platform) or launched
+standalone via <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">serve</span></code>.</p>
+<p>FastAPI is an optional dependency. Import <code class="docutils literal notranslate"><span class="pre">xa.service</span></code> only when you
+have installed <code class="docutils literal notranslate"><span class="pre">xa[service]</span></code> (pulls in <code class="docutils literal notranslate"><span class="pre">fastapi</span></code> + <code class="docutils literal notranslate"><span class="pre">uvicorn</span></code>).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.service.Captcha">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xa.service.</span></span><span class="sig-name descname"><span class="pre">Captcha</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl_sec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">120</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/service.html#Captcha"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.service.Captcha" title="Link to this definition"></a></dt>
+<dd><p>Stateless 4-letter captcha with an HMAC-signed token.</p>
+<p>The signing key never leaves the server. Tokens are
+<code class="docutils literal notranslate"><span class="pre">b64(CHALLENGE.EXPIRY).SIG</span></code> where SIG = HMAC-SHA256(key, payload).
+Multi-worker safe; no server-side state. Pass one instance of this
+class to <a class="reference internal" href="#xa.service.build_api" title="xa.service.build_api"><code class="xref py py-func docutils literal notranslate"><span class="pre">build_api()</span></code></a> to enable captcha-gated deletes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.service.Captcha.issue">
+<span class="sig-name descname"><span class="pre">issue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/service.html#Captcha.issue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.service.Captcha.issue" title="Link to this definition"></a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">(token,</span> <span class="pre">challenge,</span> <span class="pre">ttl_sec)</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.service.allow_all">
+<span class="sig-prename descclassname"><span class="pre">xa.service.</span></span><span class="sig-name descname"><span class="pre">allow_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/service.html#allow_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.service.allow_all" title="Link to this definition"></a></dt>
+<dd><p>No-op auth dependency. Useful when the service is behind an external
+auth layer (enlace, reverse-proxy mTLS) that already gated the request.</p>
+<p>FastAPI inspects the signature to decide what to inject; keep this
+nullary so it isn’t treated as query-parameter binding.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.service.build_api">
+<span class="sig-prename descclassname"><span class="pre">xa.service.</span></span><span class="sig-name descname"><span class="pre">build_api</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">*,</span> <span class="pre">auth:</span> <span class="pre">~typing.Callable[[...],</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">allow_all&gt;,</span> <span class="pre">events_store:</span> <span class="pre">~xa.store.JsonLinesStore</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">pane_store:</span> <span class="pre">~xa.store.FileStore</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">captcha:</span> <span class="pre">~xa.service.Captcha</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">claude_home:</span> <span class="pre">~pathlib.Path</span> <span class="pre">=</span> <span class="pre">PosixPath('/home/runner/.claude'),</span> <span class="pre">claude_bin:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'claude',</span> <span class="pre">session_prefix:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'xa-',</span> <span class="pre">title:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'xa',</span> <span class="pre">version:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'0.1'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/xa/service.html#build_api"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.service.build_api" title="Link to this definition"></a></dt>
+<dd><p>Return a <code class="docutils literal notranslate"><span class="pre">FastAPI</span></code> app exposing <code class="docutils literal notranslate"><span class="pre">xa</span></code>’s session + archive surface.</p>
+<p>The caller composes this app into whatever process they have: mount
+under <code class="docutils literal notranslate"><span class="pre">/api/xa/</span></code> inside enlace, or run standalone via <code class="docutils literal notranslate"><span class="pre">uvicorn</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.service.make_basic_auth">
+<span class="sig-prename descclassname"><span class="pre">xa.service.</span></span><span class="sig-name descname"><span class="pre">make_basic_auth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/service.html#make_basic_auth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.service.make_basic_auth" title="Link to this definition"></a></dt>
+<dd><p>Build a FastAPI dependency that enforces HTTP Basic auth.</p>
+<p>Returns a callable suitable for <code class="docutils literal notranslate"><span class="pre">Depends(...)</span></code>. Uses
+<code class="docutils literal notranslate"><span class="pre">secrets.compare_digest</span></code> to avoid timing leaks.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="hosts/ssh.html" class="btn btn-neutral float-left" title="xa.hosts.ssh" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sessions.html" class="btn btn-neutral float-right" title="xa.sessions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

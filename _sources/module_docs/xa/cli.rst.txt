@@ -1,0 +1,4 @@
+xa.cli
+======
+.. automodule:: xa.cli
+   :members:

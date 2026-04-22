@@ -1,0 +1,19 @@
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   module_docs/xa
+   module_docs/xa/__main__
+   module_docs/xa/archive
+   module_docs/xa/claude_cli
+   module_docs/xa/claude_fs
+   module_docs/xa/cli
+   module_docs/xa/config
+   module_docs/xa/hosts
+   module_docs/xa/hosts/http
+   module_docs/xa/hosts/local
+   module_docs/xa/hosts/ssh
+   module_docs/xa/service
+   module_docs/xa/sessions
+   module_docs/xa/store
+   module_docs/xa/tmux

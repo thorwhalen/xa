@@ -1,0 +1,4 @@
+xa.tmux
+=======
+.. automodule:: xa.tmux
+   :members:

@@ -1,0 +1,4 @@
+xa.__main__
+===========
+.. automodule:: xa.__main__
+   :members:

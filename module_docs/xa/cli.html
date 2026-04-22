@@ -1,0 +1,323 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.cli &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="xa.config" href="config.html" />
+    <link rel="prev" title="xa.claude_fs" href="claude_fs.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">xa.cli</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.archive_forensics_cmd"><code class="docutils literal notranslate"><span class="pre">archive_forensics_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.archive_list_cmd"><code class="docutils literal notranslate"><span class="pre">archive_list_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.archive_log_cmd"><code class="docutils literal notranslate"><span class="pre">archive_log_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.history_cmd"><code class="docutils literal notranslate"><span class="pre">history_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.info_cmd"><code class="docutils literal notranslate"><span class="pre">info_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.kill_cmd"><code class="docutils literal notranslate"><span class="pre">kill_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.list_cmd"><code class="docutils literal notranslate"><span class="pre">list_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.pick_cmd"><code class="docutils literal notranslate"><span class="pre">pick_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.resume_cmd"><code class="docutils literal notranslate"><span class="pre">resume_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.serve_cmd"><code class="docutils literal notranslate"><span class="pre">serve_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.spawn_cmd"><code class="docutils literal notranslate"><span class="pre">spawn_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.sync_cmd"><code class="docutils literal notranslate"><span class="pre">sync_cmd()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">xa.cli</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/xa/cli.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xa.cli">
+<span id="xa-cli"></span><h1>xa.cli<a class="headerlink" href="#module-xa.cli" title="Link to this heading"></a></h1>
+<p>Command-line interface for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p>
+<p>Exposes subcommands via <code class="docutils literal notranslate"><span class="pre">argh</span></code>: <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">info</span></code>, <code class="docutils literal notranslate"><span class="pre">history</span></code>.
+Later phases add <code class="docutils literal notranslate"><span class="pre">spawn</span></code>, <code class="docutils literal notranslate"><span class="pre">resume</span></code>, <code class="docutils literal notranslate"><span class="pre">kill</span></code>, <code class="docutils literal notranslate"><span class="pre">serve</span></code> and others.</p>
+<p>Entry point: <code class="docutils literal notranslate"><span class="pre">xa</span></code> (see <code class="docutils literal notranslate"><span class="pre">[project.scripts]</span></code> in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>).</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.archive_forensics_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">archive_forensics_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#archive_forensics_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.archive_forensics_cmd" title="Link to this definition"></a></dt>
+<dd><p>Print rich forensics for an archived session as JSON.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>archive_id</strong> – Archive id from <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">list</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.archive_list_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">archive_list_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#archive_list_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.archive_list_cmd" title="Link to this definition"></a></dt>
+<dd><p>List archived sessions (<code class="docutils literal notranslate"><span class="pre">created</span></code> events, newest first).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>limit</strong> – Maximum rows (0 = unlimited).</p></li>
+<li><p><strong>json_out</strong> – One JSON object per line.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.archive_log_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">archive_log_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">archive_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tail_kb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#archive_log_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.archive_log_cmd" title="Link to this definition"></a></dt>
+<dd><p>Print the pane log for an archived session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>archive_id</strong> – The archive id (first column of <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">list</span></code>).</p></li>
+<li><p><strong>tail_kb</strong> – Only print the last N KB (0 = full log).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.history_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">history_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#history_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.history_cmd" title="Link to this definition"></a></dt>
+<dd><p>Grep over <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>search</strong> – Case-insensitive substring to filter on (display field).</p></li>
+<li><p><strong>limit</strong> – Maximum rows to emit (0 = unlimited).</p></li>
+<li><p><strong>json_out</strong> – Emit one JSON object per line.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.info_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">info_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#info_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.info_cmd" title="Link to this definition"></a></dt>
+<dd><p>Show full metadata + forensics for one session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>session_id</strong> – Full UUID or unique prefix (e.g. first 8 chars).</p></li>
+<li><p><strong>json_out</strong> – Emit a single JSON object.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.kill_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">kill_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#kill_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.kill_cmd" title="Link to this definition"></a></dt>
+<dd><p>Kill the tmux session backing a live Claude Code session.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>session_id</strong> – Full UUID or unique prefix, or a tmux session name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.list_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">list_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_forks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_live</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#list_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.list_cmd" title="Link to this definition"></a></dt>
+<dd><p>List Claude Code sessions across configured hosts, newest first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>project</strong> – Substring match against session cwd (case-insensitive).</p></li>
+<li><p><strong>limit</strong> – Maximum rows to show (0 = unlimited).</p></li>
+<li><p><strong>include_forks</strong> – Include sessions spawned with <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code>.</p></li>
+<li><p><strong>no_live</strong> – Skip the tmux/ephemeral scan (archive-only view).</p></li>
+<li><p><strong>state</strong> – Restrict to ‘live’, ‘archived’, or ‘transcript_only’.</p></li>
+<li><p><strong>host</strong> – Restrict to a single configured host by name.</p></li>
+<li><p><strong>json_out</strong> – Emit one JSON object per line instead of a table.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.main">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.main" title="Link to this definition"></a></dt>
+<dd><p>Entry point referenced by <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>’s <code class="docutils literal notranslate"><span class="pre">[project.scripts]</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.pick_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">pick_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#pick_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.pick_cmd" title="Link to this definition"></a></dt>
+<dd><p>Interactive session picker — pick a row by number, then choose an action.</p>
+<p>A pragmatic v1 picker without a TUI framework. Use <strong class="command">xa list</strong>
+for scripting; use <strong class="command">xa pick</strong> when a human is at the keyboard.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.resume_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">resume_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">120.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#resume_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.resume_cmd" title="Link to this definition"></a></dt>
+<dd><p>Resume a past session (<code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code>) in a new tmux pane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>session_id</strong> – Full UUID or unique prefix.</p></li>
+<li><p><strong>name</strong> – tmux session name (auto if omitted).</p></li>
+<li><p><strong>cwd</strong> – Override cwd (defaults to the original session’s cwd).</p></li>
+<li><p><strong>timeout</strong> – Seconds to wait for the bridge URL.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.serve_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">serve_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">captcha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#serve_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.serve_cmd" title="Link to this definition"></a></dt>
+<dd><p>Run the xa HTTP service (requires the <code class="docutils literal notranslate"><span class="pre">xa[service]</span></code> extra).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> – Bind host.</p></li>
+<li><p><strong>port</strong> – Bind port.</p></li>
+<li><p><strong>mount</strong> – Optional mount prefix (e.g. <code class="docutils literal notranslate"><span class="pre">/api/xa</span></code>).</p></li>
+<li><p><strong>username</strong> – HTTP Basic username; if omitted, no auth is enforced.</p></li>
+<li><p><strong>password</strong> – HTTP Basic password (required if username is given).</p></li>
+<li><p><strong>captcha</strong> – Enable captcha-gated deletes.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.spawn_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">spawn_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_remote_control</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#spawn_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.spawn_cmd" title="Link to this definition"></a></dt>
+<dd><p>Spawn a detached claude-in-tmux session and print its remote URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cwd</strong> – Working directory to start claude in.</p></li>
+<li><p><strong>name</strong> – tmux session name (auto if omitted).</p></li>
+<li><p><strong>timeout</strong> – Seconds to wait for the bridge URL.</p></li>
+<li><p><strong>no_remote_control</strong> – Skip auto-issuing /remote-control.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.sync_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">sync_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#sync_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.sync_cmd" title="Link to this definition"></a></dt>
+<dd><p>Refresh remote-host caches (SSH hosts; HTTP is always fresh).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> – Only sync this one host (default: all configured).</p></li>
+<li><p><strong>force</strong> – Sync even if the cache isn’t stale yet.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="claude_fs.html" class="btn btn-neutral float-left" title="xa.claude_fs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-right" title="xa.config" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

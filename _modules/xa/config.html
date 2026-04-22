@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.config &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">xa.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for xa.config</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;TOML config loader for ``xa``.</span>
+
+<span class="sd">Resolves a host registry and settings from ``~/.config/xa/config.toml``</span>
+<span class="sd">(respecting ``$XDG_CONFIG_HOME``). Override the path via ``$XA_CONFIG``.</span>
+
+<span class="sd">Example:</span>
+
+<span class="sd">.. code-block:: toml</span>
+
+<span class="sd">    [settings]</span>
+<span class="sd">    cache_dir = &quot;~/.cache/xa/remotes&quot;</span>
+<span class="sd">    stale_threshold_sec = 3600</span>
+
+<span class="sd">    [hosts.local]</span>
+<span class="sd">    kind = &quot;local&quot;</span>
+
+<span class="sd">    [hosts.devbox]</span>
+<span class="sd">    kind = &quot;ssh&quot;</span>
+<span class="sd">    host = &quot;devbox&quot;</span>
+
+<span class="sd">    [hosts.phone_mirror]</span>
+<span class="sd">    kind = &quot;http&quot;</span>
+<span class="sd">    base_url = &quot;https://apps.example.com/api/xa&quot;</span>
+<span class="sd">    auth = &quot;basic&quot;</span>
+<span class="sd">    username = &quot;me&quot;</span>
+<span class="sd">    password_env = &quot;XA_PHONE_PASSWORD&quot;   # value read from env, not stored in TOML</span>
+
+<span class="sd">The registry exposed by :func:`load_hosts` is ``{name: Host}`` and can be</span>
+<span class="sd">passed directly to :func:`xa.sessions.list_sessions`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tomllib</span>
+<span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover — fallback for 3.10</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tomli</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tomllib</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># paths</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_xdg_config_home</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;XDG_CONFIG_HOME&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.config&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">default_config_path</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="n">override</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;XA_CONFIG&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">override</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">override</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_xdg_config_home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;xa&quot;</span> <span class="o">/</span> <span class="s2">&quot;config.toml&quot;</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># data</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="Settings">
+<a class="viewcode-back" href="../../module_docs/xa/config.html#xa.Settings">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Settings</span><span class="p">:</span>
+    <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Path</span>
+    <span class="n">stale_threshold_sec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3600</span>
+    <span class="n">claude_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;claude&quot;</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tmux&quot;</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_settings</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Settings</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Settings</span><span class="p">(</span><span class="n">cache_dir</span><span class="o">=</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;xa&quot;</span> <span class="o">/</span> <span class="s2">&quot;remotes&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># parsing</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_expand</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expandvars</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_toml</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tomllib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_settings</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Settings</span><span class="p">:</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;settings&quot;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">cache_dir</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cache_dir&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Settings</span><span class="p">(</span>
+        <span class="n">cache_dir</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">_expand</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">))</span> <span class="k">if</span> <span class="n">cache_dir</span> <span class="k">else</span> <span class="n">_default_settings</span><span class="p">()</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">,</span>
+        <span class="n">stale_threshold_sec</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stale_threshold_sec&quot;</span><span class="p">,</span> <span class="mi">3600</span><span class="p">)),</span>
+        <span class="n">claude_bin</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;claude_bin&quot;</span><span class="p">,</span> <span class="s2">&quot;claude&quot;</span><span class="p">),</span>
+        <span class="n">tmux_bin</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tmux_bin&quot;</span><span class="p">,</span> <span class="s2">&quot;tmux&quot;</span><span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_host</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">entry</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Settings</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Turn one ``[hosts.&lt;name&gt;]`` entry into a concrete Host.&quot;&quot;&quot;</span>
+    <span class="c1"># Delay imports so that, e.g., a config referencing only SSH hosts</span>
+    <span class="c1"># doesn&#39;t fail if the user hasn&#39;t installed fastapi for HTTPHost.</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kind&quot;</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalHost</span>
+        <span class="k">return</span> <span class="n">LocalHost</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">claude_bin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">,</span>
+            <span class="n">tmux_bin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;ssh&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">SSHHost</span>
+        <span class="k">if</span> <span class="s2">&quot;host&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[hosts.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] missing required key &#39;host&#39;&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SSHHost</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;host&quot;</span><span class="p">],</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">),</span>
+            <span class="n">remote_claude_home</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;remote_claude_home&quot;</span><span class="p">,</span> <span class="s2">&quot;~/.claude&quot;</span><span class="p">),</span>
+            <span class="n">cache_dir</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">cache_dir</span><span class="p">,</span>
+            <span class="n">stale_threshold_sec</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">stale_threshold_sec</span><span class="p">,</span>
+            <span class="n">claude_bin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">,</span>
+            <span class="n">tmux_bin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s2">&quot;http&quot;</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPHost</span>
+        <span class="k">if</span> <span class="s2">&quot;base_url&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">entry</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[hosts.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] missing required key &#39;base_url&#39;&quot;</span><span class="p">)</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">password</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;password_env&quot;</span><span class="p">):</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;password_env&quot;</span><span class="p">])</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;token&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;token_env&quot;</span><span class="p">):</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;token_env&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">HTTPHost</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">base_url</span><span class="o">=</span><span class="n">entry</span><span class="p">[</span><span class="s2">&quot;base_url&quot;</span><span class="p">],</span>
+            <span class="n">auth</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;auth&quot;</span><span class="p">),</span>
+            <span class="n">username</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;username&quot;</span><span class="p">),</span>
+            <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+            <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timeout&quot;</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">)),</span>
+        <span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[hosts.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">] unknown kind &#39;</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># public API</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="load">
+<a class="viewcode-back" href="../../module_docs/xa/config.html#xa.load">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Settings</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return ``(settings, hosts_registry)`` from a config file.</span>
+
+<span class="sd">    Missing file → ``(defaults, {&quot;local&quot;: LocalHost()})``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">_read_toml</span><span class="p">(</span><span class="n">path</span> <span class="ow">or</span> <span class="n">default_config_path</span><span class="p">())</span>
+    <span class="n">settings</span> <span class="o">=</span> <span class="n">_build_settings</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    <span class="n">hosts_raw</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hosts&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">hosts</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">hosts_raw</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalHost</span>
+        <span class="n">hosts</span><span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">LocalHost</span><span class="p">(</span>
+            <span class="n">claude_bin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">tmux_bin</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">hosts_raw</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">hosts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">_build_host</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">settings</span><span class="p">,</span> <span class="n">hosts</span></div>
+
+
+
+<div class="viewcode-block" id="load_hosts">
+<a class="viewcode-back" href="../../module_docs/xa/config.html#xa.load_hosts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_hosts</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shortcut: just the host registry.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

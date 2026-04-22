@@ -1,0 +1,627 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.claude_fs &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">xa.claude_fs</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for xa.claude_fs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Pure filesystem view of ``~/.claude/``.</span>
+
+<span class="sd">This layer reads Claude Code&#39;s on-disk state and nothing else: no tmux, no</span>
+<span class="sd">subprocess, no network. It is the substrate every higher layer of ``xa``</span>
+<span class="sd">reads from.</span>
+
+<span class="sd">What lives under ``~/.claude/`` (as of Claude Code 2.x):</span>
+
+<span class="sd">- ``projects/&lt;slug&gt;/&lt;uuid&gt;.jsonl`` — one file per session, full transcript.</span>
+<span class="sd">  ``&lt;slug&gt;`` is the cwd with ``/`` replaced by ``-`` (leading ``-`` kept).</span>
+<span class="sd">  ``&lt;uuid&gt;`` is the Claude ``sessionId``.</span>
+<span class="sd">- ``sessions/&lt;pid&gt;.json`` — per-process ephemeral metadata while a</span>
+<span class="sd">  ``claude`` process is alive. Holds ``pid``, ``sessionId``,</span>
+<span class="sd">  ``bridgeSessionId``, ``cwd``, ``startedAt``, ``version``. Deleted when</span>
+<span class="sd">  the process exits.</span>
+<span class="sd">- ``history.jsonl`` — global append-only log of every prompt sent. Each</span>
+<span class="sd">  line carries ``sessionId`` + ``cwd``.</span>
+<span class="sd">- ``sessions-index.json`` — summary index (not yet consumed here).</span>
+
+<span class="sd">All functions are read-only. All paths default to ``~/.claude/`` but accept</span>
+<span class="sd">a ``claude_home`` override (set ``XA_CLAUDE_HOME`` in the env to point at a</span>
+<span class="sd">fixture tree during testing).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<span class="n">DEFAULT_CLAUDE_HOME</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;XA_CLAUDE_HOME&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.claude&quot;</span><span class="p">)</span>
+
+<span class="n">_UUID_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[0-9a-f]</span><span class="si">{8}</span><span class="s2">-[0-9a-f]</span><span class="si">{4}</span><span class="s2">-[0-9a-f]</span><span class="si">{4}</span><span class="s2">-[0-9a-f]</span><span class="si">{4}</span><span class="s2">-[0-9a-f]</span><span class="si">{12}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">_PID_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^\d+$&quot;</span><span class="p">)</span>
+<span class="n">_USER_INTERRUPT_MARKER</span> <span class="o">=</span> <span class="s2">&quot;Request interrupted by user for tool use&quot;</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># dataclasses (SSOT for the shapes this layer returns)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="TranscriptMeta">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.TranscriptMeta">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TranscriptMeta</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summary of a transcript JSONL, cheap enough to compute for listings.&quot;&quot;&quot;</span>
+
+    <span class="n">path</span><span class="p">:</span> <span class="n">Path</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">project_slug</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">custom_title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">first_user_message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">turn_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">forked_from</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">created</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">modified</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">size_bytes</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+
+<div class="viewcode-block" id="TranscriptForensics">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.TranscriptForensics">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TranscriptForensics</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Postmortem facts extracted by walking a transcript from the end.</span>
+
+<span class="sd">    ``user_interrupted`` is the raw marker presence — it is **ambiguous**</span>
+<span class="sd">    (also fires on phone-standby bridge drops), so do not derive user intent</span>
+<span class="sd">    from it alone. Callers should corroborate against pane-log tails.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">transcript_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span>
+    <span class="n">line_count</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">last_tool_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">last_tool_command</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">last_tool_exit_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">last_tool_result_tail</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">final_assistant_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">user_interrupted</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+
+
+<div class="viewcode-block" id="HistoryEntry">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.HistoryEntry">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HistoryEntry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;One line from ``~/.claude/history.jsonl``.&quot;&quot;&quot;</span>
+
+    <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">display</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">pasted_contents</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># slug ↔ cwd</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="encode_project_slug">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.encode_project_slug">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">encode_project_slug</span><span class="p">(</span><span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encode a cwd into the ``~/.claude/projects/`` slug form.</span>
+
+<span class="sd">    &gt;&gt;&gt; encode_project_slug(&#39;/root/py/proj/tt/glossa&#39;)</span>
+<span class="sd">    &#39;-root-py-proj-tt-glossa&#39;</span>
+<span class="sd">    &gt;&gt;&gt; encode_project_slug(&#39;/&#39;)</span>
+<span class="sd">    &#39;-&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">cwd</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="parse_project_slug">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.parse_project_slug">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_project_slug</span><span class="p">(</span><span class="n">slug</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode a ``~/.claude/projects/`` slug back to a cwd.</span>
+
+<span class="sd">    &gt;&gt;&gt; parse_project_slug(&#39;-root-py-proj-tt-glossa&#39;)</span>
+<span class="sd">    &#39;/root/py/proj/tt/glossa&#39;</span>
+<span class="sd">    &gt;&gt;&gt; parse_project_slug(&#39;-Users-thorwhalen-tw-server&#39;)</span>
+<span class="sd">    &#39;/Users/thorwhalen/tw/server&#39;</span>
+
+<span class="sd">    NB: This transform is lossy — a cwd with literal ``-`` in segment names</span>
+<span class="sd">    round-trips to a different slug. Claude Code itself has the same</span>
+<span class="sd">    limitation, so we accept it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">slug</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># transcript file enumeration</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_projects_dir</span><span class="p">(</span><span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">claude_home</span> <span class="o">/</span> <span class="s2">&quot;projects&quot;</span>
+
+
+<div class="viewcode-block" id="iter_project_slugs">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.iter_project_slugs">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">iter_project_slugs</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield slugs (directory names) under ``~/.claude/projects/``.&quot;&quot;&quot;</span>
+    <span class="n">projects</span> <span class="o">=</span> <span class="n">_projects_dir</span><span class="p">(</span><span class="n">claude_home</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">projects</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">projects</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span></div>
+
+
+
+<div class="viewcode-block" id="iter_transcript_files">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.iter_transcript_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">iter_transcript_files</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
+    <span class="n">project_slug</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield transcript JSONL paths, optionally restricted to one project.</span>
+
+<span class="sd">    Only files whose stem is a valid UUID are yielded — this filters out</span>
+<span class="sd">    the ``memory/`` subfolder and other non-session artefacts Claude Code</span>
+<span class="sd">    stores alongside transcripts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">projects</span> <span class="o">=</span> <span class="n">_projects_dir</span><span class="p">(</span><span class="n">claude_home</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">projects</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="n">slugs</span> <span class="o">=</span> <span class="p">[</span><span class="n">project_slug</span><span class="p">]</span> <span class="k">if</span> <span class="n">project_slug</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">iter_project_slugs</span><span class="p">(</span><span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">slug</span> <span class="ow">in</span> <span class="n">slugs</span><span class="p">:</span>
+        <span class="n">pdir</span> <span class="o">=</span> <span class="n">projects</span> <span class="o">/</span> <span class="n">slug</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pdir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">pdir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">suffix</span> <span class="o">!=</span> <span class="s2">&quot;.jsonl&quot;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_UUID_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">stem</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">yield</span> <span class="n">entry</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># ephemeral session files (~/.claude/sessions/&lt;pid&gt;.json)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_sessions_dir</span><span class="p">(</span><span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">claude_home</span> <span class="o">/</span> <span class="s2">&quot;sessions&quot;</span>
+
+
+<div class="viewcode-block" id="read_ephemeral_session">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.read_ephemeral_session">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_ephemeral_session</span><span class="p">(</span>
+    <span class="n">pid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the per-process session file for ``pid`` if present.&quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">_sessions_dir</span><span class="p">(</span><span class="n">claude_home</span><span class="p">)</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pid</span><span class="si">}</span><span class="s2">.json&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="iter_ephemeral_sessions">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.iter_ephemeral_sessions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">iter_ephemeral_sessions</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield all live ephemeral session dicts.</span>
+
+<span class="sd">    A session file disappears when claude exits, so this reflects</span>
+<span class="sd">    momentary state only.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sdir</span> <span class="o">=</span> <span class="n">_sessions_dir</span><span class="p">(</span><span class="n">claude_home</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sdir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">sdir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">suffix</span> <span class="o">!=</span> <span class="s2">&quot;.json&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_PID_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">stem</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">):</span>
+            <span class="k">continue</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># transcript parsing</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_iter_json_lines</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield parsed JSON objects from a JSONL file; skip malformed lines.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+                    <span class="k">continue</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span>
+
+
+<div class="viewcode-block" id="iter_transcript_events">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.iter_transcript_events">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">iter_transcript_events</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield every event from a transcript JSONL.</span>
+
+<span class="sd">    Lines that fail to parse are silently skipped — transcripts are</span>
+<span class="sd">    append-only on a live process, so the tail can be partial.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">yield from</span> <span class="n">_iter_json_lines</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_first_text_content</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the first ``text`` block from a message.content array.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">content</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">text</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">text</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="transcript_metadata">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.transcript_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transcript_metadata</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TranscriptMeta</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Summarise a transcript without holding it all in memory.</span>
+
+<span class="sd">    Walks forward, counting turns and capturing the first user message /</span>
+<span class="sd">    summary / custom title / fork pointer / cwd / sessionId. Stops reading</span>
+<span class="sd">    content fields once it has what it needs, but still counts turns to</span>
+<span class="sd">    the end. For very large transcripts, callers who only need counts</span>
+<span class="sd">    should use ``iter_transcript_events`` directly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">custom_title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">first_user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">forked_from</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">turn_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">_iter_json_lines</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant&quot;</span><span class="p">):</span>
+            <span class="n">turn_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">session_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">session_id</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sessionId&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cwd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">summary</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;summary&quot;</span><span class="p">:</span>
+            <span class="n">summary</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;summary&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">custom_title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">custom_title</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;customTitle&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">forked_from</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ff</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;forkedFrom&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">forked_from</span> <span class="o">=</span> <span class="n">ff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sessionId&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ff</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">forked_from</span> <span class="o">=</span> <span class="n">ff</span>
+        <span class="k">if</span> <span class="n">first_user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">==</span> <span class="s2">&quot;user&quot;</span><span class="p">:</span>
+            <span class="n">first_user</span> <span class="o">=</span> <span class="n">_first_text_content</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">))</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span>
+        <span class="n">created</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">st_ctime</span>
+        <span class="n">modified</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">st_mtime</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">st_size</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="n">created</span> <span class="o">=</span> <span class="n">modified</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">slug</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span>
+    <span class="k">return</span> <span class="n">TranscriptMeta</span><span class="p">(</span>
+        <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+        <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+        <span class="n">project_slug</span><span class="o">=</span><span class="n">slug</span><span class="p">,</span>
+        <span class="n">summary</span><span class="o">=</span><span class="n">summary</span><span class="p">,</span>
+        <span class="n">custom_title</span><span class="o">=</span><span class="n">custom_title</span><span class="p">,</span>
+        <span class="n">first_user_message</span><span class="o">=</span><span class="p">(</span><span class="n">first_user</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span> <span class="k">if</span> <span class="n">first_user</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">turn_count</span><span class="o">=</span><span class="n">turn_count</span><span class="p">,</span>
+        <span class="n">forked_from</span><span class="o">=</span><span class="n">forked_from</span><span class="p">,</span>
+        <span class="n">created</span><span class="o">=</span><span class="n">created</span><span class="p">,</span>
+        <span class="n">modified</span><span class="o">=</span><span class="n">modified</span><span class="p">,</span>
+        <span class="n">size_bytes</span><span class="o">=</span><span class="n">size</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="transcript_forensics">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.transcript_forensics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transcript_forensics</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TranscriptForensics</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract postmortem-relevant facts from the tail of a transcript.</span>
+
+<span class="sd">    Walks from the *end* of the file so we find the most recent</span>
+<span class="sd">    ``tool_use`` / ``tool_result`` / assistant ``text`` without reparsing</span>
+<span class="sd">    the whole transcript.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">TranscriptForensics</span><span class="p">(</span>
+            <span class="n">transcript_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">line_count</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">last_tool_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">last_tool_command</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">last_tool_exit_code</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">last_tool_result_tail</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">final_assistant_text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">user_interrupted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">last_tool_use</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">last_tool_result</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">last_assistant_text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">last_tool_use</span> <span class="ow">and</span> <span class="n">last_tool_result</span> <span class="ow">and</span> <span class="n">last_assistant_text</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ev</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">role</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;role&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">bt</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bt</span> <span class="o">==</span> <span class="s2">&quot;tool_use&quot;</span> <span class="ow">and</span> <span class="n">last_tool_use</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">last_tool_use</span> <span class="o">=</span> <span class="n">block</span>
+            <span class="k">elif</span> <span class="n">bt</span> <span class="o">==</span> <span class="s2">&quot;tool_result&quot;</span> <span class="ow">and</span> <span class="n">last_tool_result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">last_tool_result</span> <span class="o">=</span> <span class="n">block</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="n">bt</span> <span class="o">==</span> <span class="s2">&quot;text&quot;</span>
+                <span class="ow">and</span> <span class="n">last_assistant_text</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="n">role</span> <span class="o">==</span> <span class="s2">&quot;assistant&quot;</span>
+            <span class="p">):</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">last_assistant_text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span>
+
+    <span class="n">tool_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tool_command</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">last_tool_use</span><span class="p">:</span>
+        <span class="n">tool_name</span> <span class="o">=</span> <span class="n">last_tool_use</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
+        <span class="n">inp</span> <span class="o">=</span> <span class="n">last_tool_use</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">inp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;command&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">inp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_path&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">tool_command</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cmd</span><span class="p">)[:</span><span class="mi">500</span><span class="p">]</span>
+
+    <span class="n">exit_code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">result_tail</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">interrupted</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">last_tool_result</span><span class="p">:</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">last_tool_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">result_str</span> <span class="o">=</span> <span class="n">raw</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Exit code (\d+)&quot;</span><span class="p">,</span> <span class="n">result_str</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+            <span class="n">exit_code</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">result_tail</span> <span class="o">=</span> <span class="n">result_str</span><span class="p">[:</span><span class="mi">800</span><span class="p">]</span>
+        <span class="n">interrupted</span> <span class="o">=</span> <span class="n">_USER_INTERRUPT_MARKER</span> <span class="ow">in</span> <span class="n">result_str</span>
+
+    <span class="k">return</span> <span class="n">TranscriptForensics</span><span class="p">(</span>
+        <span class="n">transcript_path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+        <span class="n">line_count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">),</span>
+        <span class="n">last_tool_name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span>
+        <span class="n">last_tool_command</span><span class="o">=</span><span class="n">tool_command</span><span class="p">,</span>
+        <span class="n">last_tool_exit_code</span><span class="o">=</span><span class="n">exit_code</span><span class="p">,</span>
+        <span class="n">last_tool_result_tail</span><span class="o">=</span><span class="n">result_tail</span><span class="p">,</span>
+        <span class="n">final_assistant_text</span><span class="o">=</span><span class="n">last_assistant_text</span><span class="p">,</span>
+        <span class="n">user_interrupted</span><span class="o">=</span><span class="n">interrupted</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># history.jsonl</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="history_iter">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.history_iter">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">history_iter</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">HistoryEntry</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield entries from ``~/.claude/history.jsonl`` in file order (oldest first).</span>
+
+<span class="sd">    Useful for cross-project full-text prompt search without loading</span>
+<span class="sd">    every transcript.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">claude_home</span> <span class="o">/</span> <span class="s2">&quot;history.jsonl&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">_iter_json_lines</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">HistoryEntry</span><span class="p">(</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">),</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;projectPath&quot;</span><span class="p">),</span>
+            <span class="n">display</span><span class="o">=</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;display&quot;</span><span class="p">),</span>
+            <span class="n">pasted_contents</span><span class="o">=</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pastedContents&quot;</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># transcript lookup by (cwd, session_id)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="transcript_path">
+<a class="viewcode-back" href="../../module_docs/xa/claude_fs.html#xa.transcript_path">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">transcript_path</span><span class="p">(</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the transcript path for ``(cwd, session_id)`` if it exists.</span>
+
+<span class="sd">    &gt;&gt;&gt; from pathlib import Path</span>
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; with tempfile.TemporaryDirectory() as td:</span>
+<span class="sd">    ...     home = Path(td)</span>
+<span class="sd">    ...     (home / &#39;projects&#39; / &#39;-foo-bar&#39;).mkdir(parents=True)</span>
+<span class="sd">    ...     f = home / &#39;projects&#39; / &#39;-foo-bar&#39; / &#39;aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jsonl&#39;</span>
+<span class="sd">    ...     _ = f.write_text(&#39;&#39;)</span>
+<span class="sd">    ...     p = transcript_path(&#39;/foo/bar&#39;, &#39;aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee&#39;, claude_home=home)</span>
+<span class="sd">    ...     p == f</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="n">encode_project_slug</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">claude_home</span> <span class="o">/</span> <span class="s2">&quot;projects&quot;</span> <span class="o">/</span> <span class="n">slug</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">.jsonl&quot;</span>
+    <span class="k">return</span> <span class="n">path</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

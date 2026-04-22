@@ -1,0 +1,4 @@
+xa.config
+=========
+.. automodule:: xa.config
+   :members:

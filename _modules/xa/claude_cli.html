@@ -1,0 +1,522 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.claude_cli &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">xa.claude_cli</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for xa.claude_cli</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Spawn, resume, and URL-resolve Claude Code sessions.</span>
+
+<span class="sd">Ties ``xa.tmux`` (pane / process control), ``xa.claude_fs`` (read the</span>
+<span class="sd">ephemeral ``~/.claude/sessions/&lt;pid&gt;.json`` file) and the ``claude`` CLI</span>
+<span class="sd">binary together. Everything here targets the *local* machine; remote-host</span>
+<span class="sd">dispatch lives in ``xa.hosts`` (Phase 6+).</span>
+
+<span class="sd">Bridge URL format: ``https://claude.ai/code/&lt;bridgeSessionId&gt;``. The</span>
+<span class="sd">``bridgeSessionId`` already starts with ``session_`` — do not prepend</span>
+<span class="sd">anything.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_fs</span> <span class="k">as</span> <span class="n">cfs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmux</span> <span class="k">as</span> <span class="n">tm</span>
+
+
+<span class="n">DEFAULT_CLAUDE_BIN</span> <span class="o">=</span> <span class="s2">&quot;claude&quot;</span>
+<span class="n">CLAUDE_WEB_BASE</span> <span class="o">=</span> <span class="s2">&quot;https://claude.ai/code&quot;</span>
+
+<span class="n">_URL_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;https://claude\.ai/code/session_[A-Za-z0-9_-]+&quot;</span><span class="p">)</span>
+
+<span class="n">UrlSource</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;session_file&quot;</span><span class="p">,</span> <span class="s2">&quot;pane_capture&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="SpawnResult">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.SpawnResult">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpawnResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;What ``spawn_session`` / ``resume_session`` return to the caller.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">claude_pid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">claude_session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">bridge_session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">url_source</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UrlSource</span><span class="p">]</span>
+    <span class="n">warning</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># URL resolution</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="find_claude_pid">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.find_claude_pid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_claude_pid</span><span class="p">(</span>
+    <span class="n">session_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the ``claude`` process PID living in the session&#39;s pane.&quot;&quot;&quot;</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">pane_pid</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="o">*</span><span class="n">tm</span><span class="o">.</span><span class="n">descendants</span><span class="p">(</span><span class="n">root</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">tm</span><span class="o">.</span><span class="n">proc_comm</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;claude&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pid</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_url_from_text</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">_URL_RE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">m</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="resolve_bridge_url">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.resolve_bridge_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_bridge_url</span><span class="p">(</span>
+    <span class="n">session_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
+    <span class="n">scrape_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UrlSource</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return ``(url, source)`` for a live tmux-hosted claude session.</span>
+
+<span class="sd">    Primary path: find the claude descendant pid → read</span>
+<span class="sd">    ``~/.claude/sessions/&lt;pid&gt;.json`` → take ``bridgeSessionId``.</span>
+<span class="sd">    Fallback: regex-scrape ``capture-pane`` output for the full URL.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">find_claude_pid</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">read_ephemeral_session</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bridge</span> <span class="o">:=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bridgeSessionId&quot;</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;session_file&quot;</span>
+    <span class="n">pane</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="n">scrape_lines</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">_extract_url_from_text</span><span class="p">(</span><span class="n">pane</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="s2">&quot;pane_capture&quot;</span>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># readiness handshake</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dismiss_trust_and_enable_remote_control</span><span class="p">(</span>
+    <span class="n">session_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">deadline</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">auto_remote_control</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Poll the pane until claude is ready; dismiss prompts on the way.</span>
+
+<span class="sd">    States handled:</span>
+<span class="sd">      - &quot;trust this folder&quot; → send Enter.</span>
+<span class="sd">      - Main prompt (``❯``) visible but &quot;remote control active&quot; absent →</span>
+<span class="sd">        send ``/remote-control`` + Enter (skipped if ``auto_remote_control``</span>
+<span class="sd">        is False).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">trust_dismissed</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">rc_sent</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">deadline</span><span class="p">:</span>
+        <span class="n">pane</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trust_dismissed</span> <span class="ow">and</span> <span class="s2">&quot;trust this folder&quot;</span> <span class="ow">in</span> <span class="n">pane</span><span class="p">:</span>
+            <span class="n">tm</span><span class="o">.</span><span class="n">send_keys</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="s2">&quot;Enter&quot;</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+            <span class="n">trust_dismissed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">auto_remote_control</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="n">rc_sent</span>
+            <span class="ow">and</span> <span class="s2">&quot;remote control active&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pane</span>
+            <span class="ow">and</span> <span class="s2">&quot;❯&quot;</span> <span class="ow">in</span> <span class="n">pane</span>
+        <span class="p">):</span>
+            <span class="n">tm</span><span class="o">.</span><span class="n">send_keys</span><span class="p">(</span>
+                <span class="n">session_name</span><span class="p">,</span> <span class="s2">&quot;/remote-control&quot;</span><span class="p">,</span> <span class="s2">&quot;Enter&quot;</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span>
+            <span class="p">)</span>
+            <span class="n">rc_sent</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">return</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># spawn / resume</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wait_for_url</span><span class="p">(</span>
+    <span class="n">session_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">deadline</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">auto_remote_control</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UrlSource</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Poll for the bridge URL, dismissing prompts along the way.</span>
+
+<span class="sd">    Returns ``(url, source)`` or ``(None, None)`` if the deadline passes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">deadline</span><span class="p">:</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="n">resolve_bridge_url</span><span class="p">(</span>
+            <span class="n">session_name</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="n">src</span>
+        <span class="n">_dismiss_trust_and_enable_remote_control</span><span class="p">(</span>
+            <span class="n">session_name</span><span class="p">,</span>
+            <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">,</span>
+            <span class="n">deadline</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">deadline</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="n">auto_remote_control</span><span class="o">=</span><span class="n">auto_remote_control</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_spawn</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">shell_cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">url_timeout_sec</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">auto_remote_control</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">pane_log_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>
+    <span class="n">archive_ctx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;_ArchiveCtx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpawnResult</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cwd does not exist: </span><span class="si">{</span><span class="n">cwd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">tm</span><span class="o">.</span><span class="n">new_session</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">shell_cmd</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pane_log_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pane_log_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">tm</span><span class="o">.</span><span class="n">pipe_pane_to_file</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">pane_log_path</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">archive_ctx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">archive_ctx</span><span class="o">.</span><span class="n">emit_created</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">pane_log</span><span class="o">=</span><span class="n">pane_log_path</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span>
+        <span class="p">)</span>
+
+    <span class="n">deadline</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">url_timeout_sec</span>
+    <span class="n">url</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="n">_wait_for_url</span><span class="p">(</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+        <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">,</span>
+        <span class="n">deadline</span><span class="o">=</span><span class="n">deadline</span><span class="p">,</span>
+        <span class="n">auto_remote_control</span><span class="o">=</span><span class="n">auto_remote_control</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">claude_pid</span> <span class="o">=</span> <span class="n">find_claude_pid</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">cfs</span><span class="o">.</span><span class="n">read_ephemeral_session</span><span class="p">(</span><span class="n">claude_pid</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">claude_pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">SpawnResult</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+        <span class="n">claude_pid</span><span class="o">=</span><span class="n">claude_pid</span><span class="p">,</span>
+        <span class="n">claude_session_id</span><span class="o">=</span><span class="p">(</span><span class="n">data</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sessionId&quot;</span><span class="p">),</span>
+        <span class="n">bridge_session_id</span><span class="o">=</span><span class="p">(</span><span class="n">data</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bridgeSessionId&quot;</span><span class="p">),</span>
+        <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+        <span class="n">url_source</span><span class="o">=</span><span class="n">src</span><span class="p">,</span>
+        <span class="n">warning</span><span class="o">=</span><span class="kc">None</span>
+        <span class="k">if</span> <span class="n">url</span>
+        <span class="k">else</span> <span class="s2">&quot;Session created but no remote-control URL detected yet — try refreshing.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">archive_ctx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">url</span><span class="p">:</span>
+        <span class="n">archive_ctx</span><span class="o">.</span><span class="n">emit_url_acquired</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">claude_session_id</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
+            <span class="n">claude_pid</span><span class="o">=</span><span class="n">claude_pid</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_ArchiveCtx</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal adapter passed to ``_run_spawn`` for event emission.</span>
+
+<span class="sd">    Kept private so ``xa.archive`` owns the schema end-to-end. Callers</span>
+<span class="sd">    use :func:`spawn_session` / :func:`resume_session` with the public</span>
+<span class="sd">    ``archive_store`` / ``pane_store`` / ``archive_id`` kwargs instead.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">events_store</span><span class="p">:</span> <span class="nb">object</span>
+    <span class="n">archive_id</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">emit_created</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pane_log</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">archive</span> <span class="k">as</span> <span class="n">arch</span>  <span class="c1"># local import to avoid cycle</span>
+
+        <span class="n">tmux_ts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">(</span><span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                <span class="n">tmux_ts</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">created</span>
+                <span class="k">break</span>
+        <span class="n">arch</span><span class="o">.</span><span class="n">append_created</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events_store</span><span class="p">,</span>
+            <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">archive_id</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+            <span class="n">claude_bin</span><span class="o">=</span><span class="n">DEFAULT_CLAUDE_BIN</span><span class="p">,</span>
+            <span class="n">tmux_created_ts</span><span class="o">=</span><span class="n">tmux_ts</span><span class="p">,</span>
+            <span class="n">pane_log</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">pane_log</span><span class="p">)</span> <span class="k">if</span> <span class="n">pane_log</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">emit_url_acquired</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">claude_session_id</span><span class="p">,</span> <span class="n">claude_pid</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">archive</span> <span class="k">as</span> <span class="n">arch</span>
+
+        <span class="n">arch</span><span class="o">.</span><span class="n">append_url_acquired</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events_store</span><span class="p">,</span>
+            <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">archive_id</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">claude_session_id</span><span class="o">=</span><span class="n">claude_session_id</span><span class="p">,</span>
+            <span class="n">claude_pid</span><span class="o">=</span><span class="n">claude_pid</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<div class="viewcode-block" id="new_archive_id">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.new_archive_id">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">new_archive_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fresh 12-char hex id used as the key for pane logs + archive events.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">secrets</span><span class="o">.</span><span class="n">token_hex</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_archive_ctx</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span> <span class="n">archive_store</span><span class="p">,</span> <span class="n">pane_store</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">_ArchiveCtx</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="k">if</span> <span class="n">archive_store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">sid</span> <span class="o">=</span> <span class="n">archive_id</span> <span class="ow">or</span> <span class="n">new_archive_id</span><span class="p">()</span>
+    <span class="n">pane_log</span> <span class="o">=</span> <span class="n">pane_store</span><span class="o">.</span><span class="n">path_for</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span> <span class="k">if</span> <span class="n">pane_store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">_ArchiveCtx</span><span class="p">(</span><span class="n">events_store</span><span class="o">=</span><span class="n">archive_store</span><span class="p">,</span> <span class="n">archive_id</span><span class="o">=</span><span class="n">sid</span><span class="p">),</span> <span class="n">pane_log</span><span class="p">,</span> <span class="n">sid</span>
+
+
+<div class="viewcode-block" id="spawn_session">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.spawn_session">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">spawn_session</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">claude_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_BIN</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
+    <span class="n">url_timeout_sec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">120.0</span><span class="p">,</span>
+    <span class="n">auto_remote_control</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">pane_log_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">archive_store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pane_store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">archive_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpawnResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a detached tmux session running ``claude`` in ``cwd``.</span>
+
+<span class="sd">    Waits up to ``url_timeout_sec`` for the bridge URL to appear, dismissing</span>
+<span class="sd">    the &quot;trust this folder&quot; prompt and issuing ``/remote-control`` as needed.</span>
+
+<span class="sd">    If ``archive_store`` (and optionally ``pane_store``) are given, emits</span>
+<span class="sd">    ``created`` + ``url_acquired`` events to the archive and pipes the pane</span>
+<span class="sd">    output to a file under ``pane_store``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ctx</span><span class="p">,</span> <span class="n">ctx_pane_log</span><span class="p">,</span> <span class="n">_sid</span> <span class="o">=</span> <span class="n">_build_archive_ctx</span><span class="p">(</span>
+        <span class="n">archive_store</span><span class="o">=</span><span class="n">archive_store</span><span class="p">,</span> <span class="n">pane_store</span><span class="o">=</span><span class="n">pane_store</span><span class="p">,</span> <span class="n">archive_id</span><span class="o">=</span><span class="n">archive_id</span>
+    <span class="p">)</span>
+    <span class="n">shell_cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;&amp; exec </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">claude_bin</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="n">_run_spawn</span><span class="p">(</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+        <span class="n">shell_cmd</span><span class="o">=</span><span class="n">shell_cmd</span><span class="p">,</span>
+        <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+        <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">,</span>
+        <span class="n">url_timeout_sec</span><span class="o">=</span><span class="n">url_timeout_sec</span><span class="p">,</span>
+        <span class="n">auto_remote_control</span><span class="o">=</span><span class="n">auto_remote_control</span><span class="p">,</span>
+        <span class="n">pane_log_path</span><span class="o">=</span><span class="n">pane_log_path</span> <span class="ow">or</span> <span class="n">ctx_pane_log</span><span class="p">,</span>
+        <span class="n">archive_ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="resume_session">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.resume_session">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resume_session</span><span class="p">(</span>
+    <span class="n">claude_session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">claude_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_BIN</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
+    <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
+    <span class="n">url_timeout_sec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">120.0</span><span class="p">,</span>
+    <span class="n">auto_remote_control</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">pane_log_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">archive_store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">pane_store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">archive_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SpawnResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Launch ``claude --resume &lt;id&gt;`` in a new detached tmux session.</span>
+
+<span class="sd">    ``--resume`` reuses the cwd&#39;s trusted-folder setting, so we skip the</span>
+<span class="sd">    trust-prompt dismiss; the ``/remote-control`` handshake still runs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Auto-name: &lt;claude_session_id-short&gt;-r{n}.</span>
+        <span class="n">live</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">(</span><span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)}</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;resumed-</span><span class="si">{</span><span class="n">claude_session_id</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+            <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-r</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="k">if</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-r</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">live</span><span class="p">),</span>
+            <span class="n">base</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">ctx</span><span class="p">,</span> <span class="n">ctx_pane_log</span><span class="p">,</span> <span class="n">_sid</span> <span class="o">=</span> <span class="n">_build_archive_ctx</span><span class="p">(</span>
+        <span class="n">archive_store</span><span class="o">=</span><span class="n">archive_store</span><span class="p">,</span> <span class="n">pane_store</span><span class="o">=</span><span class="n">pane_store</span><span class="p">,</span> <span class="n">archive_id</span><span class="o">=</span><span class="n">archive_id</span>
+    <span class="p">)</span>
+    <span class="n">shell_cmd</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;&amp; &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;exec </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">claude_bin</span><span class="p">)</span><span class="si">}</span><span class="s2"> --resume </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">claude_session_id</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_run_spawn</span><span class="p">(</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+        <span class="n">shell_cmd</span><span class="o">=</span><span class="n">shell_cmd</span><span class="p">,</span>
+        <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+        <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">,</span>
+        <span class="n">url_timeout_sec</span><span class="o">=</span><span class="n">url_timeout_sec</span><span class="p">,</span>
+        <span class="n">auto_remote_control</span><span class="o">=</span><span class="n">auto_remote_control</span><span class="p">,</span>
+        <span class="n">pane_log_path</span><span class="o">=</span><span class="n">pane_log_path</span> <span class="ow">or</span> <span class="n">ctx_pane_log</span><span class="p">,</span>
+        <span class="n">archive_ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

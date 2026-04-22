@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.tmux &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">xa.tmux</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for xa.tmux</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Pure tmux wrappers.</span>
+
+<span class="sd">No Claude Code knowledge lives here. Every public function takes a</span>
+<span class="sd">``binary`` keyword so callers can override the tmux executable (tests,</span>
+<span class="sd">cross-platform installs, remote-host bridges).</span>
+
+<span class="sd">Key gotchas encoded below:</span>
+
+<span class="sd">- ``session_target(name)`` returns ``f&quot;{name}:&quot;`` — the trailing colon is</span>
+<span class="sd">  essential. A bare session name can be silently resolved as a window or</span>
+<span class="sd">  pane spec and mis-target a different session.</span>
+<span class="sd">- ``list_sessions`` returns an empty list (not raises) when the tmux</span>
+<span class="sd">  server isn&#39;t running; tmux exits non-zero in that case and we absorb it.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+
+<span class="n">DEFAULT_TMUX_BIN</span> <span class="o">=</span> <span class="s2">&quot;tmux&quot;</span>
+
+
+<div class="viewcode-block" id="TmuxSession">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.TmuxSession">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TmuxSession</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimal view of one tmux session, from ``list-sessions``.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">created</span><span class="p">:</span> <span class="nb">int</span>       <span class="c1"># unix seconds</span>
+    <span class="n">activity</span><span class="p">:</span> <span class="nb">int</span>      <span class="c1"># unix seconds of last activity</span>
+    <span class="n">attached</span><span class="p">:</span> <span class="nb">bool</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># helpers</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="session_target">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.session_target">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">session_target</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the canonical target string for a session.</span>
+
+<span class="sd">    &gt;&gt;&gt; session_target(&#39;foo&#39;)</span>
+<span class="sd">    &#39;foo:&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">:&quot;</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span>
+    <span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="n">args</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># core operations</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="list_sessions">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.list_sessions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">list_sessions</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TmuxSession</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return all live tmux sessions; empty list if server isn&#39;t running.&quot;&quot;&quot;</span>
+    <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;#</span><span class="si">{session_name}</span><span class="s2">|#</span><span class="si">{session_created}</span><span class="s2">|#</span><span class="si">{session_activity}</span><span class="s2">|#</span><span class="si">{session_attached}</span><span class="s2">&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">&quot;list-sessions&quot;</span><span class="p">,</span> <span class="s2">&quot;-F&quot;</span><span class="p">,</span> <span class="n">fmt</span><span class="p">])</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TmuxSession</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">attached</span> <span class="o">=</span> <span class="n">parts</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">TmuxSession</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">created</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">created</span><span class="p">),</span>
+                    <span class="n">activity</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">activity</span><span class="p">),</span>
+                    <span class="n">attached</span><span class="o">=</span><span class="n">attached</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">continue</span>
+    <span class="k">return</span> <span class="n">rows</span></div>
+
+
+
+<div class="viewcode-block" id="new_session">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.new_session">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">new_session</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a detached tmux session running ``command`` as its pane&#39;s program.</span>
+
+<span class="sd">    ``command`` is passed to a shell: the caller is responsible for quoting.</span>
+<span class="sd">    Use ``shlex.quote`` for untrusted parts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">&quot;new-session&quot;</span><span class="p">,</span> <span class="s2">&quot;-d&quot;</span><span class="p">,</span> <span class="s2">&quot;-s&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">command</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tmux new-session failed: </span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">kill_session</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">&quot;kill-session&quot;</span><span class="p">,</span> <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="n">session_target</span><span class="p">(</span><span class="n">name</span><span class="p">)])</span>
+    <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tmux kill-session failed: </span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="capture_pane">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.capture_pane">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">capture_pane</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the last ``lines`` of the session&#39;s first pane, or &#39;&#39; on failure.&quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">binary</span><span class="p">,</span> <span class="s2">&quot;capture-pane&quot;</span><span class="p">,</span> <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="n">session_target</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;-S&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">lines</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span> <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="send_keys">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.send_keys">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_keys</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send one or more keys/strings to the pane. Always pass ``&quot;Enter&quot;`` for newline.&quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">&quot;send-keys&quot;</span><span class="p">,</span> <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="n">session_target</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="o">*</span><span class="n">keys</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tmux send-keys failed: </span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="pipe_pane_to_file">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.pipe_pane_to_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pipe_pane_to_file</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start streaming the pane&#39;s output to ``path`` (append mode).</span>
+
+<span class="sd">    Uses ``-o`` so a duplicate call toggles the pipe off, matching edualc&#39;s</span>
+<span class="sd">    behavior. tmux stops piping automatically when the pane dies.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;cat &gt;&gt; </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">&quot;pipe-pane&quot;</span><span class="p">,</span> <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="n">session_target</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tmux pipe-pane failed: </span><span class="si">{</span><span class="n">out</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="pane_pid">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.pane_pid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pane_pid</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the pid of the first pane&#39;s program, or None if the session is gone.&quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">binary</span><span class="p">,</span> <span class="s2">&quot;list-panes&quot;</span><span class="p">,</span> <span class="s2">&quot;-s&quot;</span><span class="p">,</span> <span class="s2">&quot;-t&quot;</span><span class="p">,</span> <span class="n">session_target</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="s2">&quot;-F&quot;</span><span class="p">,</span> <span class="s2">&quot;#</span><span class="si">{pane_pid}</span><span class="s2">&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># /proc-based process tree walk (no pstree dependency)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="descendants">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.descendants">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">descendants</span><span class="p">(</span><span class="n">pid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;All transitive descendant PIDs of ``pid``.</span>
+
+<span class="sd">    Scans ``/proc/*/status``; silently tolerates races (processes dying</span>
+<span class="sd">    mid-scan). Not available on non-Linux platforms — returns ``[]`` if</span>
+<span class="sd">    ``/proc`` is absent.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">proc_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/proc&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">proc_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">children_of</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">proc_root</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="p">(</span><span class="n">entry</span> <span class="o">/</span> <span class="s2">&quot;status&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;PPid:&quot;</span><span class="p">):</span>
+                    <span class="n">ppid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">children_of</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">ppid</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+                    <span class="k">break</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">,</span> <span class="ne">ProcessLookupError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="c1"># Races: process dies between iterdir and read. Also tolerate</span>
+            <span class="c1"># OSError, which covers Linux&#39;s ESRCH surfaced as OSError.</span>
+            <span class="k">continue</span>
+
+    <span class="n">seen</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">pid</span><span class="p">]</span>
+    <span class="k">while</span> <span class="n">stack</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">children_of</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                <span class="n">seen</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="n">stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">seen</span></div>
+
+
+
+<div class="viewcode-block" id="proc_comm">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.proc_comm">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">proc_comm</span><span class="p">(</span><span class="n">pid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the ``comm`` name of a pid (kernel-level process name), &#39;&#39; if unreadable.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/proc&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="nb">str</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;comm&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">,</span> <span class="ne">ProcessLookupError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

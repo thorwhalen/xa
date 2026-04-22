@@ -1,0 +1,487 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.hosts.ssh &mdash; xa 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../module_docs/xa/tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../hosts.html">xa.hosts</a></li>
+      <li class="breadcrumb-item active">xa.hosts.ssh</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for xa.hosts.ssh</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;SSH-backed host.</span>
+
+<span class="sd">Mirrors the cc-sessions transport pattern: pull the remote&#39;s</span>
+<span class="sd">``~/.claude/`` tree into a local cache via ``rsync -az --delete -e ssh``,</span>
+<span class="sd">then read the cache with the same ``claude_fs`` code paths we use for</span>
+<span class="sd">local discovery. Actions (``spawn`` / ``resume`` / ``kill`` / tmux queries)</span>
+<span class="sd">dispatch to the remote via ``ssh &lt;host&gt; &lt;cmd&gt;``.</span>
+
+<span class="sd">No Python SSH library is pulled in: we shell out to the system ``ssh`` /</span>
+<span class="sd">``rsync`` binaries, which means the user&#39;s ``~/.ssh/config``, agent, and</span>
+<span class="sd">host keys Just Work. Install overhead: zero.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_cli</span> <span class="k">as</span> <span class="n">ccli</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_fs</span> <span class="k">as</span> <span class="n">cfs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmux</span> <span class="k">as</span> <span class="n">tm</span>
+
+
+<span class="n">DEFAULT_CACHE_DIR</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;.cache&quot;</span> <span class="o">/</span> <span class="s2">&quot;xa&quot;</span> <span class="o">/</span> <span class="s2">&quot;remotes&quot;</span>
+
+
+<div class="viewcode-block" id="SSHHost">
+<a class="viewcode-back" href="../../../module_docs/xa/hosts/ssh.html#xa.SSHHost">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SSHHost</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transcripts via rsync; actions via ssh exec.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name:</span>
+<span class="sd">        Logical name used in ``Session.host`` and elsewhere.</span>
+<span class="sd">    host:</span>
+<span class="sd">        SSH hostname / alias. Matches cc-sessions: either an</span>
+<span class="sd">        ``~/.ssh/config`` alias (``devbox``) or a raw host (``1.2.3.4``).</span>
+<span class="sd">    user:</span>
+<span class="sd">        Optional SSH user for raw hosts.</span>
+<span class="sd">    remote_claude_home:</span>
+<span class="sd">        Remote path to ``~/.claude/``. Defaults to ``~/.claude`` which</span>
+<span class="sd">        resolves relative to the SSH user&#39;s home on the remote side.</span>
+<span class="sd">    cache_dir:</span>
+<span class="sd">        Where to stage the rsync&#39;d tree locally.</span>
+<span class="sd">    stale_threshold_sec:</span>
+<span class="sd">        Re-sync when the cached copy is older than this. ``0`` means</span>
+<span class="sd">        always sync.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;ssh&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">remote_claude_home</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;~/.claude&quot;</span><span class="p">,</span>
+        <span class="n">cache_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CACHE_DIR</span><span class="p">,</span>
+        <span class="n">stale_threshold_sec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3600</span><span class="p">,</span>
+        <span class="n">claude_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_BIN</span><span class="p">,</span>
+        <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
+        <span class="n">ssh_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ssh&quot;</span><span class="p">,</span>
+        <span class="n">rsync_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rsync&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_claude_home</span> <span class="o">=</span> <span class="n">remote_claude_home</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cache_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stale_threshold_sec</span> <span class="o">=</span> <span class="n">stale_threshold_sec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span> <span class="o">=</span> <span class="n">claude_bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span> <span class="o">=</span> <span class="n">tmux_bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ssh_bin</span> <span class="o">=</span> <span class="n">ssh_bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rsync_bin</span> <span class="o">=</span> <span class="n">rsync_bin</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># internal helpers</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;``user@host`` or ``host`` for the rsync/ssh source spec.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="si">}</span><span class="s2">@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_remote_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rel</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a remote path spec for ``rsync``/``ssh``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_claude_home</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">rel</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_rsync_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rel_src</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the rsync argv for a directory pull.</span>
+
+<span class="sd">        The trailing slash on the source is significant — it copies</span>
+<span class="sd">        *contents*, not the directory itself, matching cc-sessions&#39;</span>
+<span class="sd">        convention.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rsync_bin</span><span class="p">,</span>
+            <span class="s2">&quot;-a&quot;</span><span class="p">,</span> <span class="s2">&quot;-z&quot;</span><span class="p">,</span> <span class="s2">&quot;--delete&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-e&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssh_bin</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_path</span><span class="p">(</span><span class="n">rel_src</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ssh_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ssh_bin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">,</span> <span class="n">remote_cmd</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_stale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dest</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stale_threshold_sec</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">age</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">dest</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stale_threshold_sec</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">argv</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># sync</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+
+<div class="viewcode-block" id="SSHHost.sync">
+<a class="viewcode-back" href="../../../module_docs/xa/hosts/ssh.html#xa.SSHHost.sync">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pull ``&lt;remote_claude_home&gt;/projects/`` and ``/sessions/`` into the cache.</span>
+
+<span class="sd">        Non-existent remote directories are tolerated (rsync returns 23).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">projects_dest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;projects&quot;</span>
+        <span class="n">sessions_dest</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span> <span class="o">/</span> <span class="s2">&quot;sessions&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_stale</span><span class="p">(</span><span class="n">projects_dest</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">projects_dest</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sessions_dest</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Best-effort — don&#39;t blow up when the remote tree is partly empty.</span>
+        <span class="k">for</span> <span class="n">rel</span><span class="p">,</span> <span class="n">dest</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;projects&quot;</span><span class="p">,</span> <span class="n">projects_dest</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;sessions&quot;</span><span class="p">,</span> <span class="n">sessions_dest</span><span class="p">)]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rsync_cmd</span><span class="p">(</span><span class="n">rel</span><span class="p">,</span> <span class="n">dest</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">120.0</span><span class="p">)</span>
+                <span class="c1"># rsync exit 23 = &quot;partial transfer due to vanished files&quot; —</span>
+                <span class="c1"># happens on active trees, tolerable.</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">):</span>
+                    <span class="c1"># Don&#39;t silence completely — attach for debugging.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_last_sync_error</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_sync_error</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># remote queries</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_remote_tmux_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run ``tmux list-sessions`` over SSH and parse the output.&quot;&quot;&quot;</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;#</span><span class="si">{session_name}</span><span class="s2">|#</span><span class="si">{session_created}</span><span class="s2">|#</span><span class="si">{session_activity}</span><span class="s2">|#</span><span class="si">{session_attached}</span><span class="s2">&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span><span class="si">}</span><span class="s2"> list-sessions -F </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ssh_cmd</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">attached</span> <span class="o">=</span> <span class="n">parts</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">created</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">created</span><span class="p">),</span>
+                    <span class="n">activity</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">activity</span><span class="p">),</span>
+                    <span class="n">attached</span><span class="o">=</span><span class="n">attached</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+                <span class="p">))</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">return</span> <span class="n">rows</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># discovery</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_sessions</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">project_slug</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">include_live</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">&quot;Session&quot;</span><span class="p">]:</span>  <span class="c1"># noqa: F821</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa.sessions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">_session_from_transcript_meta</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+
+        <span class="n">cached_home</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_dir</span>
+
+        <span class="n">live_by_cs_id</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">live_tmux_rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">include_live</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">eph</span> <span class="ow">in</span> <span class="n">cfs</span><span class="o">.</span><span class="n">iter_ephemeral_sessions</span><span class="p">(</span><span class="n">claude_home</span><span class="o">=</span><span class="n">cached_home</span><span class="p">):</span>
+                <span class="n">cs</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sessionId&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cs</span><span class="p">:</span>
+                    <span class="n">live_by_cs_id</span><span class="p">[</span><span class="n">cs</span><span class="p">]</span> <span class="o">=</span> <span class="n">eph</span>
+            <span class="n">live_tmux_rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_tmux_list</span><span class="p">()</span>
+
+        <span class="c1"># We can&#39;t walk /proc on the remote cheaply, so match tmux ↔ ephemeral</span>
+        <span class="c1"># by cwd (best-effort): for each tmux session, pick the ephemeral</span>
+        <span class="c1"># whose cwd best matches the tmux activity. In practice we only need</span>
+        <span class="c1"># *some* tmux_name attribution, and per-machine it tends to be</span>
+        <span class="c1"># unambiguous (one claude per cwd).</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_pick_tmux</span><span class="p">(</span><span class="n">eph</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">]:</span>
+            <span class="c1"># If only one tmux session exists, attribute any live eph to it.</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">live_tmux_rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">live_tmux_rows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Otherwise, we simply return None — the UI still shows the URL</span>
+            <span class="c1"># from the ephemeral file; the tmux_name is advisory.</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">emitted</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">cfs</span><span class="o">.</span><span class="n">iter_transcript_files</span><span class="p">(</span>
+            <span class="n">claude_home</span><span class="o">=</span><span class="n">cached_home</span><span class="p">,</span> <span class="n">project_slug</span><span class="o">=</span><span class="n">project_slug</span>
+        <span class="p">):</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">transcript_metadata</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">_session_from_transcript_meta</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">cs_id</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">claude_session_id</span>
+            <span class="k">if</span> <span class="n">cs_id</span> <span class="ow">and</span> <span class="n">cs_id</span> <span class="ow">in</span> <span class="n">live_by_cs_id</span><span class="p">:</span>
+                <span class="n">eph</span> <span class="o">=</span> <span class="n">live_by_cs_id</span><span class="p">[</span><span class="n">cs_id</span><span class="p">]</span>
+                <span class="n">tmux_row</span> <span class="o">=</span> <span class="n">_pick_tmux</span><span class="p">(</span><span class="n">eph</span><span class="p">)</span>
+                <span class="n">bridge</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bridgeSessionId&quot;</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">replace</span><span class="p">(</span>
+                    <span class="n">base</span><span class="p">,</span>
+                    <span class="n">state</span><span class="o">=</span><span class="s2">&quot;live&quot;</span><span class="p">,</span>
+                    <span class="n">live_pid</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">tmux_name</span><span class="o">=</span><span class="n">tmux_row</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">tmux_row</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">bridge_session_id</span><span class="o">=</span><span class="n">bridge</span><span class="p">,</span>
+                    <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ccli</span><span class="o">.</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">url_source</span><span class="o">=</span><span class="s2">&quot;session_file&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">emitted</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cs_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">base</span>
+
+        <span class="k">for</span> <span class="n">cs_id</span><span class="p">,</span> <span class="n">eph</span> <span class="ow">in</span> <span class="n">live_by_cs_id</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">cs_id</span> <span class="ow">in</span> <span class="n">emitted</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">bridge</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bridgeSessionId&quot;</span><span class="p">)</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Session</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="n">cs_id</span><span class="p">,</span>
+                <span class="n">claude_session_id</span><span class="o">=</span><span class="n">cs_id</span><span class="p">,</span>
+                <span class="n">bridge_session_id</span><span class="o">=</span><span class="n">bridge</span><span class="p">,</span>
+                <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+                <span class="n">project_slug</span><span class="o">=</span><span class="n">cfs</span><span class="o">.</span><span class="n">encode_project_slug</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span> <span class="k">if</span> <span class="n">cwd</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="n">state</span><span class="o">=</span><span class="s2">&quot;live&quot;</span><span class="p">,</span>
+                <span class="n">live_pid</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">tmux_name</span><span class="o">=</span><span class="p">(</span><span class="n">_pick_tmux</span><span class="p">(</span><span class="n">eph</span><span class="p">)</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">_pick_tmux</span><span class="p">(</span><span class="n">eph</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">summary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">first_user_message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">turn_count</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">forked_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">created</span><span class="o">=</span><span class="p">(</span>
+                    <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;startedAt&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;startedAt&quot;</span><span class="p">),</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+                    <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">),</span>
+                <span class="n">modified</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ccli</span><span class="o">.</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">url_source</span><span class="o">=</span><span class="s2">&quot;session_file&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">transcript_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># actions (SSH-dispatched)</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+
+<div class="viewcode-block" id="SSHHost.spawn">
+<a class="viewcode-back" href="../../../module_docs/xa/hosts/ssh.html#xa.SSHHost.spawn">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">spawn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spawn ``tmux new-session -d &#39;s &lt;name&gt;&#39; &#39;cd &lt;cwd&gt; &amp;&amp; exec claude&#39;`` over SSH.</span>
+
+<span class="sd">        URL detection is left to the caller&#39;s next :meth:`sync` + listing —</span>
+<span class="sd">        we don&#39;t round-trip waiting for the bridge URL here (that would</span>
+<span class="sd">        hold an SSH connection open for up to 2 minutes).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Za-z0-9_.-]{1,48}$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid tmux session name&quot;</span><span class="p">)</span>
+        <span class="n">remote_cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span><span class="si">}</span><span class="s2"> new-session -d &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;-s </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="si">}</span><span class="s1"> &amp;&amp; exec </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ssh_cmd</span><span class="p">(</span><span class="n">remote_cmd</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ssh spawn failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+            <span class="n">claude_pid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">claude_session_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">bridge_session_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">url_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">warning</span><span class="o">=</span><span class="s2">&quot;SSH spawn initiated — run `xa sync` then `xa list` to see the URL.&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">claude_session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;resumed-</span><span class="si">{</span><span class="n">claude_session_id</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Za-z0-9_.-]{1,48}$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid tmux session name&quot;</span><span class="p">)</span>
+        <span class="n">remote_cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span><span class="si">}</span><span class="s2"> new-session -d &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;-s </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="si">}</span><span class="s1"> &amp;&amp; exec </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">)</span><span class="si">}</span><span class="s1"> --resume </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">claude_session_id</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ssh_cmd</span><span class="p">(</span><span class="n">remote_cmd</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ssh resume failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+            <span class="n">claude_pid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">claude_session_id</span><span class="o">=</span><span class="n">claude_session_id</span><span class="p">,</span>
+            <span class="n">bridge_session_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">url_source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">warning</span><span class="o">=</span><span class="s2">&quot;SSH resume initiated — run `xa sync` then `xa list` to see the URL.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Za-z0-9_.-]{1,48}$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid tmux session name&quot;</span><span class="p">)</span>
+        <span class="n">remote_cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span><span class="si">}</span><span class="s2"> kill-session -t </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ssh_cmd</span><span class="p">(</span><span class="n">remote_cmd</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ssh kill failed: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">capture_pane</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Za-z0-9_.-]{1,48}$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid tmux session name&quot;</span><span class="p">)</span>
+        <span class="n">remote_cmd</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span><span class="si">}</span><span class="s2"> capture-pane -t &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> -p -S -</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ssh_cmd</span><span class="p">(</span><span class="n">remote_cmd</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
