@@ -98,7 +98,9 @@ def _build_settings(raw: dict) -> Settings:
     s = raw.get("settings", {})
     cache_dir = s.get("cache_dir")
     return Settings(
-        cache_dir=Path(_expand(cache_dir)) if cache_dir else _default_settings().cache_dir,
+        cache_dir=Path(_expand(cache_dir))
+        if cache_dir
+        else _default_settings().cache_dir,
         stale_threshold_sec=int(s.get("stale_threshold_sec", 3600)),
         claude_bin=s.get("claude_bin", "claude"),
         tmux_bin=s.get("tmux_bin", "tmux"),
@@ -112,6 +114,7 @@ def _build_host(name: str, entry: dict, settings: Settings):
     kind = entry.get("kind", "local")
     if kind == "local":
         from xa.hosts import LocalHost
+
         return LocalHost(
             name=name,
             claude_bin=settings.claude_bin,
@@ -119,6 +122,7 @@ def _build_host(name: str, entry: dict, settings: Settings):
         )
     if kind == "ssh":
         from xa.hosts import SSHHost
+
         if "host" not in entry:
             raise ValueError(f"[hosts.{name}] missing required key 'host'")
         return SSHHost(
@@ -133,6 +137,7 @@ def _build_host(name: str, entry: dict, settings: Settings):
         )
     if kind == "http":
         from xa.hosts import HTTPHost
+
         if "base_url" not in entry:
             raise ValueError(f"[hosts.{name}] missing required key 'base_url'")
         password = entry.get("password")
@@ -169,6 +174,7 @@ def load(path: Optional[Path] = None) -> tuple[Settings, dict]:
     hosts: dict[str, Any] = {}
     if not hosts_raw:
         from xa.hosts import LocalHost
+
         hosts["local"] = LocalHost(
             claude_bin=settings.claude_bin, tmux_bin=settings.tmux_bin
         )

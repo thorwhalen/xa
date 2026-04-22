@@ -131,9 +131,7 @@ def _dismiss_trust_and_enable_remote_control(
             and "remote control active" not in pane
             and "❯" in pane
         ):
-            tm.send_keys(
-                session_name, "/remote-control", "Enter", binary=tmux_bin
-            )
+            tm.send_keys(session_name, "/remote-control", "Enter", binary=tmux_bin)
             rc_sent = True
             time.sleep(1.5)
             continue

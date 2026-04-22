@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "xa"
-version = "0.1.0"
+version = "0.1.1"
 description = "Tools for managing remote Claude Code sessions across projects and machines"
 readme = "README.md"
 requires-python = ">=3.10"

@@ -101,8 +101,11 @@ class SSHHost:
         """
         return [
             self.rsync_bin,
-            "-a", "-z", "--delete",
-            "-e", self.ssh_bin,
+            "-a",
+            "-z",
+            "--delete",
+            "-e",
+            self.ssh_bin,
             f"{self._remote_path(rel_src)}/",
             f"{dest}/",
         ]
@@ -121,7 +124,9 @@ class SSHHost:
             return True
         return age > self.stale_threshold_sec
 
-    def _run(self, argv: list[str], *, timeout: float = 60.0) -> subprocess.CompletedProcess:
+    def _run(
+        self, argv: list[str], *, timeout: float = 60.0
+    ) -> subprocess.CompletedProcess:
         return subprocess.run(
             argv, capture_output=True, text=True, timeout=timeout, check=False
         )
@@ -161,7 +166,9 @@ class SSHHost:
 
     def _remote_tmux_list(self) -> list[tm.TmuxSession]:
         """Run ``tmux list-sessions`` over SSH and parse the output."""
-        fmt = "#{session_name}|#{session_created}|#{session_activity}|#{session_attached}"
+        fmt = (
+            "#{session_name}|#{session_created}|#{session_activity}|#{session_attached}"
+        )
         cmd = f"{shlex.quote(self.tmux_bin)} list-sessions -F {shlex.quote(fmt)}"
         try:
             result = self._run(self._ssh_cmd(cmd))
@@ -176,12 +183,14 @@ class SSHHost:
                 continue
             name, created, activity, attached = parts
             try:
-                rows.append(tm.TmuxSession(
-                    name=name,
-                    created=int(created),
-                    activity=int(activity),
-                    attached=attached == "1",
-                ))
+                rows.append(
+                    tm.TmuxSession(
+                        name=name,
+                        created=int(created),
+                        activity=int(activity),
+                        attached=attached == "1",
+                    )
+                )
             except ValueError:
                 continue
         return rows
@@ -238,7 +247,9 @@ class SSHHost:
                 yield replace(
                     base,
                     state="live",
-                    live_pid=eph.get("pid") if isinstance(eph.get("pid"), int) else None,
+                    live_pid=eph.get("pid")
+                    if isinstance(eph.get("pid"), int)
+                    else None,
                     tmux_name=tmux_row.name if tmux_row else None,
                     bridge_session_id=bridge,
                     url=f"{ccli.CLAUDE_WEB_BASE}/{bridge}" if bridge else None,
@@ -311,9 +322,7 @@ class SSHHost:
             warning="SSH spawn initiated — run `xa sync` then `xa list` to see the URL.",
         )
 
-    def resume(
-        self, claude_session_id: str, *, cwd: str, **opts
-    ) -> ccli.SpawnResult:
+    def resume(self, claude_session_id: str, *, cwd: str, **opts) -> ccli.SpawnResult:
         name = opts.get("name") or f"resumed-{claude_session_id[:8]}"
         if not re.match(r"^[A-Za-z0-9_.-]{1,48}$", name):
             raise ValueError("invalid tmux session name")

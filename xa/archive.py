@@ -164,10 +164,7 @@ def classify_death(
     if pane_kind == "clean_exit":
         if forensics is not None and forensics.user_interrupted:
             return "interrupted"
-        if (
-            forensics is not None
-            and forensics.last_tool_exit_code not in (None, 0)
-        ):
+        if forensics is not None and forensics.last_tool_exit_code not in (None, 0):
             return "tool_crash"
         return "clean_exit"
     return "abrupt"
@@ -236,8 +233,10 @@ def reconcile(
         if not is_gone:
             continue
 
-        replaced = live_ts is not None and archived_tmux_ts is not None and (
-            abs(int(live_ts) - int(archived_tmux_ts)) > 2
+        replaced = (
+            live_ts is not None
+            and archived_tmux_ts is not None
+            and (abs(int(live_ts) - int(archived_tmux_ts)) > 2)
         )
 
         death_ts, pane_kind = _infer_pane_death(panes, sid)
@@ -304,9 +303,7 @@ class ArchiveRecord:
     forensics: Optional[dict]
 
 
-def records(
-    events: st.JsonLinesStore, panes: st.FileStore
-) -> list[ArchiveRecord]:
+def records(events: st.JsonLinesStore, panes: st.FileStore) -> list[ArchiveRecord]:
     """Return per-session summaries, newest-first (by creation time)."""
     by_id: dict[str, dict] = {}
     for ev in events:

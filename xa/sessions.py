@@ -90,6 +90,7 @@ def _session_from_transcript_meta(
 def _default_hosts() -> dict[str, "Host"]:  # noqa: F821
     # Local import — avoid the sessions ↔ hosts cycle at module load.
     from xa.hosts import default_hosts
+
     return default_hosts()
 
 
@@ -248,5 +249,6 @@ def _host_for(session: Session, hosts: Optional[Mapping[str, object]]) -> object
         # Fall back to a default local host when the session's host name
         # isn't in the registry — keeps single-host CLI calls working.
         from xa.hosts import LocalHost
+
         h = LocalHost(name=session.host)
     return h

@@ -132,9 +132,7 @@ class LocalHost:
             **opts,
         )
 
-    def resume(
-        self, claude_session_id: str, *, cwd: str, **opts
-    ) -> ccli.SpawnResult:
+    def resume(self, claude_session_id: str, *, cwd: str, **opts) -> ccli.SpawnResult:
         return ccli.resume_session(
             claude_session_id,
             cwd=cwd,

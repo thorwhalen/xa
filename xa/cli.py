@@ -58,9 +58,7 @@ def _truncate(text: Optional[str], width: int) -> str:
     return text[: width - 1] + "…"
 
 
-def _render_table(
-    rows: list[list[str]], headers: list[str], *, out=sys.stdout
-) -> None:
+def _render_table(rows: list[list[str]], headers: list[str], *, out=sys.stdout) -> None:
     """Emit a plain two-space-separated column table.
 
     Widths are computed per-column; the last column soaks up any overflow
@@ -72,8 +70,7 @@ def _render_table(
     all_rows = [headers, *rows]
     widths = [max(len(r[i]) for r in all_rows) for i in range(len(headers))]
     fmt = "  ".join(
-        f"{{:<{w}}}" if i < len(headers) - 1 else "{}"
-        for i, w in enumerate(widths)
+        f"{{:<{w}}}" if i < len(headers) - 1 else "{}" for i, w in enumerate(widths)
     )
     print(fmt.format(*headers), file=out)
     print(fmt.format(*["-" * w for w in widths]), file=out)
@@ -90,10 +87,12 @@ def _configured_hosts() -> "dict":
     """Load hosts from the user's config file, falling back to a LocalHost."""
     try:
         from xa import config as cfg
+
         return cfg.load_hosts()
     except Exception as e:
         print(f"warn: failed to load xa config: {e}", file=sys.stderr)
         from xa.hosts import default_hosts
+
         return default_hosts()
 
 
@@ -117,6 +116,7 @@ def list_cmd(
     :param json_out: Emit one JSON object per line instead of a table.
     """
     from typing import cast
+
     all_hosts = _configured_hosts()
     if host is not None:
         if host not in all_hosts:
@@ -222,7 +222,9 @@ def info_cmd(session_id: str, json_out: bool = False) -> None:
         if forensics.last_tool_exit_code is not None:
             print(f"exit_code:       {forensics.last_tool_exit_code}")
         if forensics.user_interrupted:
-            print("user_interrupted: yes  (marker is ambiguous — also fires on bridge drops)")
+            print(
+                "user_interrupted: yes  (marker is ambiguous — also fires on bridge drops)"
+            )
         if forensics.final_assistant_text:
             print(f"final_msg:       {_truncate(forensics.final_assistant_text, 200)}")
 
@@ -252,11 +254,15 @@ def history_cmd(
 
     if json_out:
         for e in matched:
-            print(json.dumps({
-                "cwd": e.cwd,
-                "project": e.project,
-                "display": e.display,
-            }))
+            print(
+                json.dumps(
+                    {
+                        "cwd": e.cwd,
+                        "project": e.project,
+                        "display": e.display,
+                    }
+                )
+            )
         return
 
     rows = [
@@ -426,18 +432,22 @@ def archive_list_cmd(limit: int = 30, json_out: bool = False) -> None:
 
     if json_out:
         for r in recs:
-            print(json.dumps({
-                "id": r.id,
-                "name": r.name,
-                "cwd": r.cwd,
-                "created": r.created,
-                "gone": r.gone,
-                "gone_reason": r.gone_reason,
-                "url": r.url,
-                "pane_log_bytes": r.pane_log_bytes,
-                "claude_session_id": r.claude_session_id,
-                "forensics": r.forensics,
-            }))
+            print(
+                json.dumps(
+                    {
+                        "id": r.id,
+                        "name": r.name,
+                        "cwd": r.cwd,
+                        "created": r.created,
+                        "gone": r.gone,
+                        "gone_reason": r.gone_reason,
+                        "url": r.url,
+                        "pane_log_bytes": r.pane_log_bytes,
+                        "claude_session_id": r.claude_session_id,
+                        "forensics": r.forensics,
+                    }
+                )
+            )
         return
 
     rows = [
@@ -452,9 +462,7 @@ def archive_list_cmd(limit: int = 30, json_out: bool = False) -> None:
         ]
         for r in recs
     ]
-    _render_table(
-        rows, ["ID", "NAME", "REASON", "CREATED", "GONE", "LOG_B", "CWD"]
-    )
+    _render_table(rows, ["ID", "NAME", "REASON", "CREATED", "GONE", "LOG_B", "CWD"])
 
 
 def archive_log_cmd(archive_id: str, tail_kb: int = 64) -> None:
@@ -471,7 +479,7 @@ def archive_log_cmd(archive_id: str, tail_kb: int = 64) -> None:
         sys.exit(1)
     data = panes[archive_id]
     if tail_kb and len(data) > tail_kb * 1024:
-        data = data[-tail_kb * 1024:]
+        data = data[-tail_kb * 1024 :]
     sys.stdout.buffer.write(data)
 
 
@@ -482,9 +490,7 @@ def sync_cmd(host: "Optional[str]" = None, force: bool = False) -> None:
     :param force: Sync even if the cache isn't stale yet.
     """
     hosts = _configured_hosts()
-    targets = (
-        [hosts[host]] if host else list(hosts.values())
-    )
+    targets = [hosts[host]] if host else list(hosts.values())
     if host and host not in hosts:
         print(
             f"error: host '{host}' not in config; available: {list(hosts)}",
@@ -516,6 +522,7 @@ def pick_cmd(
     for scripting; use :command:`xa pick` when a human is at the keyboard.
     """
     from typing import cast
+
     all_hosts = _configured_hosts()
     if host is not None and host not in all_hosts:
         print(
@@ -524,9 +531,7 @@ def pick_cmd(
         )
         sys.exit(1)
     hosts = [all_hosts[host]] if host else list(all_hosts.values())
-    rows = sess.list_sessions(
-        hosts=hosts, project=project, limit=limit or None
-    )
+    rows = sess.list_sessions(hosts=hosts, project=project, limit=limit or None)
     if not rows:
         print("no sessions.")
         return
@@ -562,8 +567,7 @@ def pick_cmd(
         print(f"url: {chosen.url}")
     print()
     actions = (
-        ["info", "resume", "kill"] if chosen.state == "live"
-        else ["info", "resume"]
+        ["info", "resume", "kill"] if chosen.state == "live" else ["info", "resume"]
     )
     print(f"actions: {', '.join(actions)}  (or q)")
     try:
@@ -606,8 +610,7 @@ def serve_cmd(
         from fastapi import FastAPI
     except ImportError:
         print(
-            "error: xa[service] extra not installed. "
-            "Run: pip install 'xa[service]'",
+            "error: xa[service] extra not installed. Run: pip install 'xa[service]'",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -617,7 +620,9 @@ def serve_cmd(
     auth_dep = svc.allow_all
     if username:
         if not password:
-            print("error: --password required when --username is given", file=sys.stderr)
+            print(
+                "error: --password required when --username is given", file=sys.stderr
+            )
             sys.exit(1)
         auth_dep = svc.make_basic_auth(username, password)
 
@@ -626,6 +631,7 @@ def serve_cmd(
         key = os.environ.get("XA_CAPTCHA_KEY")
         if not key:
             import secrets
+
             key = secrets.token_hex(32)
             print("warn: XA_CAPTCHA_KEY not set; using ephemeral key", file=sys.stderr)
         captcha_obj = svc.Captcha(key=key)

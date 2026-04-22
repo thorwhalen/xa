@@ -176,7 +176,9 @@ def build_api(
 
     def _session_dict(s: sess.Session) -> dict:
         d = asdict(s)
-        d["transcript_path"] = str(d["transcript_path"]) if d["transcript_path"] else None
+        d["transcript_path"] = (
+            str(d["transcript_path"]) if d["transcript_path"] else None
+        )
         return d
 
     def _record_dict(r: arch.ArchiveRecord) -> dict:
@@ -221,7 +223,9 @@ def build_api(
     def create_session(req: CreateReq, _: str = Depends(auth)) -> dict:
         name = req.name or _generate_name()
         if not _NAME_RE.match(name):
-            raise HTTPException(400, "Invalid name (allowed: letters, digits, _.-, max 48)")
+            raise HTTPException(
+                400, "Invalid name (allowed: letters, digits, _.-, max 48)"
+            )
         existing = {t.name for t in tm.list_sessions()}
         if name in existing:
             raise HTTPException(409, f"Session '{name}' already exists")
@@ -258,7 +262,9 @@ def build_api(
             raise HTTPException(400, "Invalid session name")
         if captcha is not None:
             if not captcha.check(req.captcha_token or "", req.captcha_answer or ""):
-                raise HTTPException(400, "Captcha failed — request a new one and try again")
+                raise HTTPException(
+                    400, "Captcha failed — request a new one and try again"
+                )
         existing = {t.name for t in tm.list_sessions()}
         if name not in existing:
             raise HTTPException(404, f"No such session: {name}")
@@ -338,7 +344,9 @@ def build_api(
             raise HTTPException(404, "No such archived session")
         out = _record_dict(rec)
         if rec.cwd and rec.claude_session_id:
-            path = cfs.transcript_path(rec.cwd, rec.claude_session_id, claude_home=claude_home)
+            path = cfs.transcript_path(
+                rec.cwd, rec.claude_session_id, claude_home=claude_home
+            )
             if path is not None:
                 out["transcript_forensics"] = asdict(cfs.transcript_forensics(path))
                 out["transcript_forensics"]["transcript_path"] = (
@@ -349,16 +357,14 @@ def build_api(
         return out
 
     @app.get("/archive/{archive_id}/log")
-    def archive_log(
-        archive_id: str, _: str = Depends(auth), tail_kb: int = 64
-    ):
+    def archive_log(archive_id: str, _: str = Depends(auth), tail_kb: int = 64):
         if not re.fullmatch(r"[0-9a-f]{6,64}", archive_id):
             raise HTTPException(400, "Invalid archive id")
         if archive_id not in panes:
             raise HTTPException(404, "No pane log for that session")
         data = panes[archive_id]
         if tail_kb and len(data) > tail_kb * 1024:
-            data = data[-tail_kb * 1024:]
+            data = data[-tail_kb * 1024 :]
         return PlainTextResponse(
             data.decode("utf-8", errors="replace"),
             media_type="text/plain; charset=utf-8",
@@ -369,6 +375,7 @@ def build_api(
     # --------------------------------------------------------------------- #
 
     if captcha is not None:
+
         @app.get("/captcha")
         def _captcha(_: str = Depends(auth)) -> dict:
             token, challenge, ttl = captcha.issue()

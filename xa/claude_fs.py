@@ -155,7 +155,11 @@ def iter_transcript_files(
     projects = _projects_dir(claude_home)
     if not projects.is_dir():
         return
-    slugs = [project_slug] if project_slug else list(iter_project_slugs(claude_home=claude_home))
+    slugs = (
+        [project_slug]
+        if project_slug
+        else list(iter_project_slugs(claude_home=claude_home))
+    )
     for slug in slugs:
         pdir = projects / slug
         if not pdir.is_dir():
@@ -370,11 +374,7 @@ def transcript_forensics(path: Path) -> TranscriptForensics:
                 last_tool_use = block
             elif bt == "tool_result" and last_tool_result is None:
                 last_tool_result = block
-            elif (
-                bt == "text"
-                and last_assistant_text is None
-                and role == "assistant"
-            ):
+            elif bt == "text" and last_assistant_text is None and role == "assistant":
                 text = block.get("text") or ""
                 last_assistant_text = text[:500]
 
@@ -416,9 +416,7 @@ def transcript_forensics(path: Path) -> TranscriptForensics:
 # --------------------------------------------------------------------------- #
 
 
-def history_iter(
-    *, claude_home: Path = DEFAULT_CLAUDE_HOME
-) -> Iterator[HistoryEntry]:
+def history_iter(*, claude_home: Path = DEFAULT_CLAUDE_HOME) -> Iterator[HistoryEntry]:
     """Yield entries from ``~/.claude/history.jsonl`` in file order (oldest first).
 
     Useful for cross-project full-text prompt search without loading

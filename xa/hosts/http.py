@@ -63,9 +63,7 @@ class HTTPHost:
             return {"Authorization": f"Bearer {self.token}"}
         return {}
 
-    def _request(
-        self, method: str, path: str, *, body: Optional[dict] = None
-    ) -> Any:
+    def _request(self, method: str, path: str, *, body: Optional[dict] = None) -> Any:
         url = self.base_url + path
         data: Optional[bytes] = None
         headers = {"Accept": "application/json", **self._auth_header()}
@@ -106,6 +104,7 @@ class HTTPHost:
             # The remote API filters by cwd substring, so a slug works as a
             # substring too after the slug → cwd transform.
             from xa.claude_fs import parse_project_slug
+
             qs.append(f"project={parse_project_slug(project_slug)}")
         qs.append(f"limit=0")  # all rows
         query = ("?" + "&".join(qs)) if qs else ""
@@ -150,9 +149,7 @@ class HTTPHost:
     # ------------------------------------------------------------------ #
 
     def spawn(self, name: str, *, cwd: str, **opts) -> SpawnResult:
-        body = self._request(
-            "POST", "/sessions", body={"name": name, "cwd": cwd}
-        )
+        body = self._request("POST", "/sessions", body={"name": name, "cwd": cwd})
         return SpawnResult(
             name=body.get("name", name),
             cwd=body.get("cwd", cwd),
@@ -164,9 +161,7 @@ class HTTPHost:
             warning=body.get("warning"),
         )
 
-    def resume(
-        self, claude_session_id: str, *, cwd: str, **opts
-    ) -> SpawnResult:
+    def resume(self, claude_session_id: str, *, cwd: str, **opts) -> SpawnResult:
         # The remote API resumes by the ``id`` field exposed on
         # /sessions. Pass the Claude session UUID directly.
         body = self._request(
