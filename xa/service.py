@@ -399,9 +399,7 @@ def build_api(
                 pane_tail = None
         if pane_tail:
             out["pane_tail"] = pane_tail
-            oom_markers = tuple(
-                m for m in arch._OOM_PANE_MARKERS if m in pane_tail
-            )
+            oom_markers = tuple(m for m in arch._OOM_PANE_MARKERS if m in pane_tail)
             if oom_markers:
                 out["oom_signals"] = list(oom_markers)
 

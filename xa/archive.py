@@ -184,8 +184,8 @@ class PaneInspection:
 
     death_ts: Optional[float]
     kind: Literal["clean_exit", "abrupt", "missing", "unknown"]
-    oom_markers: tuple[str, ...]   # which _OOM_PANE_MARKERS were found
-    tail: str                      # the decoded tail (may be empty)
+    oom_markers: tuple[str, ...]  # which _OOM_PANE_MARKERS were found
+    tail: str  # the decoded tail (may be empty)
 
 
 def _inspect_pane(panes: st.FileStore, sid: str) -> PaneInspection:
@@ -443,13 +443,17 @@ def reconcile(
         )
 
         forensics_summary: Optional[dict] = None
-        if forensics is not None and any(
-            [
-                forensics.last_tool_name,
-                forensics.last_tool_exit_code is not None,
-                forensics.user_interrupted,
-            ]
-        ) or insp.oom_markers:
+        if (
+            forensics is not None
+            and any(
+                [
+                    forensics.last_tool_name,
+                    forensics.last_tool_exit_code is not None,
+                    forensics.user_interrupted,
+                ]
+            )
+            or insp.oom_markers
+        ):
             forensics_summary = {
                 "last_tool_name": forensics.last_tool_name if forensics else None,
                 "last_tool_command": forensics.last_tool_command if forensics else None,
