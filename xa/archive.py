@@ -131,9 +131,7 @@ def append_gone(
     events.append(ev)
 
 
-def append_label(
-    events: st.JsonLinesStore, *, id: str, label: Optional[str]
-) -> None:
+def append_label(events: st.JsonLinesStore, *, id: str, label: Optional[str]) -> None:
     """Set or clear a user-supplied display label for a session.
 
     ``id`` can be an archive id, a tmux session name, or a
@@ -150,9 +148,7 @@ def append_label(
     )
 
 
-def append_hidden(
-    events: st.JsonLinesStore, *, id: str, hidden: bool
-) -> None:
+def append_hidden(events: st.JsonLinesStore, *, id: str, hidden: bool) -> None:
     """Mark an archived session as hidden (or un-hide it)."""
     events.append(
         {
@@ -334,8 +330,8 @@ class ArchiveRecord:
     pane_log_bytes: int
     claude_session_id: Optional[str]
     forensics: Optional[dict]
-    label: Optional[str] = None        # user-set display label overlay
-    hidden: bool = False               # user-set "hide from default view"
+    label: Optional[str] = None  # user-set display label overlay
+    hidden: bool = False  # user-set "hide from default view"
 
 
 def overlays(events: st.JsonLinesStore) -> dict[str, dict]:

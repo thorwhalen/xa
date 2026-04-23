@@ -46,7 +46,7 @@ try:  # pragma: no cover - optional dep
         name: Optional[str] = None
 
     class LabelReq(BaseModel):
-        label: Optional[str] = None    # null or "" clears
+        label: Optional[str] = None  # null or "" clears
 
     class HideReq(BaseModel):
         hidden: bool = True
@@ -479,6 +479,8 @@ def build_api(
         webui_root = Path(__file__).parent / "webui"
         if webui_root.is_dir():
             # `html=True` makes `/` serve `index.html` naturally.
-            app.mount("/", StaticFiles(directory=str(webui_root), html=True), name="webui")
+            app.mount(
+                "/", StaticFiles(directory=str(webui_root), html=True), name="webui"
+            )
 
     return app

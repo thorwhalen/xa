@@ -725,6 +725,7 @@ def gen_secret_cmd(length: int = 32) -> None:
     :param length: Byte length of the secret (hex output is 2x this).
     """
     import secrets
+
     print(secrets.token_hex(length))
 
 
