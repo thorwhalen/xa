@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>xa</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-2: #1d2029;
+      --border: #2a2e38;
+      --text: #e6e8eb;
+      --muted: #8a90a0;
+      --accent: #7cc4ff;
+      --accent-2: #9aa6ff;
+      --danger: #ff6b6b;
+      --ok: #6bd69c;
+      --warn: #ffc36b;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+      font: 15px/1.4 system-ui, -apple-system, sans-serif; }
+    header { padding: 14px 18px; border-bottom: 1px solid var(--border);
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; background: var(--bg); z-index: 5; }
+    h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: .4px; }
+    h1 small { color: var(--muted); font-weight: 400; font-size: 13px; margin-left: 6px; }
+    main { padding: 12px 14px; max-width: 820px; margin: 0 auto; }
+    button, input[type="text"] { font: inherit; color: var(--text);
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 7px 11px; }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    button.primary { background: var(--accent); color: #0a1420;
+      border-color: var(--accent); font-weight: 600; }
+    button.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+    button.danger:hover { background: var(--danger); color: #1a0708; }
+    button.small { padding: 4px 8px; font-size: 13px; }
+    .section { margin-top: 18px; }
+    .section-header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px;
+      color: var(--muted); font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .6px; cursor: pointer; user-select: none; }
+    .section-header:hover { color: var(--text); }
+    .section-header .count { color: var(--text); background: var(--panel-2);
+      border: 1px solid var(--border); border-radius: 999px; padding: 1px 8px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+    .section-header .chev { font-size: 10px; transition: transform .12s; }
+    .section.collapsed .card-list { display: none; }
+    .section.collapsed .chev { transform: rotate(-90deg); }
+    .card { background: var(--panel); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 13px; margin-bottom: 8px; }
+    .card.dead { opacity: .82; }
+    .card h3 { margin: 0 0 4px 0; font-size: 15px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px; word-break: break-word; }
+    .card h3 .dot { width: 8px; height: 8px; border-radius: 999px;
+      background: var(--ok); flex: 0 0 8px; }
+    .card.dead h3 .dot { background: var(--muted); }
+    .card h3 input { flex: 1; background: var(--panel-2); border: 1px solid var(--accent);
+      border-radius: 6px; padding: 4px 7px; font: inherit; font-weight: 600; }
+    .card .url { color: var(--accent); word-break: break-all; font-size: 13px;
+      display: block; margin: 3px 0; }
+    .card .meta { color: var(--muted); font-size: 12px; display: flex; gap: 8px;
+      flex-wrap: wrap; margin-top: 4px; }
+    .card .actions { display: flex; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
+    .tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px;
+      background: var(--panel-2); border: 1px solid var(--border); color: var(--muted); }
+    .tag.ok { color: var(--ok); border-color: #2a4a3a; }
+    .tag.warn { color: var(--warn); border-color: #4a3d2a; }
+    .tag.bad { color: var(--danger); border-color: #4a2a2a; }
+    .status { margin: 8px 0; color: var(--muted); font-size: 13px; }
+    .status.err { color: var(--danger); }
+    dialog { background: var(--panel); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px; padding: 16px; max-width: 440px; }
+    dialog::backdrop { background: rgba(0,0,0,.5); }
+    pre.info { white-space: pre-wrap; font: 12px/1.3 ui-monospace, monospace;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px; margin: 8px 0 0; max-height: 60vh; overflow: auto; }
+    .captcha { font-family: ui-monospace, monospace; font-size: 22px; letter-spacing: 6px;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 12px; display: inline-block; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .grow { flex: 1; }
+    label { min-width: 60px; color: var(--muted); font-size: 13px; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>xa <small>Claude Code sessions</small></h1>
+    <div class="row">
+      <button id="refresh">↻</button>
+      <button id="new" class="primary">+ New</button>
+    </div>
+  </header>
+  <main>
+    <div id="status" class="status"></div>
+
+    <div class="section" id="liveSection">
+      <div class="section-header" data-toggle="liveSection">
+        <span class="chev">▼</span> Live <span class="count" id="liveCount">0</span>
+      </div>
+      <div class="card-list" id="liveList"></div>
+    </div>
+
+    <div class="section collapsed" id="deadSection">
+      <div class="section-header" data-toggle="deadSection">
+        <span class="chev">▼</span> Dead <span class="count" id="deadCount">0</span>
+      </div>
+      <div class="card-list" id="deadList"></div>
+    </div>
+
+    <div class="section collapsed" id="hiddenSection" hidden>
+      <div class="section-header" data-toggle="hiddenSection">
+        <span class="chev">▼</span> Hidden <span class="count" id="hiddenCount">0</span>
+      </div>
+      <div class="card-list" id="hiddenList"></div>
+    </div>
+  </main>
+
+  <dialog id="newDialog">
+    <h3 style="margin:0 0 10px">New session</h3>
+    <p class="muted" style="margin:0 0 10px; color: var(--muted); font-size:13px">
+      Leave name blank for an auto-generated one.</p>
+    <div class="row" style="margin-bottom:8px"><label>Name</label>
+      <input type="text" id="newName" placeholder="auto" class="grow" /></div>
+    <div class="row" style="margin-bottom:12px"><label>Cwd</label>
+      <input type="text" id="newCwd" placeholder="(default)" class="grow" /></div>
+    <div class="row" style="justify-content:flex-end">
+      <button onclick="document.getElementById('newDialog').close()">Cancel</button>
+      <button class="primary" id="newSubmit">Create</button>
+    </div>
+  </dialog>
+
+  <dialog id="delDialog">
+    <h3 style="margin:0 0 10px">Kill <span id="delName"></span>?</h3>
+    <p class="muted" style="margin:0 0 10px; color: var(--muted); font-size:13px">
+      Type the four letters to confirm.</p>
+    <div class="row" style="margin-bottom:10px">
+      <span class="captcha" id="delChallenge">····</span></div>
+    <input type="text" id="delAnswer" placeholder="four letters" maxlength="4"
+      autocapitalize="characters" autocomplete="off" style="width: 100%" />
+    <div class="row" style="justify-content:flex-end; margin-top:12px">
+      <button onclick="document.getElementById('delDialog').close()">Cancel</button>
+      <button class="danger" id="delSubmit">Kill</button>
+    </div>
+  </dialog>
+
+  <dialog id="infoDialog">
+    <h3 style="margin:0 0 10px">Session info</h3>
+    <pre class="info" id="infoBody"></pre>
+    <div class="row" style="justify-content:flex-end; margin-top:10px">
+      <button onclick="document.getElementById('infoDialog').close()">Close</button>
+    </div>
+  </dialog>
+
+  <dialog id="logDialog">
+    <h3 style="margin:0 0 10px">Pane log <span id="logName" class="muted"
+      style="color:var(--muted)"></span></h3>
+    <pre class="info" id="logBody"></pre>
+    <div class="row" style="justify-content:flex-end; margin-top:10px">
+      <button onclick="document.getElementById('logDialog').close()">Close</button>
+    </div>
+  </dialog>
+
+<script>
+// xa webui — served by xa.service when include_webui=True, or mounted
+// behind an enlace-style reverse proxy at /<app_name>/.
+//
+// Detects the API base from location.pathname:
+//   served at "/"          (xa serve standalone) → API at ""
+//   served at "/<name>/"   (enlace frontend mount) → API at "/api/<name>"
+// Override with: <body data-api-base="…">.
+function _resolveApiBase() {
+  const override = document.body && document.body.dataset
+    ? document.body.dataset.apiBase : undefined;
+  if (override !== undefined) return override;
+  const m = location.pathname.match(/^\/([^/]+)\/?(?:index\.html)?$/);
+  if (m && m[1] && m[1] !== "api") return `/api/${m[1]}`;
+  return "";
+}
+const API = _resolveApiBase();
+
+function rel(p) { return API + p; }
+
+async function api(path, opts = {}) {
+  const res = await fetch(rel(path), { credentials: "include", ...opts });
+  if (res.status === 401) {
+    setStatus("authentication required — reload and enter credentials", true);
+    throw new Error("unauthorized");
+  }
+  const ct = res.headers.get("content-type") || "";
+  const body = ct.includes("application/json") ? await res.json() : await res.text();
+  if (!res.ok) {
+    const msg = (body && body.detail) || body || res.statusText;
+    throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
+  }
+  return body;
+}
+
+function setStatus(msg, err = false) {
+  const el = document.getElementById("status");
+  el.textContent = msg || "";
+  el.className = "status" + (err ? " err" : "");
+}
+
+function fmtAgo(sec) {
+  if (!sec) return "";
+  const d = Math.max(0, Math.floor(Date.now() / 1000 - sec));
+  if (d < 60) return d + "s ago";
+  if (d < 3600) return Math.floor(d / 60) + "m ago";
+  if (d < 86400) return Math.floor(d / 3600) + "h ago";
+  return Math.floor(d / 86400) + "d ago";
+}
+
+function fmtBytes(n) {
+  if (n == null) return "?";
+  if (n < 1024) return n + "B";
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + "KB";
+  return (n / 1024 / 1024).toFixed(1) + "MB";
+}
+
+function escapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+// Pick the best display name for a session, in priority order.
+function displayName(s) {
+  return s.label || s.tmux_name || (s.id ? s.id.slice(0, 12) : "unnamed");
+}
+
+// Render a live session card (live-only; no hide affordance).
+function liveCard(s) {
+  const card = document.createElement("div");
+  card.className = "card";
+  const url = s.url
+    ? `<a class="url" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.url)}</a>`
+    : `<span class="tag warn">no URL yet</span>`;
+  const firstMsg = s.first_user_message
+    ? `<div class="meta" style="font-size:12px; color: var(--muted)">${escapeHtml(s.first_user_message).slice(0, 160)}</div>`
+    : "";
+  card.innerHTML = `
+    <h3><span class="dot"></span><span class="name" data-id="${escapeHtml(s.id)}">${escapeHtml(displayName(s))}</span></h3>
+    ${url}
+    <div class="meta">
+      <span class="tag ok">live</span>
+      ${s.cwd ? `<span class="tag">${escapeHtml(s.cwd)}</span>` : ""}
+      <span>turns ${s.turn_count || 0}</span>
+      <span>modified ${fmtAgo(s.modified || s.created)}</span>
+    </div>
+    ${firstMsg}
+    <div class="actions">
+      <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
+      <button class="small" data-info="${escapeHtml(s.id)}">Info</button>
+      <button class="small danger" data-kill="${escapeHtml(s.tmux_name || s.id)}">Kill</button>
+    </div>
+  `;
+  return card;
+}
+
+// Render an archived (dead or hidden) session card.
+function deadCard(r) {
+  const card = document.createElement("div");
+  card.className = "card dead";
+  const lifespan = r.gone && r.created
+    ? Math.floor(r.gone - r.created) : null;
+  const reasonCls = (r.gone_reason === "clean_exit") ? "ok"
+                  : (r.gone_reason ? "warn" : "");
+  const forensics = r.forensics || {};
+  const forensicsBits = [];
+  if (forensics.last_tool_name)
+    forensicsBits.push(`<span class="tag">last tool: ${escapeHtml(forensics.last_tool_name)}</span>`);
+  if (forensics.last_tool_exit_code != null) {
+    const cls = forensics.last_tool_exit_code === 0 ? "ok" : "warn";
+    forensicsBits.push(`<span class="tag ${cls}">exit ${forensics.last_tool_exit_code}</span>`);
+  }
+  const url = r.url
+    ? `<a class="url" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">${escapeHtml(r.url)}</a>`
+    : "";
+  const name = r.label || r.name || (r.id ? r.id.slice(0, 12) : "unnamed");
+  card.innerHTML = `
+    <h3><span class="dot"></span>
+      <span class="name" data-id="${escapeHtml(r.id)}">${escapeHtml(name)}</span>
+      <span class="tag" style="font-weight:normal">${escapeHtml(r.id.slice(0, 8))}</span>
+    </h3>
+    ${url}
+    <div class="meta">
+      ${r.gone_reason ? `<span class="tag ${reasonCls}">${escapeHtml(r.gone_reason)}</span>` : ""}
+      ${r.cwd ? `<span class="tag">${escapeHtml(r.cwd)}</span>` : ""}
+      ${lifespan != null ? `<span>lived ${Math.floor(lifespan/60)}m</span>` : ""}
+      ${r.gone ? `<span>died ${fmtAgo(r.gone)}</span>` : ""}
+      ${forensicsBits.join("")}
+    </div>
+    <div class="actions">
+      <button class="small" data-rename="${escapeHtml(r.id)}">Rename</button>
+      ${r.pane_log_bytes
+        ? `<button class="small" data-log="${escapeHtml(r.id)}" data-logname="${escapeHtml(name)}">Log (${fmtBytes(r.pane_log_bytes)})</button>`
+        : ""}
+      <button class="small" data-forensics="${escapeHtml(r.id)}">Forensics</button>
+      ${r.claude_session_id
+        ? `<button class="small primary" data-resume="${escapeHtml(r.id)}">Resume</button>` : ""}
+      <button class="small" data-hide="${escapeHtml(r.id)}" data-hidden="${r.hidden ? "true" : "false"}">${r.hidden ? "Unhide" : "Hide"}</button>
+    </div>
+  `;
+  return card;
+}
+
+// Replace the <span class="name"> with an editable input and wire save/cancel.
+function beginRename(nameSpan, id) {
+  const original = nameSpan.textContent;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = original;
+  input.maxLength = 48;
+  nameSpan.replaceWith(input);
+  input.focus();
+  input.select();
+  const commit = async (save) => {
+    if (!input.parentNode) return;
+    const fresh = document.createElement("span");
+    fresh.className = "name";
+    fresh.setAttribute("data-id", id);
+    fresh.textContent = save ? input.value.trim() || original : original;
+    input.replaceWith(fresh);
+    if (save && input.value.trim() !== original) {
+      try {
+        await api(`/sessions/${encodeURIComponent(id)}/label`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ label: input.value.trim() }),
+        });
+        setStatus(`renamed to "${input.value.trim()}"`);
+        await load();
+      } catch (e) {
+        setStatus("rename failed: " + e.message, true);
+      }
+    }
+  };
+  input.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") { ev.preventDefault(); commit(true); }
+    else if (ev.key === "Escape") { ev.preventDefault(); commit(false); }
+  });
+  input.addEventListener("blur", () => commit(true));
+}
+
+async function load() {
+  setStatus("loading…");
+  try {
+    const [sessData, archData] = await Promise.all([
+      api("/sessions?limit=200"),
+      api("/archive?limit=200"),
+    ]);
+    const sessions = sessData.sessions || [];
+    const records = archData.sessions || [];
+
+    // Index archived records by their *source* identifiers so we can
+    // dedupe when a live session also has an archive record.
+    const archByClaude = new Map();
+    for (const r of records) {
+      if (r.claude_session_id) archByClaude.set(r.claude_session_id, r);
+    }
+
+    const live = sessions.filter(s => s.state === "live" && !s.hidden);
+    const hiddenLive = sessions.filter(s => s.state === "live" && s.hidden);
+
+    // Dead = archive records with gone_reason, excluding live dupes.
+    const liveClaudeIds = new Set(live.map(s => s.claude_session_id).filter(Boolean));
+    const dead = records
+      .filter(r => r.gone_reason && !liveClaudeIds.has(r.claude_session_id) && !r.hidden)
+      .sort((a, b) => (b.gone || 0) - (a.gone || 0));
+    const hiddenDead = records.filter(r => r.hidden);
+
+    renderSection("liveList", "liveCount", live, liveCard);
+    renderSection("deadList", "deadCount", dead, deadCard);
+    const hidden = [...hiddenLive, ...hiddenDead];
+    renderSection("hiddenList", "hiddenCount", hidden, r =>
+      r.state === "live" ? liveCard(r) : deadCard(r));
+    document.getElementById("hiddenSection").hidden = hidden.length === 0;
+
+    setStatus(`${live.length} live · ${dead.length} ended${hidden.length ? " · " + hidden.length + " hidden" : ""}`);
+  } catch (e) {
+    if (e.message !== "unauthorized") setStatus("load failed: " + e.message, true);
+  }
+}
+
+function renderSection(listId, countId, items, render) {
+  const list = document.getElementById(listId);
+  list.innerHTML = "";
+  document.getElementById(countId).textContent = items.length;
+  if (!items.length) {
+    list.innerHTML = `<div class="muted" style="color:var(--muted); font-size:13px">none</div>`;
+    return;
+  }
+  for (const s of items) list.appendChild(render(s));
+}
+
+// ---- event wiring -------------------------------------------------------- //
+
+document.addEventListener("click", async (ev) => {
+  const t = ev.target;
+  const closestBtn = t.closest("button");
+  if (!closestBtn && t.dataset.toggle) {
+    document.getElementById(t.dataset.toggle).classList.toggle("collapsed");
+    return;
+  }
+  if (t.closest(".section-header")) {
+    const sec = t.closest(".section-header");
+    document.getElementById(sec.dataset.toggle).classList.toggle("collapsed");
+    return;
+  }
+  if (!closestBtn) return;
+  const b = closestBtn;
+
+  if (b.id === "refresh") return load();
+  if (b.id === "new") return document.getElementById("newDialog").showModal();
+
+  if (b.id === "newSubmit") {
+    const name = document.getElementById("newName").value.trim() || null;
+    const cwd = document.getElementById("newCwd").value.trim() || null;
+    b.disabled = true;
+    setStatus("creating session — waiting for Claude to register its URL (up to 2 min)…");
+    try {
+      const r = await api("/sessions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, cwd }),
+      });
+      document.getElementById("newDialog").close();
+      document.getElementById("newName").value = "";
+      document.getElementById("newCwd").value = "";
+      setStatus(`created ${r.name}${r.warning ? " — " + r.warning : ""}`);
+      await load();
+    } catch (e) {
+      setStatus("create failed: " + e.message, true);
+    } finally { b.disabled = false; }
+    return;
+  }
+
+  if (b.id === "delSubmit") {
+    const dlg = document.getElementById("delDialog");
+    const name = dlg.dataset.name;
+    const token = dlg.dataset.token;
+    const answer = document.getElementById("delAnswer").value.trim().toUpperCase();
+    b.disabled = true;
+    try {
+      await api(`/sessions/${encodeURIComponent(name)}`, {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ captcha_token: token, captcha_answer: answer }),
+      });
+      dlg.close();
+      setStatus(`killed ${name}`);
+      await load();
+    } catch (e) { setStatus("kill failed: " + e.message, true); }
+    finally { b.disabled = false; }
+    return;
+  }
+
+  if (b.dataset.kill) {
+    const name = b.dataset.kill;
+    try {
+      const { token, challenge } = await api("/captcha");
+      document.getElementById("delName").textContent = name;
+      document.getElementById("delChallenge").textContent = challenge;
+      document.getElementById("delAnswer").value = "";
+      const dlg = document.getElementById("delDialog");
+      dlg.dataset.name = name;
+      dlg.dataset.token = token;
+      dlg.showModal();
+    } catch (e) { setStatus("captcha failed: " + e.message, true); }
+    return;
+  }
+
+  if (b.dataset.rename) {
+    const id = b.dataset.rename;
+    const card = b.closest(".card");
+    const nameSpan = card.querySelector(".name");
+    if (nameSpan) beginRename(nameSpan, id);
+    return;
+  }
+
+  if (b.dataset.info) {
+    try {
+      const data = await api(`/sessions/${encodeURIComponent(b.dataset.info)}/info`);
+      document.getElementById("infoBody").textContent = JSON.stringify(data, null, 2);
+      document.getElementById("infoDialog").showModal();
+    } catch (e) { setStatus("info failed: " + e.message, true); }
+    return;
+  }
+
+  if (b.dataset.forensics) {
+    try {
+      const data = await api(`/archive/${encodeURIComponent(b.dataset.forensics)}/forensics`);
+      document.getElementById("infoBody").textContent = JSON.stringify(data, null, 2);
+      document.getElementById("infoDialog").showModal();
+    } catch (e) { setStatus("forensics failed: " + e.message, true); }
+    return;
+  }
+
+  if (b.dataset.log) {
+    const id = b.dataset.log;
+    const name = b.dataset.logname || id;
+    try {
+      const res = await fetch(rel(`/archive/${encodeURIComponent(id)}/log`),
+        { credentials: "include" });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      const txt = await res.text();
+      document.getElementById("logName").textContent = `${name} · ${id.slice(0, 8)}`;
+      document.getElementById("logBody").textContent =
+        txt.replace(/\x1b\[[0-9;?]*[A-Za-z]/g, "").slice(-32768);
+      document.getElementById("logDialog").showModal();
+    } catch (e) { setStatus("log fetch failed: " + e.message, true); }
+    return;
+  }
+
+  if (b.dataset.hide) {
+    const id = b.dataset.hide;
+    const isHidden = b.dataset.hidden === "true";
+    b.disabled = true;
+    try {
+      if (isHidden) {
+        await api(`/archive/${encodeURIComponent(id)}/hide`, { method: "DELETE" });
+        setStatus(`unhid ${id.slice(0, 8)}`);
+      } else {
+        await api(`/archive/${encodeURIComponent(id)}/hide`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ hidden: true }),
+        });
+        setStatus(`hid ${id.slice(0, 8)}`);
+      }
+      await load();
+    } catch (e) { setStatus("hide failed: " + e.message, true); }
+    finally { b.disabled = false; }
+    return;
+  }
+
+  if (b.dataset.resume) {
+    const id = b.dataset.resume;
+    b.disabled = true;
+    const origLabel = b.textContent;
+    let elapsed = 0;
+    const tick = setInterval(() => {
+      elapsed += 1;
+      b.textContent = `resuming ${elapsed}s`;
+    }, 1000);
+    try {
+      const r = await api(`/sessions/${encodeURIComponent(id)}/resume`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      clearInterval(tick);
+      setStatus(`resumed as ${r.name}${r.url ? " — " + r.url : ""}`);
+      await load();
+    } catch (e) {
+      clearInterval(tick);
+      setStatus("resume failed: " + e.message, true);
+    } finally { b.disabled = false; b.textContent = origLabel; }
+    return;
+  }
+});
+
+load();
+</script>
+</body>
+</html>

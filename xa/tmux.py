@@ -106,6 +106,19 @@ def kill_session(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> None:
         raise RuntimeError(f"tmux kill-session failed: {out.stderr.strip()}")
 
 
+def rename_session(
+    old_name: str, new_name: str, *, binary: str = DEFAULT_TMUX_BIN
+) -> None:
+    """Rename a live tmux session.
+
+    Both names must match the strict ``[A-Za-z0-9_.-]{1,48}`` pattern
+    used elsewhere in ``xa``; callers should validate before calling.
+    """
+    out = _run([binary, "rename-session", "-t", session_target(old_name), new_name])
+    if out.returncode != 0:
+        raise RuntimeError(f"tmux rename-session failed: {out.stderr.strip()}")
+
+
 def capture_pane(name: str, *, lines: int = 200, binary: str = DEFAULT_TMUX_BIN) -> str:
     """Return the last ``lines`` of the session's first pane, or '' on failure."""
     out = _run(

@@ -599,6 +599,7 @@ def serve_cmd(
     password: "Optional[str]" = None,
     password_env: "Optional[str]" = None,
     captcha: bool = False,
+    webui: bool = True,
     i_know_its_insecure: bool = False,
 ) -> None:
     """Run the xa HTTP service (requires the ``xa[service]`` extra).
@@ -616,6 +617,8 @@ def serve_cmd(
     :param password_env: Name of env var to read the password from (recommended).
     :param captcha: Enable captcha-gated deletes. Strongly recommended for
         any non-loopback deployment.
+    :param webui: Serve the bundled web UI at the mount root (default on).
+        Pass ``--no-webui`` to run API-only.
     :param i_know_its_insecure: Skip the public-bind-without-auth safety check.
     """
     try:
@@ -701,7 +704,7 @@ def serve_cmd(
             )
         captcha_obj = svc.Captcha(key=key)
 
-    api = svc.build_api(auth=auth_dep, captcha=captcha_obj)
+    api = svc.build_api(auth=auth_dep, captcha=captcha_obj, include_webui=webui)
 
     if mount:
         outer = FastAPI()

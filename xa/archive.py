@@ -131,6 +131,39 @@ def append_gone(
     events.append(ev)
 
 
+def append_label(
+    events: st.JsonLinesStore, *, id: str, label: Optional[str]
+) -> None:
+    """Set or clear a user-supplied display label for a session.
+
+    ``id`` can be an archive id, a tmux session name, or a
+    ``claude_session_id`` — whatever key the caller will use to look it
+    up later. Empty-string or ``None`` label clears any prior label.
+    """
+    events.append(
+        {
+            "ts": time.time(),
+            "event": "labeled",
+            "id": id,
+            "label": label or "",
+        }
+    )
+
+
+def append_hidden(
+    events: st.JsonLinesStore, *, id: str, hidden: bool
+) -> None:
+    """Mark an archived session as hidden (or un-hide it)."""
+    events.append(
+        {
+            "ts": time.time(),
+            "event": "hidden",
+            "id": id,
+            "hidden": bool(hidden),
+        }
+    )
+
+
 # --------------------------------------------------------------------------- #
 # death inference
 # --------------------------------------------------------------------------- #
@@ -301,6 +334,31 @@ class ArchiveRecord:
     pane_log_bytes: int
     claude_session_id: Optional[str]
     forensics: Optional[dict]
+    label: Optional[str] = None        # user-set display label overlay
+    hidden: bool = False               # user-set "hide from default view"
+
+
+def overlays(events: st.JsonLinesStore) -> dict[str, dict]:
+    """Fold ``labeled`` / ``hidden`` events into ``{id: {label, hidden}}``.
+
+    Later events win. Useful when rendering live sessions too — callers
+    look up by whatever id they know (archive id, claude_session_id,
+    tmux name) and apply the overlay if present.
+    """
+    out: dict[str, dict] = {}
+    for ev in events:
+        kind = ev.get("event")
+        sid = ev.get("id")
+        if not sid:
+            continue
+        if kind == "labeled":
+            slot = out.setdefault(sid, {})
+            label = ev.get("label") or ""
+            slot["label"] = label if label else None
+        elif kind == "hidden":
+            slot = out.setdefault(sid, {})
+            slot["hidden"] = bool(ev.get("hidden"))
+    return out
 
 
 def records(events: st.JsonLinesStore, panes: st.FileStore) -> list[ArchiveRecord]:
@@ -343,8 +401,20 @@ def records(events: st.JsonLinesStore, panes: st.FileStore) -> list[ArchiveRecor
             if ev.get("forensics"):
                 rec["forensics"] = ev["forensics"]
 
+    overlay = overlays(events)
+
     out: list[ArchiveRecord] = []
     for rec in by_id.values():
+        ov = overlay.get(rec["id"], {})
+        # Also honor an overlay keyed by the session's archive *name* —
+        # lets a "rename live" flow that didn't yet know the archive id
+        # survive a later lookup.
+        if rec["name"] and rec["name"] in overlay:
+            ov = {**overlay[rec["name"]], **ov}
+        # And by claude_session_id — so overlays set on a transcript id
+        # follow the session into its archive record.
+        if rec["claude_session_id"] and rec["claude_session_id"] in overlay:
+            ov = {**overlay[rec["claude_session_id"]], **ov}
         out.append(
             ArchiveRecord(
                 id=rec["id"],
@@ -358,6 +428,8 @@ def records(events: st.JsonLinesStore, panes: st.FileStore) -> list[ArchiveRecor
                 pane_log_bytes=panes.size(rec["id"]),
                 claude_session_id=rec["claude_session_id"],
                 forensics=rec["forensics"],
+                label=ov.get("label"),
+                hidden=bool(ov.get("hidden", False)),
             )
         )
     out.sort(key=lambda r: r.created or 0, reverse=True)

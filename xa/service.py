@@ -44,6 +44,12 @@ try:  # pragma: no cover - optional dep
 
     class ResumeReq(BaseModel):
         name: Optional[str] = None
+
+    class LabelReq(BaseModel):
+        label: Optional[str] = None    # null or "" clears
+
+    class HideReq(BaseModel):
+        hidden: bool = True
 except ImportError:  # pragma: no cover
     pass
 
@@ -157,6 +163,7 @@ def build_api(
     session_prefix: str = "xa-",
     title: str = "xa",
     version: str = "0.1",
+    include_webui: bool = False,
 ):
     """Return a ``FastAPI`` app exposing ``xa``'s session + archive surface.
 
@@ -174,11 +181,22 @@ def build_api(
     panes = pane_store if pane_store is not None else st.default_pane_store()
     app = FastAPI(title=title, version=version)
 
-    def _session_dict(s: sess.Session) -> dict:
+    def _session_dict(s: sess.Session, overlay_map: Optional[dict] = None) -> dict:
         d = asdict(s)
         d["transcript_path"] = (
             str(d["transcript_path"]) if d["transcript_path"] else None
         )
+        # Apply a label/hidden overlay if present for any of the session's
+        # lookup keys (tmux name, claude session id, archive id). First
+        # non-empty match wins.
+        ov = {}
+        if overlay_map:
+            for key in (s.tmux_name, s.claude_session_id, s.id):
+                if key and key in overlay_map:
+                    ov = overlay_map[key]
+                    break
+        d["label"] = ov.get("label")
+        d["hidden"] = bool(ov.get("hidden", False))
         return d
 
     def _record_dict(r: arch.ArchiveRecord) -> dict:
@@ -217,7 +235,8 @@ def build_api(
             arch.reconcile(events, panes, tm.list_sessions(), claude_home=claude_home)
         except Exception:
             pass
-        return {"sessions": [_session_dict(r) for r in rows]}
+        overlay_map = arch.overlays(events)
+        return {"sessions": [_session_dict(r, overlay_map) for r in rows]}
 
     @app.post("/sessions")
     def create_session(req: CreateReq, _: str = Depends(auth)) -> dict:
@@ -320,6 +339,67 @@ def build_api(
             "warning": result.warning,
         }
 
+    @app.patch("/sessions/{id}/label")
+    def set_label(
+        id: str,
+        req: LabelReq = Body(default=LabelReq()),
+        _: str = Depends(auth),
+    ) -> dict:
+        """Set (or clear) a display label for a session.
+
+        Accepts any of: tmux session name, archive id, claude session id.
+        For a live session, also renames the tmux session so lookups by
+        the new name work natively. For archived / transcript-only
+        sessions, the label is kept as an overlay only.
+        """
+        label = (req.label or "").strip()
+        if label and not _NAME_RE.match(label):
+            raise HTTPException(400, "Label must match [A-Za-z0-9_.-]{1,48}")
+
+        # Try to find a matching Session (live or transcript-only). If
+        # none, we still accept the request and record the overlay —
+        # archive-only records are identified by their hex id.
+        try:
+            s = sess.get_session(id, claude_home=claude_home)
+        except LookupError as e:
+            raise HTTPException(400, str(e))
+
+        keys_to_label: list[str] = [id]
+        if s is not None:
+            if s.state == "live" and s.tmux_name and label:
+                try:
+                    tm.rename_session(s.tmux_name, label)
+                except RuntimeError as e:
+                    raise HTTPException(500, f"tmux rename failed: {e}")
+            if s.id not in keys_to_label:
+                keys_to_label.append(s.id)
+            if s.claude_session_id and s.claude_session_id not in keys_to_label:
+                keys_to_label.append(s.claude_session_id)
+            if s.tmux_name and s.tmux_name not in keys_to_label:
+                keys_to_label.append(s.tmux_name)
+
+        for key in keys_to_label:
+            arch.append_label(events, id=key, label=label or None)
+        return {"id": id, "label": label or None}
+
+    @app.post("/archive/{archive_id}/hide")
+    def hide(
+        archive_id: str,
+        req: HideReq = Body(default=HideReq()),
+        _: str = Depends(auth),
+    ) -> dict:
+        if not re.fullmatch(r"[0-9a-f]{6,64}", archive_id):
+            raise HTTPException(400, "Invalid archive id")
+        arch.append_hidden(events, id=archive_id, hidden=req.hidden)
+        return {"id": archive_id, "hidden": req.hidden}
+
+    @app.delete("/archive/{archive_id}/hide")
+    def unhide(archive_id: str, _: str = Depends(auth)) -> dict:
+        if not re.fullmatch(r"[0-9a-f]{6,64}", archive_id):
+            raise HTTPException(400, "Invalid archive id")
+        arch.append_hidden(events, id=archive_id, hidden=False)
+        return {"id": archive_id, "hidden": False}
+
     # --------------------------------------------------------------------- #
     # archive
     # --------------------------------------------------------------------- #
@@ -384,5 +464,21 @@ def build_api(
     @app.get("/health")
     def health() -> dict:
         return {"ok": True}
+
+    # --------------------------------------------------------------------- #
+    # optional webui
+    # --------------------------------------------------------------------- #
+    #
+    # The bundled static UI lives at ``xa/webui/`` and is served at the
+    # mount root when ``include_webui=True``. It talks to the API on the
+    # same origin — works under ``xa serve`` standalone and under any
+    # reverse-proxy mount that includes the same prefix for both.
+    if include_webui:
+        from fastapi.staticfiles import StaticFiles
+
+        webui_root = Path(__file__).parent / "webui"
+        if webui_root.is_dir():
+            # `html=True` makes `/` serve `index.html` naturally.
+            app.mount("/", StaticFiles(directory=str(webui_root), html=True), name="webui")
 
     return app

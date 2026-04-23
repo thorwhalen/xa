@@ -43,8 +43,11 @@ from xa.archive import (
     DeathReason,
     append_created,
     append_gone,
+    append_hidden,
+    append_label,
     append_url_acquired,
     classify_death,
+    overlays,
     reconcile,
     records,
 )
@@ -99,8 +102,11 @@ __all__ = [
     "DeathReason",
     "append_created",
     "append_gone",
+    "append_hidden",
+    "append_label",
     "append_url_acquired",
     "classify_death",
+    "overlays",
     "reconcile",
     "records",
     # hosts

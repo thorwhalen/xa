@@ -114,6 +114,77 @@ def test_captcha_issue_and_check() -> None:
     assert c.check("garbage", challenge) is False
 
 
+def test_label_overlay_roundtrips(app_and_stores) -> None:
+    """PATCH /sessions/{id}/label writes an event; /sessions reports it."""
+    client, events, panes = app_and_stores
+    # Emit a transcript so /sessions returns something.
+    from xa import archive as arch
+    arch.append_created(events, id="abc123", name="oldname", cwd="/tmp", claude_bin="claude")
+    arch.append_url_acquired(
+        events, id="abc123", name="oldname",
+        url="https://claude.ai/code/session_x",
+        claude_session_id="deadbeefdeadbeefdeadbeefdeadbeef",
+    )
+    r = client.patch(
+        "/sessions/abc123/label", json={"label": "my-nice-name"}
+    )
+    assert r.status_code == 200 and r.json()["label"] == "my-nice-name"
+    # The next /archive listing should carry the label.
+    body = client.get("/archive").json()
+    rec = next(s for s in body["sessions"] if s["id"] == "abc123")
+    assert rec["label"] == "my-nice-name"
+
+
+def test_label_rejects_bad_chars(app_and_stores) -> None:
+    client, events, panes = app_and_stores
+    from xa import archive as arch
+    arch.append_created(events, id="abc123", name="x", cwd="/tmp", claude_bin="claude")
+    r = client.patch(
+        "/sessions/abc123/label", json={"label": "bad name with spaces"}
+    )
+    assert r.status_code == 400
+
+
+def test_hide_and_unhide_archive_records(app_and_stores) -> None:
+    client, events, panes = app_and_stores
+    from xa import archive as arch
+    arch.append_created(events, id="abcdef", name="s", cwd="/tmp", claude_bin="claude")
+    arch.append_gone(events, id="abcdef", name="s", reason="clean_exit")
+    # Hide it.
+    r = client.post("/archive/abcdef/hide", json={"hidden": True})
+    assert r.status_code == 200 and r.json()["hidden"] is True
+    rec = next(s for s in client.get("/archive").json()["sessions"] if s["id"] == "abcdef")
+    assert rec["hidden"] is True
+    # Unhide via DELETE.
+    r = client.delete("/archive/abcdef/hide")
+    assert r.status_code == 200 and r.json()["hidden"] is False
+    rec = next(s for s in client.get("/archive").json()["sessions"] if s["id"] == "abcdef")
+    assert rec["hidden"] is False
+
+
+def test_webui_served_when_enabled(tmp_path: Path) -> None:
+    fake_home = tmp_path / ".claude"
+    (fake_home / "projects").mkdir(parents=True)
+    api = svc.build_api(
+        events_store=st.JsonLinesStore(tmp_path / "events.jsonl"),
+        pane_store=st.FileStore(tmp_path / "panes", suffix=".log"),
+        claude_home=fake_home,
+        include_webui=True,
+    )
+    client = TestClient(api)
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "<title>xa</title>" in r.text
+    assert "/sessions" in r.text     # webui fetches /sessions
+
+
+def test_webui_not_served_by_default(app_and_stores) -> None:
+    client, *_ = app_and_stores
+    # Default: no /  route mounted (Starlette returns 404 for unknown static).
+    r = client.get("/")
+    assert r.status_code == 404
+
+
 def test_captcha_endpoint_and_gated_delete(tmp_path: Path) -> None:
     fake_home = tmp_path / ".claude"
     (fake_home / "projects").mkdir(parents=True)
