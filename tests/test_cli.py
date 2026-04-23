@@ -15,8 +15,27 @@ from pathlib import Path
 import pytest
 
 from xa import claude_fs as cfs
+
 # Reuse the fake_home builder from the sessions test module.
 from tests.test_sessions import SID_A, SID_B, SID_C, fake_home  # noqa: F401
+
+
+# The three ``xa serve`` tests exercise the service codepath, which
+# needs fastapi + uvicorn. CI doesn't install the ``[service]`` extra by
+# default (that would bloat every matrix job), so gate those tests
+# instead of forcing the install.
+try:
+    import fastapi  # noqa: F401
+    import uvicorn  # noqa: F401
+
+    _HAS_SERVICE = True
+except ImportError:
+    _HAS_SERVICE = False
+
+_needs_service = pytest.mark.skipif(
+    not _HAS_SERVICE,
+    reason="requires xa[service] extra (fastapi + uvicorn)",
+)
 
 
 def _run(args: list[str], *, env_home: Path) -> subprocess.CompletedProcess:
@@ -81,16 +100,24 @@ def test_gen_secret_honors_length(fake_home: Path) -> None:
     assert r.returncode == 0 and len(r.stdout.strip()) == 32
 
 
+@_needs_service
 def test_serve_refuses_public_bind_without_auth(fake_home: Path) -> None:
-    """The hard guardrail: --host 0.0.0.0 without --username is rejected."""
+    """The hard guardrail: --host 0.0.0.0 without --username is rejected.
+
+    With the ``[service]`` extra installed, ``xa serve`` reaches the
+    guardrail and exits 2. Without it, it exits 1 with "extra not
+    installed" *before* the guardrail — which is why this test needs
+    ``fastapi``/``uvicorn`` on the path.
+    """
     r = _run(["serve", "--host", "0.0.0.0", "--port", "18010"], env_home=fake_home)
-    assert r.returncode == 2
+    assert r.returncode == 2, r.stderr
     assert "refusing to bind" in r.stderr.lower()
     # Help text should point the user at the fix.
     assert "gen-secret" in r.stderr
     assert "--captcha" in r.stderr
 
 
+@_needs_service
 def test_serve_allows_loopback_without_auth(monkeypatch) -> None:
     """127.0.0.1 is fine without auth (only reachable by this machine).
 
@@ -110,6 +137,7 @@ def test_serve_allows_loopback_without_auth(monkeypatch) -> None:
     assert called == {"host": "127.0.0.1", "port": 18010}
 
 
+@_needs_service
 def test_serve_bypass_with_insecure_flag(monkeypatch) -> None:
     """--i-know-its-insecure lets the public-bind-without-auth through."""
     import uvicorn
@@ -117,7 +145,8 @@ def test_serve_bypass_with_insecure_flag(monkeypatch) -> None:
 
     called = {}
     monkeypatch.setattr(
-        uvicorn, "run",
+        uvicorn,
+        "run",
         lambda app, host, port: called.update(host=host, port=port),
     )
     xa_cli.serve_cmd(host="0.0.0.0", port=18010, i_know_its_insecure=True)
