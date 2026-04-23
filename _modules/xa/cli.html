@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.cli &mdash; xa 0.1.0 documentation</title>
+  <title>xa.cli &mdash; xa 0.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -148,9 +148,7 @@
     <span class="k">return</span> <span class="n">text</span><span class="p">[:</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;…&quot;</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_render_table</span><span class="p">(</span>
-    <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_render_table</span><span class="p">(</span><span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">headers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Emit a plain two-space-separated column table.</span>
 
 <span class="sd">    Widths are computed per-column; the last column soaks up any overflow</span>
@@ -162,8 +160,7 @@
     <span class="n">all_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">headers</span><span class="p">,</span> <span class="o">*</span><span class="n">rows</span><span class="p">]</span>
     <span class="n">widths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">all_rows</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">headers</span><span class="p">))]</span>
     <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;  &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">:&lt;</span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">:&lt;</span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">widths</span><span class="p">)</span>
     <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">headers</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">fmt</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="n">w</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">widths</span><span class="p">]),</span> <span class="n">file</span><span class="o">=</span><span class="n">out</span><span class="p">)</span>
@@ -180,10 +177,12 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load hosts from the user&#39;s config file, falling back to a LocalHost.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">config</span> <span class="k">as</span> <span class="n">cfg</span>
+
         <span class="k">return</span> <span class="n">cfg</span><span class="o">.</span><span class="n">load_hosts</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;warn: failed to load xa config: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_hosts</span>
+
         <span class="k">return</span> <span class="n">default_hosts</span><span class="p">()</span>
 
 
@@ -209,6 +208,7 @@
 <span class="sd">    :param json_out: Emit one JSON object per line instead of a table.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
+
     <span class="n">all_hosts</span> <span class="o">=</span> <span class="n">_configured_hosts</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_hosts</span><span class="p">:</span>
@@ -317,7 +317,9 @@
         <span class="k">if</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;exit_code:       </span><span class="si">{</span><span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">forensics</span><span class="o">.</span><span class="n">user_interrupted</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;user_interrupted: yes  (marker is ambiguous — also fires on bridge drops)&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;user_interrupted: yes  (marker is ambiguous — also fires on bridge drops)&quot;</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="n">forensics</span><span class="o">.</span><span class="n">final_assistant_text</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;final_msg:       </span><span class="si">{</span><span class="n">_truncate</span><span class="p">(</span><span class="n">forensics</span><span class="o">.</span><span class="n">final_assistant_text</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
@@ -350,11 +352,15 @@
 
     <span class="k">if</span> <span class="n">json_out</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">matched</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
-                <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
-                <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
-                <span class="s2">&quot;display&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">display</span><span class="p">,</span>
-            <span class="p">}))</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
+                        <span class="s2">&quot;project&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">project</span><span class="p">,</span>
+                        <span class="s2">&quot;display&quot;</span><span class="p">:</span> <span class="n">e</span><span class="o">.</span><span class="n">display</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
         <span class="k">return</span>
 
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
@@ -536,18 +542,22 @@
 
     <span class="k">if</span> <span class="n">json_out</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">recs</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
-                <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
-                <span class="s2">&quot;created&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
-                <span class="s2">&quot;gone&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">gone</span><span class="p">,</span>
-                <span class="s2">&quot;gone_reason&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">gone_reason</span><span class="p">,</span>
-                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
-                <span class="s2">&quot;pane_log_bytes&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">pane_log_bytes</span><span class="p">,</span>
-                <span class="s2">&quot;claude_session_id&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
-                <span class="s2">&quot;forensics&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">forensics</span><span class="p">,</span>
-            <span class="p">}))</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
+                        <span class="s2">&quot;created&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
+                        <span class="s2">&quot;gone&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">gone</span><span class="p">,</span>
+                        <span class="s2">&quot;gone_reason&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">gone_reason</span><span class="p">,</span>
+                        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                        <span class="s2">&quot;pane_log_bytes&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">pane_log_bytes</span><span class="p">,</span>
+                        <span class="s2">&quot;claude_session_id&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
+                        <span class="s2">&quot;forensics&quot;</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">forensics</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
         <span class="k">return</span>
 
     <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
@@ -562,9 +572,7 @@
         <span class="p">]</span>
         <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">recs</span>
     <span class="p">]</span>
-    <span class="n">_render_table</span><span class="p">(</span>
-        <span class="n">rows</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ID&quot;</span><span class="p">,</span> <span class="s2">&quot;NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;REASON&quot;</span><span class="p">,</span> <span class="s2">&quot;CREATED&quot;</span><span class="p">,</span> <span class="s2">&quot;GONE&quot;</span><span class="p">,</span> <span class="s2">&quot;LOG_B&quot;</span><span class="p">,</span> <span class="s2">&quot;CWD&quot;</span><span class="p">]</span>
-    <span class="p">)</span></div>
+    <span class="n">_render_table</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;ID&quot;</span><span class="p">,</span> <span class="s2">&quot;NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;REASON&quot;</span><span class="p">,</span> <span class="s2">&quot;CREATED&quot;</span><span class="p">,</span> <span class="s2">&quot;GONE&quot;</span><span class="p">,</span> <span class="s2">&quot;LOG_B&quot;</span><span class="p">,</span> <span class="s2">&quot;CWD&quot;</span><span class="p">])</span></div>
 
 
 
@@ -584,7 +592,7 @@
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">panes</span><span class="p">[</span><span class="n">archive_id</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">tail_kb</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tail_kb</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="n">tail_kb</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">:]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="n">tail_kb</span> <span class="o">*</span> <span class="mi">1024</span> <span class="p">:]</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">buffer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
 
@@ -598,9 +606,7 @@
 <span class="sd">    :param force: Sync even if the cache isn&#39;t stale yet.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">hosts</span> <span class="o">=</span> <span class="n">_configured_hosts</span><span class="p">()</span>
-    <span class="n">targets</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">[</span><span class="n">hosts</span><span class="p">[</span><span class="n">host</span><span class="p">]]</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">hosts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="p">)</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="n">hosts</span><span class="p">[</span><span class="n">host</span><span class="p">]]</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">hosts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
     <span class="k">if</span> <span class="n">host</span> <span class="ow">and</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hosts</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;error: host &#39;</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">&#39; not in config; available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">hosts</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -635,6 +641,7 @@
 <span class="sd">    for scripting; use :command:`xa pick` when a human is at the keyboard.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
+
     <span class="n">all_hosts</span> <span class="o">=</span> <span class="n">_configured_hosts</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_hosts</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
@@ -643,9 +650,7 @@
         <span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_hosts</span><span class="p">[</span><span class="n">host</span><span class="p">]]</span> <span class="k">if</span> <span class="n">host</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_hosts</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-    <span class="n">rows</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">(</span>
-        <span class="n">hosts</span><span class="o">=</span><span class="n">hosts</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span> <span class="ow">or</span> <span class="kc">None</span>
-    <span class="p">)</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">(</span><span class="n">hosts</span><span class="o">=</span><span class="n">hosts</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="n">limit</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rows</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no sessions.&quot;</span><span class="p">)</span>
         <span class="k">return</span>
@@ -681,8 +686,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;url: </span><span class="si">{</span><span class="n">chosen</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">()</span>
     <span class="n">actions</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;resume&quot;</span><span class="p">,</span> <span class="s2">&quot;kill&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">chosen</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span>
-        <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;resume&quot;</span><span class="p">]</span>
+        <span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;resume&quot;</span><span class="p">,</span> <span class="s2">&quot;kill&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">chosen</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;resume&quot;</span><span class="p">]</span>
     <span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;actions: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span><span class="si">}</span><span class="s2">  (or q)&quot;</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -704,6 +708,9 @@
 
 
 
+<span class="n">_LOOPBACK_HOSTS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="s2">&quot;::1&quot;</span><span class="p">}</span>
+
+
 <div class="viewcode-block" id="serve_cmd">
 <a class="viewcode-back" href="../../module_docs/xa/cli.html#xa.cli.serve_cmd">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">serve_cmd</span><span class="p">(</span>
@@ -712,35 +719,96 @@
     <span class="n">mount</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="n">username</span><span class="p">:</span> <span class="s2">&quot;Optional[str]&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">password</span><span class="p">:</span> <span class="s2">&quot;Optional[str]&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">password_env</span><span class="p">:</span> <span class="s2">&quot;Optional[str]&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">captcha</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">webui</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">i_know_its_insecure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the xa HTTP service (requires the ``xa[service]`` extra).</span>
 
-<span class="sd">    :param host: Bind host.</span>
+<span class="sd">    **Secure by default.** Refuses to bind to a non-loopback interface</span>
+<span class="sd">    without HTTP Basic credentials. Override this guardrail with</span>
+<span class="sd">    ``--i-know-its-insecure`` only in locked-down deployments (e.g.</span>
+<span class="sd">    behind an mTLS-terminating proxy).</span>
+
+<span class="sd">    :param host: Bind host. ``127.0.0.1`` by default — only this machine.</span>
 <span class="sd">    :param port: Bind port.</span>
 <span class="sd">    :param mount: Optional mount prefix (e.g. ``/api/xa``).</span>
-<span class="sd">    :param username: HTTP Basic username; if omitted, no auth is enforced.</span>
-<span class="sd">    :param password: HTTP Basic password (required if username is given).</span>
-<span class="sd">    :param captcha: Enable captcha-gated deletes.</span>
+<span class="sd">    :param username: HTTP Basic username.</span>
+<span class="sd">    :param password: HTTP Basic password. Prefer ``--password-env``.</span>
+<span class="sd">    :param password_env: Name of env var to read the password from (recommended).</span>
+<span class="sd">    :param captcha: Enable captcha-gated deletes. Strongly recommended for</span>
+<span class="sd">        any non-loopback deployment.</span>
+<span class="sd">    :param webui: Serve the bundled web UI at the mount root (default on).</span>
+<span class="sd">        Pass ``--no-webui`` to run API-only.</span>
+<span class="sd">    :param i_know_its_insecure: Skip the public-bind-without-auth safety check.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">uvicorn</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;error: xa[service] extra not installed. &quot;</span>
-            <span class="s2">&quot;Run: pip install &#39;xa[service]&#39;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;error: xa[service] extra not installed. Run: pip install &#39;xa[service]&#39;&quot;</span><span class="p">,</span>
             <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">service</span> <span class="k">as</span> <span class="n">svc</span>
 
+    <span class="c1"># Resolve password: env var &gt; --password.</span>
+    <span class="k">if</span> <span class="n">password_env</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">password_env</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;error: --password-env </span><span class="si">{</span><span class="n">password_env</span><span class="si">!r}</span><span class="s2"> is unset in env&quot;</span><span class="p">,</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">is_public</span> <span class="o">=</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_LOOPBACK_HOSTS</span>
+
+    <span class="c1"># Safety: refuse to bind publicly without auth.</span>
+    <span class="k">if</span> <span class="n">is_public</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">username</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">i_know_its_insecure</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;error: refusing to bind to a non-loopback interface &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">host</span><span class="si">!r}</span><span class="s2">) without --username/--password.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       Anyone who can reach this port could spawn arbitrary</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       shell commands via Claude Code sessions on this host.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       Fix (recommended): add credentials + captcha.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;         xa gen-secret                  # use for password + XA_CAPTCHA_KEY</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;         export XA_PASSWORD=&#39;&lt;paste&gt;&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;         export XA_CAPTCHA_KEY=&#39;&lt;paste&gt;&#39;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;         xa serve --host 0.0.0.0 --port 8010 </span><span class="se">\\\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;           --username me --password-env XA_PASSWORD --captcha</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       Put a TLS-terminating reverse proxy (Caddy / nginx) in</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       front of this port — HTTP Basic without TLS is a password</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       sent in plaintext on every request.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       Bypass (only when an outer layer already gates access,</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;       e.g. mTLS in the reverse proxy): --i-know-its-insecure&quot;</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_public</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">captcha</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;warn: binding publicly without --captcha. Destructive endpoints</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;      (DELETE /sessions/</span><span class="si">{name}</span><span class="s2">) will not be captcha-gated. Add</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;      --captcha unless you really don&#39;t need it.&quot;</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">username</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;error: --password (or --password-env) required when --username is given&quot;</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
     <span class="n">auth_dep</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">allow_all</span>
     <span class="k">if</span> <span class="n">username</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;error: --password required when --username is given&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">auth_dep</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">make_basic_auth</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
 
     <span class="n">captcha_obj</span> <span class="o">=</span> <span class="kc">None</span>
@@ -748,14 +816,19 @@
         <span class="n">key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;XA_CAPTCHA_KEY&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+
             <span class="n">key</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">token_hex</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;warn: XA_CAPTCHA_KEY not set; using ephemeral key&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;warn: XA_CAPTCHA_KEY not set; using an ephemeral key.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      Outstanding captcha tokens will invalidate on restart.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;      For persistent tokens: export XA_CAPTCHA_KEY=$(xa gen-secret)&quot;</span><span class="p">,</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="n">captcha_obj</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">Captcha</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
 
-    <span class="n">api</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">build_api</span><span class="p">(</span><span class="n">auth</span><span class="o">=</span><span class="n">auth_dep</span><span class="p">,</span> <span class="n">captcha</span><span class="o">=</span><span class="n">captcha_obj</span><span class="p">)</span>
+    <span class="n">api</span> <span class="o">=</span> <span class="n">svc</span><span class="o">.</span><span class="n">build_api</span><span class="p">(</span><span class="n">auth</span><span class="o">=</span><span class="n">auth_dep</span><span class="p">,</span> <span class="n">captcha</span><span class="o">=</span><span class="n">captcha_obj</span><span class="p">,</span> <span class="n">include_webui</span><span class="o">=</span><span class="n">webui</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">mount</span><span class="p">:</span>
-        <span class="c1"># Wrap in an outer app so the API lives under /mount/...</span>
         <span class="n">outer</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
         <span class="n">outer</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="n">mount</span><span class="p">,</span> <span class="n">api</span><span class="p">)</span>
         <span class="n">app</span> <span class="o">=</span> <span class="n">outer</span>
@@ -763,6 +836,21 @@
         <span class="n">app</span> <span class="o">=</span> <span class="n">api</span>
 
     <span class="n">uvicorn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="gen_secret_cmd">
+<a class="viewcode-back" href="../../module_docs/xa/cli.html#xa.cli.gen_secret_cmd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gen_secret_cmd</span><span class="p">(</span><span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Print a cryptographically strong random hex secret.</span>
+
+<span class="sd">    Useful for ``XA_PASSWORD``, ``XA_CAPTCHA_KEY``, bearer tokens. Output</span>
+<span class="sd">    is to stdout with a trailing newline; pipe it into anything.</span>
+
+<span class="sd">    :param length: Byte length of the secret (hex output is 2x this).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">secrets</span><span class="o">.</span><span class="n">token_hex</span><span class="p">(</span><span class="n">length</span><span class="p">))</span></div>
 
 
 
@@ -819,6 +907,7 @@
 <span class="n">serve_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;serve&quot;</span>
 <span class="n">sync_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;sync&quot;</span>
 <span class="n">pick_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;pick&quot;</span>
+<span class="n">gen_secret_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;gen-secret&quot;</span>
 
 <span class="n">archive_list_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;list&quot;</span>
 <span class="n">archive_log_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">&quot;log&quot;</span>
@@ -834,6 +923,7 @@
     <span class="n">serve_cmd</span><span class="p">,</span>
     <span class="n">sync_cmd</span><span class="p">,</span>
     <span class="n">pick_cmd</span><span class="p">,</span>
+    <span class="n">gen_secret_cmd</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">_archive_funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">archive_list_cmd</span><span class="p">,</span> <span class="n">archive_log_cmd</span><span class="p">,</span> <span class="n">archive_forensics_cmd</span><span class="p">]</span>
 

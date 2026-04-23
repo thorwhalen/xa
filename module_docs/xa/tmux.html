@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.tmux &mdash; xa 0.1.0 documentation</title>
+  <title>xa.tmux &mdash; xa 0.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -71,6 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.pane_pid"><code class="docutils literal notranslate"><span class="pre">pane_pid()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.pipe_pane_to_file"><code class="docutils literal notranslate"><span class="pre">pipe_pane_to_file()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.proc_comm"><code class="docutils literal notranslate"><span class="pre">proc_comm()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.tmux.rename_session"><code class="docutils literal notranslate"><span class="pre">rename_session()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.send_keys"><code class="docutils literal notranslate"><span class="pre">send_keys()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.session_target"><code class="docutils literal notranslate"><span class="pre">session_target()</span></code></a></li>
 </ul>
@@ -168,6 +169,14 @@ behavior. tmux stops piping automatically when the pane dies.</p>
 <dt class="sig sig-object py" id="xa.tmux.proc_comm">
 <span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">proc_comm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#proc_comm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.proc_comm" title="Link to this definition"></a></dt>
 <dd><p>Return the <code class="docutils literal notranslate"><span class="pre">comm</span></code> name of a pid (kernel-level process name), ‘’ if unreadable.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.tmux.rename_session">
+<span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">rename_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#rename_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.rename_session" title="Link to this definition"></a></dt>
+<dd><p>Rename a live tmux session.</p>
+<p>Both names must match the strict <code class="docutils literal notranslate"><span class="pre">[A-Za-z0-9_.-]{1,48}</span></code> pattern
+used elsewhere in <code class="docutils literal notranslate"><span class="pre">xa</span></code>; callers should validate before calling.</p>
 </dd></dl>
 
 <dl class="py function">

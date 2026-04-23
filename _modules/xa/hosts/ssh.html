@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.hosts.ssh &mdash; xa 0.1.0 documentation</title>
+  <title>xa.hosts.ssh &mdash; xa 0.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../../_static/documentation_options.js?v=a58bc63e"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -194,8 +194,11 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rsync_bin</span><span class="p">,</span>
-            <span class="s2">&quot;-a&quot;</span><span class="p">,</span> <span class="s2">&quot;-z&quot;</span><span class="p">,</span> <span class="s2">&quot;--delete&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;-e&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ssh_bin</span><span class="p">,</span>
+            <span class="s2">&quot;-a&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-z&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--delete&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;-e&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ssh_bin</span><span class="p">,</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_path</span><span class="p">(</span><span class="n">rel_src</span><span class="p">)</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>
             <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dest</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>
         <span class="p">]</span>
@@ -214,7 +217,9 @@
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">return</span> <span class="n">age</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">stale_threshold_sec</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
             <span class="n">argv</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
@@ -257,7 +262,9 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_remote_tmux_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run ``tmux list-sessions`` over SSH and parse the output.&quot;&quot;&quot;</span>
-        <span class="n">fmt</span> <span class="o">=</span> <span class="s2">&quot;#</span><span class="si">{session_name}</span><span class="s2">|#</span><span class="si">{session_created}</span><span class="s2">|#</span><span class="si">{session_activity}</span><span class="s2">|#</span><span class="si">{session_attached}</span><span class="s2">&quot;</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;#</span><span class="si">{session_name}</span><span class="s2">|#</span><span class="si">{session_created}</span><span class="s2">|#</span><span class="si">{session_activity}</span><span class="s2">|#</span><span class="si">{session_attached}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
         <span class="n">cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span><span class="si">}</span><span class="s2"> list-sessions -F </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ssh_cmd</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
@@ -272,12 +279,14 @@
                 <span class="k">continue</span>
             <span class="n">name</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">attached</span> <span class="o">=</span> <span class="n">parts</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-                    <span class="n">created</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">created</span><span class="p">),</span>
-                    <span class="n">activity</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">activity</span><span class="p">),</span>
-                    <span class="n">attached</span><span class="o">=</span><span class="n">attached</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-                <span class="p">))</span>
+                <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">(</span>
+                        <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">created</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">created</span><span class="p">),</span>
+                        <span class="n">activity</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">activity</span><span class="p">),</span>
+                        <span class="n">attached</span><span class="o">=</span><span class="n">attached</span> <span class="o">==</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
                 <span class="k">continue</span>
         <span class="k">return</span> <span class="n">rows</span>
@@ -334,7 +343,9 @@
                 <span class="k">yield</span> <span class="n">replace</span><span class="p">(</span>
                     <span class="n">base</span><span class="p">,</span>
                     <span class="n">state</span><span class="o">=</span><span class="s2">&quot;live&quot;</span><span class="p">,</span>
-                    <span class="n">live_pid</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">live_pid</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>
+                    <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">tmux_name</span><span class="o">=</span><span class="n">tmux_row</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">tmux_row</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">bridge_session_id</span><span class="o">=</span><span class="n">bridge</span><span class="p">,</span>
                     <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ccli</span><span class="o">.</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
@@ -410,9 +421,7 @@
         <span class="p">)</span></div>
 
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">claude_session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">claude_session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">:</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">opts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;resumed-</span><span class="si">{</span><span class="n">claude_session_id</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Za-z0-9_.-]{1,48}$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid tmux session name&quot;</span><span class="p">)</span>

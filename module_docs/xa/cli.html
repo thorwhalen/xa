@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.cli &mdash; xa 0.1.0 documentation</title>
+  <title>xa.cli &mdash; xa 0.1.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -58,6 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.archive_forensics_cmd"><code class="docutils literal notranslate"><span class="pre">archive_forensics_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.archive_list_cmd"><code class="docutils literal notranslate"><span class="pre">archive_list_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.archive_log_cmd"><code class="docutils literal notranslate"><span class="pre">archive_log_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.gen_secret_cmd"><code class="docutils literal notranslate"><span class="pre">gen_secret_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.history_cmd"><code class="docutils literal notranslate"><span class="pre">history_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.info_cmd"><code class="docutils literal notranslate"><span class="pre">info_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.kill_cmd"><code class="docutils literal notranslate"><span class="pre">kill_cmd()</span></code></a></li>
@@ -146,6 +147,19 @@ Later phases add <code class="docutils literal notranslate"><span class="pre">sp
 <li><p><strong>archive_id</strong> – The archive id (first column of <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">list</span></code>).</p></li>
 <li><p><strong>tail_kb</strong> – Only print the last N KB (0 = full log).</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.gen_secret_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">gen_secret_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#gen_secret_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.gen_secret_cmd" title="Link to this definition"></a></dt>
+<dd><p>Print a cryptographically strong random hex secret.</p>
+<p>Useful for <code class="docutils literal notranslate"><span class="pre">XA_PASSWORD</span></code>, <code class="docutils literal notranslate"><span class="pre">XA_CAPTCHA_KEY</span></code>, bearer tokens. Output
+is to stdout with a trailing newline; pipe it into anything.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>length</strong> – Byte length of the secret (hex output is 2x this).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -241,17 +255,26 @@ for scripting; use <strong class="command">xa pick</strong> when a human is at t
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xa.cli.serve_cmd">
-<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">serve_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">captcha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#serve_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.serve_cmd" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">serve_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8010</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mount</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password_env</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">captcha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">webui</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i_know_its_insecure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#serve_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.serve_cmd" title="Link to this definition"></a></dt>
 <dd><p>Run the xa HTTP service (requires the <code class="docutils literal notranslate"><span class="pre">xa[service]</span></code> extra).</p>
+<p><strong>Secure by default.</strong> Refuses to bind to a non-loopback interface
+without HTTP Basic credentials. Override this guardrail with
+<code class="docutils literal notranslate"><span class="pre">--i-know-its-insecure</span></code> only in locked-down deployments (e.g.
+behind an mTLS-terminating proxy).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>host</strong> – Bind host.</p></li>
+<li><p><strong>host</strong> – Bind host. <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code> by default — only this machine.</p></li>
 <li><p><strong>port</strong> – Bind port.</p></li>
 <li><p><strong>mount</strong> – Optional mount prefix (e.g. <code class="docutils literal notranslate"><span class="pre">/api/xa</span></code>).</p></li>
-<li><p><strong>username</strong> – HTTP Basic username; if omitted, no auth is enforced.</p></li>
-<li><p><strong>password</strong> – HTTP Basic password (required if username is given).</p></li>
-<li><p><strong>captcha</strong> – Enable captcha-gated deletes.</p></li>
+<li><p><strong>username</strong> – HTTP Basic username.</p></li>
+<li><p><strong>password</strong> – HTTP Basic password. Prefer <code class="docutils literal notranslate"><span class="pre">--password-env</span></code>.</p></li>
+<li><p><strong>password_env</strong> – Name of env var to read the password from (recommended).</p></li>
+<li><p><strong>captcha</strong> – Enable captcha-gated deletes. Strongly recommended for
+any non-loopback deployment.</p></li>
+<li><p><strong>webui</strong> – Serve the bundled web UI at the mount root (default on).
+Pass <code class="docutils literal notranslate"><span class="pre">--no-webui</span></code> to run API-only.</p></li>
+<li><p><strong>i_know_its_insecure</strong> – Skip the public-bind-without-auth safety check.</p></li>
 </ul>
 </dd>
 </dl>
