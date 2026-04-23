@@ -186,12 +186,14 @@ def build_api(
         d["transcript_path"] = (
             str(d["transcript_path"]) if d["transcript_path"] else None
         )
-        # Apply a label/hidden overlay if present for any of the session's
-        # lookup keys (tmux name, claude session id, archive id). First
-        # non-empty match wins.
+        # Apply a label/hidden overlay if present. Lookup order goes from
+        # most session-specific to least: archive id (= claude session id
+        # for transcript-only sessions) → claude_session_id → tmux_name.
+        # tmux names get reused, so they're last to avoid an old session's
+        # label leaking onto a new one of the same name.
         ov = {}
         if overlay_map:
-            for key in (s.tmux_name, s.claude_session_id, s.id):
+            for key in (s.id, s.claude_session_id, s.tmux_name):
                 if key and key in overlay_map:
                     ov = overlay_map[key]
                     break
@@ -201,6 +203,32 @@ def build_api(
 
     def _record_dict(r: arch.ArchiveRecord) -> dict:
         return asdict(r)
+
+    _ARCHIVE_ID_RE = re.compile(r"^[0-9a-f]{6,64}$")
+
+    def _resolve_session(id: str) -> Optional[sess.Session]:
+        """Find a Session by tmux name, claude session id (full or prefix),
+        or edualc archive id.
+
+        ``sess.get_session`` only knows about claude session ids and tmux
+        names; archive ids live in the events store. This helper bridges
+        the two so /info, /label and /resume all accept the same id forms
+        the webui already shows on its session cards.
+        """
+        s = sess.get_session(id, claude_home=claude_home)
+        if s is not None:
+            return s
+        if not _ARCHIVE_ID_RE.match(id):
+            return None
+        # Translate archive id → claude_session_id via the event log.
+        cs_id: Optional[str] = None
+        for rec in arch.records(events, panes):
+            if rec.id == id and rec.claude_session_id:
+                cs_id = rec.claude_session_id
+                break
+        if cs_id is None:
+            return None
+        return sess.get_session(cs_id, claude_home=claude_home)
 
     def _generate_name() -> str:
         existing = {t.name for t in tm.list_sessions()}
@@ -296,7 +324,7 @@ def build_api(
     @app.get("/sessions/{id}/info")
     def session_info(id: str, _: str = Depends(auth)) -> dict:
         try:
-            s = sess.get_session(id, claude_home=claude_home)
+            s = _resolve_session(id)
         except LookupError as e:
             raise HTTPException(400, str(e))
         if s is None:
@@ -313,10 +341,88 @@ def build_api(
             out["pane_tail"] = tm.capture_pane(s.tmux_name, lines=80)
         return out
 
+    @app.get("/sessions/{id}/diagnose")
+    def diagnose(id: str, _: str = Depends(auth), tail_kb: int = 16) -> dict:
+        """Single-stop "what happened" for a session.
+
+        Accepts the same id forms as /info: tmux name, claude session id
+        (full or unique prefix), or archive id. Combines the existing
+        forensics, pane tail, and a synthesized human-readable hint. The
+        hint draws on the same signals ``archive.classify_death`` uses,
+        so it stays consistent with the death reason shown elsewhere.
+        """
+        try:
+            s = _resolve_session(id)
+        except LookupError as e:
+            raise HTTPException(400, str(e))
+        if s is None:
+            raise HTTPException(404, f"No session matching '{id}'")
+
+        out: dict = {"session": _session_dict(s)}
+
+        # Transcript forensics — works for live and archived sessions both.
+        forensics_obj: Optional[cfs.TranscriptForensics] = None
+        if s.transcript_path:
+            try:
+                forensics_obj = cfs.transcript_forensics(s.transcript_path)
+            except OSError:
+                forensics_obj = None
+            if forensics_obj is not None:
+                fdict = asdict(forensics_obj)
+                fdict["transcript_path"] = (
+                    str(fdict["transcript_path"]) if fdict["transcript_path"] else None
+                )
+                out["forensics"] = fdict
+
+        # Locate the matching archive record (lookup by claude_session_id
+        # via the records table — that's the join key the events store
+        # already exposes).
+        archive_rec: Optional[arch.ArchiveRecord] = None
+        if s.claude_session_id:
+            for rec in arch.records(events, panes):
+                if rec.claude_session_id == s.claude_session_id:
+                    archive_rec = rec
+                    break
+
+        # Pane tail. Live: capture from tmux. Archived: read from pane store.
+        oom_markers: tuple[str, ...] = ()
+        pane_tail: Optional[str] = None
+        if s.state == "live" and s.tmux_name:
+            pane_tail = tm.capture_pane(s.tmux_name, lines=80)
+        elif archive_rec is not None and archive_rec.id in panes:
+            cap = max(1024, tail_kb * 1024)
+            try:
+                pane_tail = panes[archive_rec.id][-cap:].decode(
+                    "utf-8", errors="replace"
+                )
+            except KeyError:
+                pane_tail = None
+        if pane_tail:
+            out["pane_tail"] = pane_tail
+            oom_markers = tuple(
+                m for m in arch._OOM_PANE_MARKERS if m in pane_tail
+            )
+            if oom_markers:
+                out["oom_signals"] = list(oom_markers)
+
+        if archive_rec is not None:
+            out["archive_id"] = archive_rec.id
+            out["gone_reason"] = archive_rec.gone_reason
+            out["gone"] = archive_rec.gone
+
+        # Synthesize the hint — consistent with classify_death's verdict.
+        out["hint"] = arch.synthesize_diagnosis(
+            state=s.state,
+            reason=archive_rec.gone_reason if archive_rec else None,
+            forensics=forensics_obj,
+            oom_markers=oom_markers,
+        )
+        return out
+
     @app.post("/sessions/{id}/resume")
     def resume(id: str, req: ResumeReq, _: str = Depends(auth)) -> dict:
         try:
-            s = sess.get_session(id, claude_home=claude_home)
+            s = _resolve_session(id)
         except LookupError as e:
             raise HTTPException(400, str(e))
         if s is None or not s.claude_session_id:
@@ -360,7 +466,7 @@ def build_api(
         # none, we still accept the request and record the overlay —
         # archive-only records are identified by their hex id.
         try:
-            s = sess.get_session(id, claude_home=claude_home)
+            s = _resolve_session(id)
         except LookupError as e:
             raise HTTPException(400, str(e))
 

@@ -185,6 +185,99 @@ def test_webui_not_served_by_default(app_and_stores) -> None:
     assert r.status_code == 404
 
 
+# --------------------------------------------------------------------------- #
+# resume / info / diagnose — archive-id resolution
+# --------------------------------------------------------------------------- #
+
+
+def _seed_transcript(claude_home: Path, cs_id: str, *, cwd: str = "/tmp") -> Path:
+    """Drop a minimal transcript at ~/.claude/projects/<slug>/<cs_id>.jsonl."""
+    slug = cwd.replace("/", "-")
+    pdir = claude_home / "projects" / slug
+    pdir.mkdir(parents=True, exist_ok=True)
+    path = pdir / f"{cs_id}.jsonl"
+    path.write_text(
+        '{"type":"user","sessionId":"%s","cwd":"%s",'
+        '"message":{"role":"user","content":"hello"}}\n' % (cs_id, cwd)
+    )
+    return path
+
+
+def test_info_resolves_by_archive_id(tmp_path: Path) -> None:
+    """Regression: webui sends 12-char archive id to /info; backend must
+    translate it to the matching claude_session_id and return that session.
+    Before the fix, /info returned 404 because get_session only matched on
+    Session.id (= claude_session_id)."""
+    events = st.JsonLinesStore(tmp_path / "events.jsonl")
+    panes = st.FileStore(tmp_path / "panes", suffix=".log")
+    fake_home = tmp_path / ".claude"
+    (fake_home / "projects").mkdir(parents=True)
+    cs_id = "deadbeef-dead-beef-dead-beefdeadbeef"
+    _seed_transcript(fake_home, cs_id)
+    arch.append_created(events, id="abc123ab", name="s", cwd="/tmp", claude_bin="claude")
+    arch.append_url_acquired(events, id="abc123ab", name="s", claude_session_id=cs_id)
+
+    api = svc.build_api(events_store=events, pane_store=panes, claude_home=fake_home)
+    client = TestClient(api)
+    r = client.get("/sessions/abc123ab/info")
+    assert r.status_code == 200, r.text
+    assert r.json()["claude_session_id"] == cs_id
+
+
+def test_resume_404_when_archive_id_has_no_claude_session(tmp_path: Path) -> None:
+    """An archive entry with no claude_session_id (URL never acquired)
+    cannot be resumed — must 404, not 500."""
+    events = st.JsonLinesStore(tmp_path / "events.jsonl")
+    panes = st.FileStore(tmp_path / "panes", suffix=".log")
+    fake_home = tmp_path / ".claude"
+    (fake_home / "projects").mkdir(parents=True)
+    arch.append_created(events, id="abc123ab", name="s", cwd="/tmp", claude_bin="claude")
+
+    api = svc.build_api(events_store=events, pane_store=panes, claude_home=fake_home)
+    client = TestClient(api)
+    r = client.post("/sessions/abc123ab/resume", json={})
+    assert r.status_code == 404
+
+
+def test_diagnose_surfaces_oom_signals_and_hint(tmp_path: Path) -> None:
+    """End-to-end: pane log with 'Killed' + transcript with exit 137 →
+    /diagnose returns oom_signals and an actionable hint."""
+    events = st.JsonLinesStore(tmp_path / "events.jsonl")
+    panes = st.FileStore(tmp_path / "panes", suffix=".log")
+    fake_home = tmp_path / ".claude"
+    (fake_home / "projects").mkdir(parents=True)
+    cs_id = "feedface-feed-face-feed-facefeedface"
+    # Transcript with a tool_use + tool_result(Exit code 137).
+    slug_dir = fake_home / "projects" / "-tmp"
+    slug_dir.mkdir(parents=True, exist_ok=True)
+    (slug_dir / f"{cs_id}.jsonl").write_text(
+        '{"type":"assistant","sessionId":"%s","cwd":"/tmp",'
+        '"message":{"role":"assistant","content":[{"type":"tool_use",'
+        '"name":"Bash","input":{"command":"big"}}]}}\n'
+        '{"type":"user","sessionId":"%s","cwd":"/tmp",'
+        '"message":{"role":"user","content":[{"type":"tool_result",'
+        '"content":"Exit code 137"}]}}\n' % (cs_id, cs_id)
+    )
+    arch.append_created(events, id="0becdead", name="s", cwd="/tmp", claude_bin="claude",
+                        tmux_created_ts=1000)
+    arch.append_url_acquired(events, id="0becdead", name="s", claude_session_id=cs_id)
+    panes["0becdead"] = b"... output ...\nKilled\n"
+    arch.reconcile(events, panes, live_sessions=[], claude_home=fake_home)
+
+    api = svc.build_api(events_store=events, pane_store=panes, claude_home=fake_home)
+    client = TestClient(api)
+    # Both the archive id and the claude_session_id should resolve.
+    for key in ("0becdead", cs_id):
+        r = client.get(f"/sessions/{key}/diagnose")
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert body.get("oom_signals") == ["Killed"], body
+        assert body.get("gone_reason") == "oom_killed", body
+        assert body.get("hint")
+        # The hint should be actionable, not just descriptive.
+        assert ("OOM" in body["hint"] or "swap" in body["hint"].lower())
+
+
 def test_captcha_endpoint_and_gated_delete(tmp_path: Path) -> None:
     fake_home = tmp_path / ".claude"
     (fake_home / "projects").mkdir(parents=True)

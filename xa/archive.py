@@ -16,8 +16,13 @@ Death-reason taxonomy (most specific wins):
   pane tail shows a clean exit. **Ambiguous**: the same marker fires on
   bridge-WebSocket resets (phone standby, reconnect), not only on human
   ESC. Don't derive user intent from this alone.
+- ``oom_killed``  — last tool exited with 137 (SIGKILL) AND the pane log
+  tail contains a kernel/shell OOM marker (``Killed``, ``Out of memory``,
+  ``MemoryError``). Strongest single signal we can derive without root —
+  the kernel's "Killed" message rides through the same tty bash uses to
+  print SIGKILL notices, so it ends up in the tee'd pane log.
 - ``tool_crash``  — pane tail shows clean exit AND the last tool use
-  exited with a non-zero code.
+  exited with a non-zero code (and we couldn't promote to ``oom_killed``).
 - ``clean_exit``  — pane tail contains ``"Resume this session with:"``.
 - ``abrupt``      — killed / crashed / bridge-dropped with no clean-exit
   marker.
@@ -40,12 +45,20 @@ DeathReason = Literal[
     "abrupt",
     "interrupted",
     "tool_crash",
+    "oom_killed",
     "replaced",
     "missing",
 ]
 
 
 _CLEAN_EXIT_MARKER = "Resume this session with:"
+
+# Substrings that indicate a SIGKILL caused by the Linux OOM killer.
+# Bash prints "Killed" to stderr when one of its children dies on signal 9
+# and the kernel's oom-kill announcement reaches the same tty. Python
+# allocators raise MemoryError before the kill; we match that too in case
+# the host had enough headroom to surface it.
+_OOM_PANE_MARKERS = ("Killed", "Out of memory", "MemoryError")
 
 
 # --------------------------------------------------------------------------- #
@@ -165,18 +178,38 @@ def append_hidden(events: st.JsonLinesStore, *, id: str, hidden: bool) -> None:
 # --------------------------------------------------------------------------- #
 
 
-def _infer_pane_death(
-    panes: st.FileStore, sid: str
-) -> tuple[Optional[float], Literal["clean_exit", "abrupt", "missing", "unknown"]]:
-    """Return ``(death_ts, pane_kind)`` by inspecting the pane log."""
+@dataclass(frozen=True)
+class PaneInspection:
+    """Read-once view of a pane log tail used by death classification."""
+
+    death_ts: Optional[float]
+    kind: Literal["clean_exit", "abrupt", "missing", "unknown"]
+    oom_markers: tuple[str, ...]   # which _OOM_PANE_MARKERS were found
+    tail: str                      # the decoded tail (may be empty)
+
+
+def _inspect_pane(panes: st.FileStore, sid: str) -> PaneInspection:
+    """Read the pane tail once and extract every signal we use downstream."""
     if sid not in panes:
-        return None, "missing"
+        return PaneInspection(death_ts=None, kind="missing", oom_markers=(), tail="")
     mtime = panes.mtime(sid)
     try:
         tail = panes[sid][-4096:].decode("utf-8", errors="replace")
     except KeyError:
-        return mtime, "unknown"
-    return mtime, "clean_exit" if _CLEAN_EXIT_MARKER in tail else "abrupt"
+        return PaneInspection(death_ts=mtime, kind="unknown", oom_markers=(), tail="")
+    kind: Literal["clean_exit", "abrupt"] = (
+        "clean_exit" if _CLEAN_EXIT_MARKER in tail else "abrupt"
+    )
+    oom = tuple(m for m in _OOM_PANE_MARKERS if m in tail)
+    return PaneInspection(death_ts=mtime, kind=kind, oom_markers=oom, tail=tail)
+
+
+# Back-compat shim — older callers (and tests) used the simpler 2-tuple form.
+def _infer_pane_death(
+    panes: st.FileStore, sid: str
+) -> tuple[Optional[float], Literal["clean_exit", "abrupt", "missing", "unknown"]]:
+    insp = _inspect_pane(panes, sid)
+    return insp.death_ts, insp.kind
 
 
 def classify_death(
@@ -184,19 +217,143 @@ def classify_death(
     *,
     replaced: bool = False,
     forensics: Optional[cfs.TranscriptForensics] = None,
+    oom_markers: tuple[str, ...] = (),
 ) -> DeathReason:
-    """Pick the most specific death reason from available signals."""
+    """Pick the most specific death reason from available signals.
+
+    ``oom_markers`` is the tuple of OOM-shaped strings observed in the
+    pane tail (see ``_OOM_PANE_MARKERS``). When the last tool exited
+    with 137 and at least one marker is present, we promote the verdict
+    to ``oom_killed`` — that pair is the strongest single signal we can
+    get without reading kernel logs (which would need root and is not
+    portable).
+    """
     if replaced:
         return "replaced"
     if pane_kind == "missing":
         return "missing"
+    last_exit = forensics.last_tool_exit_code if forensics is not None else None
+    if last_exit == 137 and oom_markers:
+        return "oom_killed"
     if pane_kind == "clean_exit":
         if forensics is not None and forensics.user_interrupted:
             return "interrupted"
-        if forensics is not None and forensics.last_tool_exit_code not in (None, 0):
+        if last_exit not in (None, 0):
             return "tool_crash"
         return "clean_exit"
     return "abrupt"
+
+
+# --------------------------------------------------------------------------- #
+# diagnosis (human-readable hints from the same signals classify_death uses)
+# --------------------------------------------------------------------------- #
+
+
+def synthesize_diagnosis(
+    *,
+    state: Literal["live", "archived", "transcript_only"],
+    reason: Optional[DeathReason] = None,
+    forensics: Optional[cfs.TranscriptForensics] = None,
+    oom_markers: tuple[str, ...] = (),
+) -> str:
+    """One-paragraph plain-English hint about what likely happened.
+
+    Designed to be useful to both a human reading the UI and an LLM agent
+    deciding whether to retry or escalate. The hint surfaces the actionable
+    bit (e.g., "add swap", "re-run with --resume") rather than just naming
+    the verdict — the structured fields next to it already do that.
+    """
+    if state == "live":
+        return "Session is currently live. No postmortem to render."
+
+    last_exit = forensics.last_tool_exit_code if forensics else None
+    last_tool = forensics.last_tool_name if forensics else None
+    last_cmd = forensics.last_tool_command if forensics else None
+    user_marker = bool(forensics and forensics.user_interrupted)
+
+    # Exit code 137 = SIGKILL. On a Linux server with Claude Code's tool
+    # subtree, the dominant cause is the kernel OOM killer (other causes:
+    # manual `kill -9`, container OOM cgroup, OS shutdown). When the pane
+    # also shows "Killed" / "Out of memory", confidence is very high
+    # (oom_killed). When it doesn't — usually because the kill hit a deep
+    # grandchild and the kernel message went to dmesg, not the tty — we
+    # still surface the likelihood since 137 alone is suggestive.
+    sigkill = last_exit == 137
+    pane_oom = bool(oom_markers)
+
+    if reason == "oom_killed" or (sigkill and pane_oom):
+        markers = ", ".join(repr(m) for m in oom_markers) or "none"
+        cmd_part = f" while running `{last_cmd}`" if last_cmd else ""
+        return (
+            f"Last tool ({last_tool or 'unknown'}) exited 137{cmd_part} and the "
+            f"pane log contains OOM-shaped markers ({markers}). Almost certainly "
+            f"the Linux OOM killer. Mitigations: add swap, lower the process's "
+            f"peak memory (stream instead of buffering), or split the work into "
+            f"smaller batches. Resume after fixing the root cause — re-running "
+            f"the same command on the same host will OOM again."
+        )
+
+    def _sigkill_caveat() -> str:
+        return (
+            " Exit 137 is SIGKILL — on a Linux host the dominant cause is the "
+            "kernel OOM killer (the OOM message goes to dmesg, not the tty, so "
+            "the pane log alone may not show it). Check `journalctl -k --since` "
+            "around the death time and `free -h` for headroom; if confirmed, "
+            "add swap or lower the process's peak memory before resuming."
+        )
+
+    if reason == "interrupted":
+        cmd_part = f" while running `{last_cmd}`" if last_cmd else ""
+        base = (
+            f"Claude's tool runner emitted the user-interrupt marker"
+            f"{cmd_part}. This marker is ambiguous: it fires on a real ESC, on "
+            f"phone-standby/bridge resets, and on remote-stop. If no human input "
+            f"is in the transcript leading up to it, blame infrastructure "
+            f"(bridge WebSocket reset) rather than the user."
+        )
+        return base + _sigkill_caveat() if sigkill else base
+
+    if reason == "tool_crash":
+        cmd_part = f" `{last_cmd}`" if last_cmd else ""
+        base = (
+            f"Last tool ({last_tool or 'unknown'}){cmd_part} exited "
+            f"{last_exit}. Pane closed cleanly afterwards, so claude itself shut "
+            f"down rather than the orchestrator killing it. Open the transcript "
+            f"to see the tool result."
+        )
+        return base + _sigkill_caveat() if sigkill else base
+
+    if reason == "clean_exit":
+        return (
+            "Session exited cleanly (claude printed its 'Resume this session "
+            "with:' marker). Safe to resume from this transcript."
+        )
+
+    if reason == "abrupt":
+        hint = (
+            "Session disappeared without a clean-exit marker. Common causes: "
+            "tmux pane killed, the host rebooted, or claude crashed."
+        )
+        if user_marker:
+            hint += (
+                " The transcript also contains an interrupt marker — "
+                "may have been a bridge reset cascading into a kill."
+            )
+        return hint
+
+    if reason == "replaced":
+        return (
+            "A new tmux session took over this name. The original is gone; "
+            "this archive entry is its postmortem."
+        )
+
+    if reason == "missing":
+        return (
+            "No pane log exists for this session — predates xa's logging or "
+            "the log was cleaned up. We can still resume from the transcript."
+        )
+
+    return "No classified reason available; inspect the pane log and transcript."
 
 
 # --------------------------------------------------------------------------- #
@@ -254,21 +411,18 @@ def reconcile(
 
         # A session is "gone" if (a) no tmux session with that name exists,
         # or (b) a tmux session with that name exists but was created at a
-        # different timestamp (i.e., the original died and was replaced).
-        is_gone = live_ts is None or (
-            archived_tmux_ts is not None
-            and abs(int(live_ts) - int(archived_tmux_ts)) > 2
-        )
-        if not is_gone:
-            continue
-
+        # different timestamp (the original died and got replaced).
         replaced = (
             live_ts is not None
             and archived_tmux_ts is not None
-            and (abs(int(live_ts) - int(archived_tmux_ts)) > 2)
+            and abs(int(live_ts) - int(archived_tmux_ts)) > 2
         )
+        is_gone = live_ts is None or replaced
+        if not is_gone:
+            continue
 
-        death_ts, pane_kind = _infer_pane_death(panes, sid)
+        insp = _inspect_pane(panes, sid)
+        death_ts, pane_kind = insp.death_ts, insp.kind
 
         forensics: Optional[cfs.TranscriptForensics] = None
         cwd = meta.get("cwd")
@@ -281,7 +435,12 @@ def reconcile(
                 except OSError:
                     forensics = None
 
-        reason = classify_death(pane_kind, replaced=replaced, forensics=forensics)
+        reason = classify_death(
+            pane_kind,
+            replaced=replaced,
+            forensics=forensics,
+            oom_markers=insp.oom_markers,
+        )
 
         forensics_summary: Optional[dict] = None
         if forensics is not None and any(
@@ -290,13 +449,19 @@ def reconcile(
                 forensics.last_tool_exit_code is not None,
                 forensics.user_interrupted,
             ]
-        ):
+        ) or insp.oom_markers:
             forensics_summary = {
-                "last_tool_name": forensics.last_tool_name,
-                "last_tool_command": forensics.last_tool_command,
-                "last_tool_exit_code": forensics.last_tool_exit_code,
-                "user_interrupted": forensics.user_interrupted,
+                "last_tool_name": forensics.last_tool_name if forensics else None,
+                "last_tool_command": forensics.last_tool_command if forensics else None,
+                "last_tool_exit_code": (
+                    forensics.last_tool_exit_code if forensics else None
+                ),
+                "user_interrupted": (
+                    forensics.user_interrupted if forensics else False
+                ),
             }
+            if insp.oom_markers:
+                forensics_summary["oom_signals"] = list(insp.oom_markers)
 
         append_gone(
             events,

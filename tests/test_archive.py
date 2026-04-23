@@ -71,6 +71,64 @@ def test_classify_abrupt_default() -> None:
     assert arch.classify_death("abrupt") == "abrupt"
 
 
+def test_classify_oom_killed_promoted() -> None:
+    """Exit 137 + OOM marker → oom_killed regardless of pane_kind."""
+    f = _forensics(exit_code=137)
+    assert (
+        arch.classify_death("abrupt", forensics=f, oom_markers=("Killed",))
+        == "oom_killed"
+    )
+    assert (
+        arch.classify_death("clean_exit", forensics=f, oom_markers=("Out of memory",))
+        == "oom_killed"
+    )
+    # Without the pane marker we can't promote — fall back to tool_crash.
+    assert (
+        arch.classify_death("clean_exit", forensics=f, oom_markers=())
+        == "tool_crash"
+    )
+    # Without exit 137 we don't promote — pane "Killed" alone is noisy
+    # (a tool that prints "Killed" in normal output would otherwise misfire).
+    assert (
+        arch.classify_death(
+            "abrupt", forensics=_forensics(exit_code=1), oom_markers=("Killed",),
+        )
+        == "abrupt"
+    )
+
+
+def test_synthesize_diagnosis_oom_mentions_swap() -> None:
+    """The hint should be actionable, not just descriptive."""
+    f = _forensics(exit_code=137)
+    hint = arch.synthesize_diagnosis(
+        state="archived",
+        reason="oom_killed",
+        forensics=f,
+        oom_markers=("Killed",),
+    )
+    assert "OOM" in hint or "swap" in hint.lower()
+
+
+def test_synthesize_diagnosis_live_says_so() -> None:
+    hint = arch.synthesize_diagnosis(state="live")
+    assert "live" in hint.lower()
+
+
+def test_reconcile_records_oom_signals(tmp_path: Path) -> None:
+    """Pane log containing 'Killed' should land oom_signals in the gone forensics."""
+    events = st.JsonLinesStore(tmp_path / "events.jsonl")
+    panes = st.FileStore(tmp_path / "panes", suffix=".log")
+    arch.append_created(
+        events, id="oomid", name="sess", cwd="/tmp", claude_bin="claude",
+        tmux_created_ts=1000,
+    )
+    panes["oomid"] = b"Killed\n"  # OOM marker in pane tail
+    arch.reconcile(events, panes, live_sessions=[])
+    # Find the gone event and check its forensics.
+    gone = next(ev for ev in events if ev.get("event") == "gone")
+    assert gone["forensics"]["oom_signals"] == ["Killed"]
+
+
 # --------------------------------------------------------------------------- #
 # reconcile
 # --------------------------------------------------------------------------- #

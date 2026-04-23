@@ -206,7 +206,10 @@ def get_session(
         return None
     if len(prefix) > 1:
         names = ", ".join(s.id[:12] for s in prefix[:5])
-        raise LookupError(f"Ambiguous session id '{session_id}': {names}...")
+        more = "" if len(prefix) <= 5 else f" (+{len(prefix) - 5} more)"
+        raise LookupError(
+            f"Ambiguous session id '{session_id}' matches: {names}{more}"
+        )
     return prefix[0]
 
 

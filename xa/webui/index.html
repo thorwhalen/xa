@@ -148,7 +148,10 @@
   </dialog>
 
   <dialog id="infoDialog">
-    <h3 style="margin:0 0 10px">Session info</h3>
+    <h3 style="margin:0 0 10px" id="infoTitle">Session info</h3>
+    <div id="infoHint" style="display:none; padding:10px; margin-bottom:8px;
+      background: var(--panel-2); border-left: 3px solid var(--accent);
+      border-radius: 4px; line-height:1.4; font-size: 13.5px"></div>
     <pre class="info" id="infoBody"></pre>
     <div class="row" style="justify-content:flex-end; margin-top:10px">
       <button onclick="document.getElementById('infoDialog').close()">Close</button>
@@ -277,6 +280,9 @@ function deadCard(r) {
     const cls = forensics.last_tool_exit_code === 0 ? "ok" : "warn";
     forensicsBits.push(`<span class="tag ${cls}">exit ${forensics.last_tool_exit_code}</span>`);
   }
+  if (forensics.oom_signals && forensics.oom_signals.length) {
+    forensicsBits.push(`<span class="tag bad" title="${escapeHtml(forensics.oom_signals.join(', '))}">OOM signals</span>`);
+  }
   const url = r.url
     ? `<a class="url" href="${escapeHtml(r.url)}" target="_blank" rel="noopener">${escapeHtml(r.url)}</a>`
     : "";
@@ -301,7 +307,7 @@ function deadCard(r) {
         : ""}
       <button class="small" data-forensics="${escapeHtml(r.id)}">Forensics</button>
       ${r.claude_session_id
-        ? `<button class="small primary" data-resume="${escapeHtml(r.id)}">Resume</button>` : ""}
+        ? `<button class="small primary" data-resume="${escapeHtml(r.claude_session_id)}">Resume</button>` : ""}
       <button class="small" data-hide="${escapeHtml(r.id)}" data-hidden="${r.hidden ? "true" : "false"}">${r.hidden ? "Unhide" : "Hide"}</button>
     </div>
   `;
@@ -482,21 +488,19 @@ document.addEventListener("click", async (ev) => {
     return;
   }
 
-  if (b.dataset.info) {
-    try {
-      const data = await api(`/sessions/${encodeURIComponent(b.dataset.info)}/info`);
-      document.getElementById("infoBody").textContent = JSON.stringify(data, null, 2);
-      document.getElementById("infoDialog").showModal();
-    } catch (e) { setStatus("info failed: " + e.message, true); }
-    return;
-  }
-
-  if (b.dataset.forensics) {
-    try {
-      const data = await api(`/archive/${encodeURIComponent(b.dataset.forensics)}/forensics`);
-      document.getElementById("infoBody").textContent = JSON.stringify(data, null, 2);
-      document.getElementById("infoDialog").showModal();
-    } catch (e) { setStatus("forensics failed: " + e.message, true); }
+  // Info (live cards) and Forensics (dead cards) both surface the same
+  // /diagnose payload — the backend assembles forensics + pane tail +
+  // synthesized hint. The backend /info and /archive/{id}/forensics
+  // endpoints are still served for direct API users.
+  const diagnoseTarget = b.dataset.info || b.dataset.forensics;
+  if (diagnoseTarget) {
+    const title = b.dataset.info ? "Session info" : "Forensics";
+    await openInfoModal({
+      title,
+      url: `/sessions/${encodeURIComponent(diagnoseTarget)}/diagnose`,
+      errPrefix: `${title.toLowerCase()} failed`,
+      hintField: "hint",
+    });
     return;
   }
 
@@ -563,6 +567,30 @@ document.addEventListener("click", async (ev) => {
     return;
   }
 });
+
+// Open the shared info-style modal with optional hint banner.
+// `hintField`: name of the field on the response payload to render as
+// the hint banner (the JSON itself stays in the body for inspection).
+async function openInfoModal({ title, url, errPrefix, hintField }) {
+  try {
+    const data = await api(url);
+    document.getElementById("infoTitle").textContent = title;
+    const hintEl = document.getElementById("infoHint");
+    const hint = hintField && data && data[hintField];
+    if (hint) {
+      hintEl.textContent = hint;
+      hintEl.style.display = "block";
+    } else {
+      hintEl.textContent = "";
+      hintEl.style.display = "none";
+    }
+    document.getElementById("infoBody").textContent =
+      JSON.stringify(data, null, 2);
+    document.getElementById("infoDialog").showModal();
+  } catch (e) {
+    setStatus(`${errPrefix}: ${e.message}`, true);
+  }
+}
 
 load();
 </script>
