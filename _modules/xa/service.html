@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.service &mdash; xa 0.1.1 documentation</title>
+  <title>xa.service &mdash; xa 0.1.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+      <script src="../../_static/documentation_options.js?v=92734c54"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -136,7 +136,7 @@
         <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">LabelReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-        <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1"># null or &quot;&quot; clears</span>
+        <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># null or &quot;&quot; clears</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">HideReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
         <span class="n">hidden</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
@@ -290,12 +290,14 @@
         <span class="n">d</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
             <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="p">)</span>
-        <span class="c1"># Apply a label/hidden overlay if present for any of the session&#39;s</span>
-        <span class="c1"># lookup keys (tmux name, claude session id, archive id). First</span>
-        <span class="c1"># non-empty match wins.</span>
+        <span class="c1"># Apply a label/hidden overlay if present. Lookup order goes from</span>
+        <span class="c1"># most session-specific to least: archive id (= claude session id</span>
+        <span class="c1"># for transcript-only sessions) → claude_session_id → tmux_name.</span>
+        <span class="c1"># tmux names get reused, so they&#39;re last to avoid an old session&#39;s</span>
+        <span class="c1"># label leaking onto a new one of the same name.</span>
         <span class="n">ov</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">overlay_map</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">key</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">overlay_map</span><span class="p">:</span>
                     <span class="n">ov</span> <span class="o">=</span> <span class="n">overlay_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
                     <span class="k">break</span>
@@ -305,6 +307,32 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_record_dict</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">arch</span><span class="o">.</span><span class="n">ArchiveRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="n">_ARCHIVE_ID_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[0-9a-f]{6,64}$&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">sess</span><span class="o">.</span><span class="n">Session</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a Session by tmux name, claude session id (full or prefix),</span>
+<span class="sd">        or edualc archive id.</span>
+
+<span class="sd">        ``sess.get_session`` only knows about claude session ids and tmux</span>
+<span class="sd">        names; archive ids live in the events store. This helper bridges</span>
+<span class="sd">        the two so /info, /label and /resume all accept the same id forms</span>
+<span class="sd">        the webui already shows on its session cards.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_ARCHIVE_ID_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># Translate archive id → claude_session_id via the event log.</span>
+        <span class="n">cs_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">arch</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">panes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">rec</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="nb">id</span> <span class="ow">and</span> <span class="n">rec</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
+                <span class="n">cs_id</span> <span class="o">=</span> <span class="n">rec</span><span class="o">.</span><span class="n">claude_session_id</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">cs_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="n">cs_id</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_generate_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">()}</span>
@@ -400,7 +428,7 @@
     <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{id}</span><span class="s2">/info&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">session_info</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -417,10 +445,88 @@
             <span class="n">out</span><span class="p">[</span><span class="s2">&quot;pane_tail&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{id}</span><span class="s2">/diagnose&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diagnose</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span> <span class="n">tail_kb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Single-stop &quot;what happened&quot; for a session.</span>
+
+<span class="sd">        Accepts the same id forms as /info: tmux name, claude session id</span>
+<span class="sd">        (full or unique prefix), or archive id. Combines the existing</span>
+<span class="sd">        forensics, pane tail, and a synthesized human-readable hint. The</span>
+<span class="sd">        hint draws on the same signals ``archive.classify_death`` uses,</span>
+<span class="sd">        so it stays consistent with the death reason shown elsewhere.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No session matching &#39;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="n">_session_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)}</span>
+
+        <span class="c1"># Transcript forensics — works for live and archived sessions both.</span>
+        <span class="n">forensics_obj</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">cfs</span><span class="o">.</span><span class="n">TranscriptForensics</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">forensics_obj</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">transcript_forensics</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="n">forensics_obj</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">forensics_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">fdict</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">forensics_obj</span><span class="p">)</span>
+                <span class="n">fdict</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">fdict</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">fdict</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+                <span class="n">out</span><span class="p">[</span><span class="s2">&quot;forensics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fdict</span>
+
+        <span class="c1"># Locate the matching archive record (lookup by claude_session_id</span>
+        <span class="c1"># via the records table — that&#39;s the join key the events store</span>
+        <span class="c1"># already exposes).</span>
+        <span class="n">archive_rec</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">arch</span><span class="o">.</span><span class="n">ArchiveRecord</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">rec</span> <span class="ow">in</span> <span class="n">arch</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">panes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">rec</span><span class="o">.</span><span class="n">claude_session_id</span> <span class="o">==</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
+                    <span class="n">archive_rec</span> <span class="o">=</span> <span class="n">rec</span>
+                    <span class="k">break</span>
+
+        <span class="c1"># Pane tail. Live: capture from tmux. Archived: read from pane store.</span>
+        <span class="n">oom_markers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="n">pane_tail</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">:</span>
+            <span class="n">pane_tail</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">archive_rec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">panes</span><span class="p">:</span>
+            <span class="n">cap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">tail_kb</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pane_tail</span> <span class="o">=</span> <span class="n">panes</span><span class="p">[</span><span class="n">archive_rec</span><span class="o">.</span><span class="n">id</span><span class="p">][</span><span class="o">-</span><span class="n">cap</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span>
+                    <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">pane_tail</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">pane_tail</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;pane_tail&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pane_tail</span>
+            <span class="n">oom_markers</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">arch</span><span class="o">.</span><span class="n">_OOM_PANE_MARKERS</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">pane_tail</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">oom_markers</span><span class="p">:</span>
+                <span class="n">out</span><span class="p">[</span><span class="s2">&quot;oom_signals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">oom_markers</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">archive_rec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;archive_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;gone_reason&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">gone_reason</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;gone&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">gone</span>
+
+        <span class="c1"># Synthesize the hint — consistent with classify_death&#39;s verdict.</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;hint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arch</span><span class="o">.</span><span class="n">synthesize_diagnosis</span><span class="p">(</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
+            <span class="n">reason</span><span class="o">=</span><span class="n">archive_rec</span><span class="o">.</span><span class="n">gone_reason</span> <span class="k">if</span> <span class="n">archive_rec</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">forensics</span><span class="o">=</span><span class="n">forensics_obj</span><span class="p">,</span>
+            <span class="n">oom_markers</span><span class="o">=</span><span class="n">oom_markers</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
     <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{id}</span><span class="s2">/resume&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">req</span><span class="p">:</span> <span class="n">ResumeReq</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
@@ -464,7 +570,7 @@
         <span class="c1"># none, we still accept the request and record the overlay —</span>
         <span class="c1"># archive-only records are identified by their hex id.</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 
@@ -583,7 +689,9 @@
         <span class="n">webui_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;webui&quot;</span>
         <span class="k">if</span> <span class="n">webui_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
             <span class="c1"># `html=True` makes `/` serve `index.html` naturally.</span>
-            <span class="n">app</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">StaticFiles</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">webui_root</span><span class="p">),</span> <span class="n">html</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;webui&quot;</span><span class="p">)</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span>
+                <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">StaticFiles</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">webui_root</span><span class="p">),</span> <span class="n">html</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;webui&quot;</span>
+            <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">app</span></div>
 

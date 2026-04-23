@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.archive &mdash; xa 0.1.1 documentation</title>
+  <title>xa.archive &mdash; xa 0.1.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=a58bc63e"></script>
+      <script src="../../_static/documentation_options.js?v=92734c54"></script>
       <script src="../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -106,8 +106,13 @@
 <span class="sd">  pane tail shows a clean exit. **Ambiguous**: the same marker fires on</span>
 <span class="sd">  bridge-WebSocket resets (phone standby, reconnect), not only on human</span>
 <span class="sd">  ESC. Don&#39;t derive user intent from this alone.</span>
+<span class="sd">- ``oom_killed``  — last tool exited with 137 (SIGKILL) AND the pane log</span>
+<span class="sd">  tail contains a kernel/shell OOM marker (``Killed``, ``Out of memory``,</span>
+<span class="sd">  ``MemoryError``). Strongest single signal we can derive without root —</span>
+<span class="sd">  the kernel&#39;s &quot;Killed&quot; message rides through the same tty bash uses to</span>
+<span class="sd">  print SIGKILL notices, so it ends up in the tee&#39;d pane log.</span>
 <span class="sd">- ``tool_crash``  — pane tail shows clean exit AND the last tool use</span>
-<span class="sd">  exited with a non-zero code.</span>
+<span class="sd">  exited with a non-zero code (and we couldn&#39;t promote to ``oom_killed``).</span>
 <span class="sd">- ``clean_exit``  — pane tail contains ``&quot;Resume this session with:&quot;``.</span>
 <span class="sd">- ``abrupt``      — killed / crashed / bridge-dropped with no clean-exit</span>
 <span class="sd">  marker.</span>
@@ -130,12 +135,20 @@
     <span class="s2">&quot;abrupt&quot;</span><span class="p">,</span>
     <span class="s2">&quot;interrupted&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tool_crash&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;oom_killed&quot;</span><span class="p">,</span>
     <span class="s2">&quot;replaced&quot;</span><span class="p">,</span>
     <span class="s2">&quot;missing&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <span class="n">_CLEAN_EXIT_MARKER</span> <span class="o">=</span> <span class="s2">&quot;Resume this session with:&quot;</span>
+
+<span class="c1"># Substrings that indicate a SIGKILL caused by the Linux OOM killer.</span>
+<span class="c1"># Bash prints &quot;Killed&quot; to stderr when one of its children dies on signal 9</span>
+<span class="c1"># and the kernel&#39;s oom-kill announcement reaches the same tty. Python</span>
+<span class="c1"># allocators raise MemoryError before the kill; we match that too in case</span>
+<span class="c1"># the host had enough headroom to surface it.</span>
+<span class="n">_OOM_PANE_MARKERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Killed&quot;</span><span class="p">,</span> <span class="s2">&quot;Out of memory&quot;</span><span class="p">,</span> <span class="s2">&quot;MemoryError&quot;</span><span class="p">)</span>
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
@@ -223,9 +236,7 @@
 
 <div class="viewcode-block" id="append_label">
 <a class="viewcode-back" href="../../module_docs/xa/archive.html#xa.append_label">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">append_label</span><span class="p">(</span>
-    <span class="n">events</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">JsonLinesStore</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">append_label</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">JsonLinesStore</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set or clear a user-supplied display label for a session.</span>
 
 <span class="sd">    ``id`` can be an archive id, a tmux session name, or a</span>
@@ -245,9 +256,7 @@
 
 <div class="viewcode-block" id="append_hidden">
 <a class="viewcode-back" href="../../module_docs/xa/archive.html#xa.append_hidden">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">append_hidden</span><span class="p">(</span>
-    <span class="n">events</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">JsonLinesStore</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">hidden</span><span class="p">:</span> <span class="nb">bool</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">append_hidden</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">JsonLinesStore</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">hidden</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mark an archived session as hidden (or un-hide it).&quot;&quot;&quot;</span>
     <span class="n">events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
         <span class="p">{</span>
@@ -265,18 +274,41 @@
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_infer_pane_death</span><span class="p">(</span>
-    <span class="n">panes</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">FileStore</span><span class="p">,</span> <span class="n">sid</span><span class="p">:</span> <span class="nb">str</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;clean_exit&quot;</span><span class="p">,</span> <span class="s2">&quot;abrupt&quot;</span><span class="p">,</span> <span class="s2">&quot;missing&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return ``(death_ts, pane_kind)`` by inspecting the pane log.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PaneInspection">
+<a class="viewcode-back" href="../../module_docs/xa/archive.html#xa.PaneInspection">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PaneInspection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read-once view of a pane log tail used by death classification.&quot;&quot;&quot;</span>
+
+    <span class="n">death_ts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;clean_exit&quot;</span><span class="p">,</span> <span class="s2">&quot;abrupt&quot;</span><span class="p">,</span> <span class="s2">&quot;missing&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">]</span>
+    <span class="n">oom_markers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>   <span class="c1"># which _OOM_PANE_MARKERS were found</span>
+    <span class="n">tail</span><span class="p">:</span> <span class="nb">str</span>                      <span class="c1"># the decoded tail (may be empty)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_inspect_pane</span><span class="p">(</span><span class="n">panes</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">FileStore</span><span class="p">,</span> <span class="n">sid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PaneInspection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read the pane tail once and extract every signal we use downstream.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">sid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">panes</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;missing&quot;</span>
+        <span class="k">return</span> <span class="n">PaneInspection</span><span class="p">(</span><span class="n">death_ts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;missing&quot;</span><span class="p">,</span> <span class="n">oom_markers</span><span class="o">=</span><span class="p">(),</span> <span class="n">tail</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">mtime</span> <span class="o">=</span> <span class="n">panes</span><span class="o">.</span><span class="n">mtime</span><span class="p">(</span><span class="n">sid</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">tail</span> <span class="o">=</span> <span class="n">panes</span><span class="p">[</span><span class="n">sid</span><span class="p">][</span><span class="o">-</span><span class="mi">4096</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">mtime</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span>
-    <span class="k">return</span> <span class="n">mtime</span><span class="p">,</span> <span class="s2">&quot;clean_exit&quot;</span> <span class="k">if</span> <span class="n">_CLEAN_EXIT_MARKER</span> <span class="ow">in</span> <span class="n">tail</span> <span class="k">else</span> <span class="s2">&quot;abrupt&quot;</span>
+        <span class="k">return</span> <span class="n">PaneInspection</span><span class="p">(</span><span class="n">death_ts</span><span class="o">=</span><span class="n">mtime</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;unknown&quot;</span><span class="p">,</span> <span class="n">oom_markers</span><span class="o">=</span><span class="p">(),</span> <span class="n">tail</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;clean_exit&quot;</span><span class="p">,</span> <span class="s2">&quot;abrupt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;clean_exit&quot;</span> <span class="k">if</span> <span class="n">_CLEAN_EXIT_MARKER</span> <span class="ow">in</span> <span class="n">tail</span> <span class="k">else</span> <span class="s2">&quot;abrupt&quot;</span>
+    <span class="p">)</span>
+    <span class="n">oom</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">_OOM_PANE_MARKERS</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">tail</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PaneInspection</span><span class="p">(</span><span class="n">death_ts</span><span class="o">=</span><span class="n">mtime</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">oom_markers</span><span class="o">=</span><span class="n">oom</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="n">tail</span><span class="p">)</span>
+
+
+<span class="c1"># Back-compat shim — older callers (and tests) used the simpler 2-tuple form.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_infer_pane_death</span><span class="p">(</span>
+    <span class="n">panes</span><span class="p">:</span> <span class="n">st</span><span class="o">.</span><span class="n">FileStore</span><span class="p">,</span> <span class="n">sid</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;clean_exit&quot;</span><span class="p">,</span> <span class="s2">&quot;abrupt&quot;</span><span class="p">,</span> <span class="s2">&quot;missing&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">]]:</span>
+    <span class="n">insp</span> <span class="o">=</span> <span class="n">_inspect_pane</span><span class="p">(</span><span class="n">panes</span><span class="p">,</span> <span class="n">sid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">insp</span><span class="o">.</span><span class="n">death_ts</span><span class="p">,</span> <span class="n">insp</span><span class="o">.</span><span class="n">kind</span>
 
 
 <div class="viewcode-block" id="classify_death">
@@ -286,19 +318,146 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">replaced</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">forensics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">cfs</span><span class="o">.</span><span class="n">TranscriptForensics</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">oom_markers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DeathReason</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pick the most specific death reason from available signals.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pick the most specific death reason from available signals.</span>
+
+<span class="sd">    ``oom_markers`` is the tuple of OOM-shaped strings observed in the</span>
+<span class="sd">    pane tail (see ``_OOM_PANE_MARKERS``). When the last tool exited</span>
+<span class="sd">    with 137 and at least one marker is present, we promote the verdict</span>
+<span class="sd">    to ``oom_killed`` — that pair is the strongest single signal we can</span>
+<span class="sd">    get without reading kernel logs (which would need root and is not</span>
+<span class="sd">    portable).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">replaced</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot;replaced&quot;</span>
     <span class="k">if</span> <span class="n">pane_kind</span> <span class="o">==</span> <span class="s2">&quot;missing&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="s2">&quot;missing&quot;</span>
+    <span class="n">last_exit</span> <span class="o">=</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span> <span class="k">if</span> <span class="n">forensics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">last_exit</span> <span class="o">==</span> <span class="mi">137</span> <span class="ow">and</span> <span class="n">oom_markers</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;oom_killed&quot;</span>
     <span class="k">if</span> <span class="n">pane_kind</span> <span class="o">==</span> <span class="s2">&quot;clean_exit&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">forensics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">forensics</span><span class="o">.</span><span class="n">user_interrupted</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;interrupted&quot;</span>
-        <span class="k">if</span> <span class="n">forensics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">last_exit</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
             <span class="k">return</span> <span class="s2">&quot;tool_crash&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;clean_exit&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;abrupt&quot;</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># diagnosis (human-readable hints from the same signals classify_death uses)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="synthesize_diagnosis">
+<a class="viewcode-back" href="../../module_docs/xa/archive.html#xa.synthesize_diagnosis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">synthesize_diagnosis</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">state</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;live&quot;</span><span class="p">,</span> <span class="s2">&quot;archived&quot;</span><span class="p">,</span> <span class="s2">&quot;transcript_only&quot;</span><span class="p">],</span>
+    <span class="n">reason</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DeathReason</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">forensics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">cfs</span><span class="o">.</span><span class="n">TranscriptForensics</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">oom_markers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;One-paragraph plain-English hint about what likely happened.</span>
+
+<span class="sd">    Designed to be useful to both a human reading the UI and an LLM agent</span>
+<span class="sd">    deciding whether to retry or escalate. The hint surfaces the actionable</span>
+<span class="sd">    bit (e.g., &quot;add swap&quot;, &quot;re-run with --resume&quot;) rather than just naming</span>
+<span class="sd">    the verdict — the structured fields next to it already do that.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Session is currently live. No postmortem to render.&quot;</span>
+
+    <span class="n">last_exit</span> <span class="o">=</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span> <span class="k">if</span> <span class="n">forensics</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">last_tool</span> <span class="o">=</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_name</span> <span class="k">if</span> <span class="n">forensics</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">last_cmd</span> <span class="o">=</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_command</span> <span class="k">if</span> <span class="n">forensics</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">user_marker</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">forensics</span> <span class="ow">and</span> <span class="n">forensics</span><span class="o">.</span><span class="n">user_interrupted</span><span class="p">)</span>
+
+    <span class="c1"># Exit code 137 = SIGKILL. On a Linux server with Claude Code&#39;s tool</span>
+    <span class="c1"># subtree, the dominant cause is the kernel OOM killer (other causes:</span>
+    <span class="c1"># manual `kill -9`, container OOM cgroup, OS shutdown). When the pane</span>
+    <span class="c1"># also shows &quot;Killed&quot; / &quot;Out of memory&quot;, confidence is very high</span>
+    <span class="c1"># (oom_killed). When it doesn&#39;t — usually because the kill hit a deep</span>
+    <span class="c1"># grandchild and the kernel message went to dmesg, not the tty — we</span>
+    <span class="c1"># still surface the likelihood since 137 alone is suggestive.</span>
+    <span class="n">sigkill</span> <span class="o">=</span> <span class="n">last_exit</span> <span class="o">==</span> <span class="mi">137</span>
+    <span class="n">pane_oom</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">oom_markers</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;oom_killed&quot;</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sigkill</span> <span class="ow">and</span> <span class="n">pane_oom</span><span class="p">):</span>
+        <span class="n">markers</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">oom_markers</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;none&quot;</span>
+        <span class="n">cmd_part</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; while running `</span><span class="si">{</span><span class="n">last_cmd</span><span class="si">}</span><span class="s2">`&quot;</span> <span class="k">if</span> <span class="n">last_cmd</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Last tool (</span><span class="si">{</span><span class="n">last_tool</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="si">}</span><span class="s2">) exited 137</span><span class="si">{</span><span class="n">cmd_part</span><span class="si">}</span><span class="s2"> and the &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;pane log contains OOM-shaped markers (</span><span class="si">{</span><span class="n">markers</span><span class="si">}</span><span class="s2">). Almost certainly &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the Linux OOM killer. Mitigations: add swap, lower the process&#39;s &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;peak memory (stream instead of buffering), or split the work into &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;smaller batches. Resume after fixing the root cause — re-running &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the same command on the same host will OOM again.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sigkill_caveat</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">&quot; Exit 137 is SIGKILL — on a Linux host the dominant cause is the &quot;</span>
+            <span class="s2">&quot;kernel OOM killer (the OOM message goes to dmesg, not the tty, so &quot;</span>
+            <span class="s2">&quot;the pane log alone may not show it). Check `journalctl -k --since` &quot;</span>
+            <span class="s2">&quot;around the death time and `free -h` for headroom; if confirmed, &quot;</span>
+            <span class="s2">&quot;add swap or lower the process&#39;s peak memory before resuming.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;interrupted&quot;</span><span class="p">:</span>
+        <span class="n">cmd_part</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; while running `</span><span class="si">{</span><span class="n">last_cmd</span><span class="si">}</span><span class="s2">`&quot;</span> <span class="k">if</span> <span class="n">last_cmd</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Claude&#39;s tool runner emitted the user-interrupt marker&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cmd_part</span><span class="si">}</span><span class="s2">. This marker is ambiguous: it fires on a real ESC, on &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;phone-standby/bridge resets, and on remote-stop. If no human input &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;is in the transcript leading up to it, blame infrastructure &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(bridge WebSocket reset) rather than the user.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">base</span> <span class="o">+</span> <span class="n">_sigkill_caveat</span><span class="p">()</span> <span class="k">if</span> <span class="n">sigkill</span> <span class="k">else</span> <span class="n">base</span>
+
+    <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;tool_crash&quot;</span><span class="p">:</span>
+        <span class="n">cmd_part</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; `</span><span class="si">{</span><span class="n">last_cmd</span><span class="si">}</span><span class="s2">`&quot;</span> <span class="k">if</span> <span class="n">last_cmd</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Last tool (</span><span class="si">{</span><span class="n">last_tool</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">&#39;unknown&#39;</span><span class="si">}</span><span class="s2">)</span><span class="si">{</span><span class="n">cmd_part</span><span class="si">}</span><span class="s2"> exited &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">last_exit</span><span class="si">}</span><span class="s2">. Pane closed cleanly afterwards, so claude itself shut &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;down rather than the orchestrator killing it. Open the transcript &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;to see the tool result.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">base</span> <span class="o">+</span> <span class="n">_sigkill_caveat</span><span class="p">()</span> <span class="k">if</span> <span class="n">sigkill</span> <span class="k">else</span> <span class="n">base</span>
+
+    <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;clean_exit&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">&quot;Session exited cleanly (claude printed its &#39;Resume this session &quot;</span>
+            <span class="s2">&quot;with:&#39; marker). Safe to resume from this transcript.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;abrupt&quot;</span><span class="p">:</span>
+        <span class="n">hint</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Session disappeared without a clean-exit marker. Common causes: &quot;</span>
+            <span class="s2">&quot;tmux pane killed, the host rebooted, or claude crashed.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">user_marker</span><span class="p">:</span>
+            <span class="n">hint</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">&quot; The transcript also contains an interrupt marker — &quot;</span>
+                <span class="s2">&quot;may have been a bridge reset cascading into a kill.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">hint</span>
+
+    <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;replaced&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">&quot;A new tmux session took over this name. The original is gone; &quot;</span>
+            <span class="s2">&quot;this archive entry is its postmortem.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">reason</span> <span class="o">==</span> <span class="s2">&quot;missing&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">&quot;No pane log exists for this session — predates xa&#39;s logging or &quot;</span>
+            <span class="s2">&quot;the log was cleaned up. We can still resume from the transcript.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="s2">&quot;No classified reason available; inspect the pane log and transcript.&quot;</span></div>
 
 
 
@@ -359,21 +518,18 @@
 
         <span class="c1"># A session is &quot;gone&quot; if (a) no tmux session with that name exists,</span>
         <span class="c1"># or (b) a tmux session with that name exists but was created at a</span>
-        <span class="c1"># different timestamp (i.e., the original died and was replaced).</span>
-        <span class="n">is_gone</span> <span class="o">=</span> <span class="n">live_ts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
-            <span class="n">archived_tmux_ts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">live_ts</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">archived_tmux_ts</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">2</span>
-        <span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gone</span><span class="p">:</span>
-            <span class="k">continue</span>
-
+        <span class="c1"># different timestamp (the original died and got replaced).</span>
         <span class="n">replaced</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">live_ts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="ow">and</span> <span class="n">archived_tmux_ts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">live_ts</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">archived_tmux_ts</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">live_ts</span><span class="p">)</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">archived_tmux_ts</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">2</span>
         <span class="p">)</span>
+        <span class="n">is_gone</span> <span class="o">=</span> <span class="n">live_ts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">replaced</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_gone</span><span class="p">:</span>
+            <span class="k">continue</span>
 
-        <span class="n">death_ts</span><span class="p">,</span> <span class="n">pane_kind</span> <span class="o">=</span> <span class="n">_infer_pane_death</span><span class="p">(</span><span class="n">panes</span><span class="p">,</span> <span class="n">sid</span><span class="p">)</span>
+        <span class="n">insp</span> <span class="o">=</span> <span class="n">_inspect_pane</span><span class="p">(</span><span class="n">panes</span><span class="p">,</span> <span class="n">sid</span><span class="p">)</span>
+        <span class="n">death_ts</span><span class="p">,</span> <span class="n">pane_kind</span> <span class="o">=</span> <span class="n">insp</span><span class="o">.</span><span class="n">death_ts</span><span class="p">,</span> <span class="n">insp</span><span class="o">.</span><span class="n">kind</span>
 
         <span class="n">forensics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">cfs</span><span class="o">.</span><span class="n">TranscriptForensics</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">cwd</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">)</span>
@@ -386,7 +542,12 @@
                 <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                     <span class="n">forensics</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">reason</span> <span class="o">=</span> <span class="n">classify_death</span><span class="p">(</span><span class="n">pane_kind</span><span class="p">,</span> <span class="n">replaced</span><span class="o">=</span><span class="n">replaced</span><span class="p">,</span> <span class="n">forensics</span><span class="o">=</span><span class="n">forensics</span><span class="p">)</span>
+        <span class="n">reason</span> <span class="o">=</span> <span class="n">classify_death</span><span class="p">(</span>
+            <span class="n">pane_kind</span><span class="p">,</span>
+            <span class="n">replaced</span><span class="o">=</span><span class="n">replaced</span><span class="p">,</span>
+            <span class="n">forensics</span><span class="o">=</span><span class="n">forensics</span><span class="p">,</span>
+            <span class="n">oom_markers</span><span class="o">=</span><span class="n">insp</span><span class="o">.</span><span class="n">oom_markers</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="n">forensics_summary</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">forensics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span>
@@ -395,13 +556,19 @@
                 <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">forensics</span><span class="o">.</span><span class="n">user_interrupted</span><span class="p">,</span>
             <span class="p">]</span>
-        <span class="p">):</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="n">insp</span><span class="o">.</span><span class="n">oom_markers</span><span class="p">:</span>
             <span class="n">forensics_summary</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">&quot;last_tool_name&quot;</span><span class="p">:</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_name</span><span class="p">,</span>
-                <span class="s2">&quot;last_tool_command&quot;</span><span class="p">:</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_command</span><span class="p">,</span>
-                <span class="s2">&quot;last_tool_exit_code&quot;</span><span class="p">:</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span><span class="p">,</span>
-                <span class="s2">&quot;user_interrupted&quot;</span><span class="p">:</span> <span class="n">forensics</span><span class="o">.</span><span class="n">user_interrupted</span><span class="p">,</span>
+                <span class="s2">&quot;last_tool_name&quot;</span><span class="p">:</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_name</span> <span class="k">if</span> <span class="n">forensics</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;last_tool_command&quot;</span><span class="p">:</span> <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_command</span> <span class="k">if</span> <span class="n">forensics</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;last_tool_exit_code&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="n">forensics</span><span class="o">.</span><span class="n">last_tool_exit_code</span> <span class="k">if</span> <span class="n">forensics</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;user_interrupted&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="n">forensics</span><span class="o">.</span><span class="n">user_interrupted</span> <span class="k">if</span> <span class="n">forensics</span> <span class="k">else</span> <span class="kc">False</span>
+                <span class="p">),</span>
             <span class="p">}</span>
+            <span class="k">if</span> <span class="n">insp</span><span class="o">.</span><span class="n">oom_markers</span><span class="p">:</span>
+                <span class="n">forensics_summary</span><span class="p">[</span><span class="s2">&quot;oom_signals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">insp</span><span class="o">.</span><span class="n">oom_markers</span><span class="p">)</span>
 
         <span class="n">append_gone</span><span class="p">(</span>
             <span class="n">events</span><span class="p">,</span>
@@ -438,8 +605,8 @@
     <span class="n">pane_log_bytes</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">claude_session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">forensics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
-    <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>        <span class="c1"># user-set display label overlay</span>
-    <span class="n">hidden</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>               <span class="c1"># user-set &quot;hide from default view&quot;</span></div>
+    <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># user-set display label overlay</span>
+    <span class="n">hidden</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># user-set &quot;hide from default view&quot;</span></div>
 
 
 
