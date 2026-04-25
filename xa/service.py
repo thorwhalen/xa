@@ -614,9 +614,7 @@ def build_api(
             except OSError:
                 # Broken symlink or unreadable — skip silently.
                 continue
-            entries.append(
-                {"name": child.name, "path": str(child), "is_dir": is_dir}
-            )
+            entries.append({"name": child.name, "path": str(child), "is_dir": is_dir})
         entries.sort(key=lambda e: (not e["is_dir"], e["name"].lower()))
         parent = str(target.parent) if target.parent != target else None
         return {"path": str(target), "parent": parent, "entries": entries}

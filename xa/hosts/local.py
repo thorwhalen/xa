@@ -108,8 +108,7 @@ class LocalHost:
                 else None
             )
             pre_first_turn = (
-                created is not None
-                and (now - created) > PRE_FIRST_TURN_GRACE_SEC
+                created is not None and (now - created) > PRE_FIRST_TURN_GRACE_SEC
             )
             yield Session(
                 id=cs_id,
