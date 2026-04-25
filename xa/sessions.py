@@ -53,6 +53,12 @@ class Session:
     url_source: Optional[Literal["session_file", "pane_capture"]]
     # provenance
     transcript_path: Optional[Path]
+    # A live session old enough to have completed a turn but with no
+    # transcript on disk — almost certainly wedged on a startup-time
+    # TUI prompt (/login, workspace-trust, /remote-control submenu,
+    # permission dialog, …). Purely structural — no TUI text matching.
+    # Only meaningful when ``state=="live"``.
+    pre_first_turn: bool = False
 
 
 def _session_from_transcript_meta(

@@ -162,6 +162,80 @@ def test_hide_and_unhide_archive_records(app_and_stores) -> None:
     assert rec["hidden"] is False
 
 
+def test_fs_default_reports_configured_default(tmp_path: Path) -> None:
+    fake_home = tmp_path / ".claude"
+    (fake_home / "projects").mkdir(parents=True)
+    chosen = tmp_path / "projects_root"
+    chosen.mkdir()
+    api = svc.build_api(
+        events_store=st.JsonLinesStore(tmp_path / "events.jsonl"),
+        pane_store=st.FileStore(tmp_path / "panes", suffix=".log"),
+        claude_home=fake_home,
+        default_folder=chosen,
+    )
+    client = TestClient(api)
+    r = client.get("/fs/default")
+    assert r.status_code == 200 and r.json()["path"] == str(chosen)
+
+
+def test_fs_list_lists_dirs_and_files(tmp_path: Path, app_and_stores) -> None:
+    client, *_ = app_and_stores
+    (tmp_path / "alpha").mkdir()
+    (tmp_path / "beta").mkdir()
+    (tmp_path / ".hidden").mkdir()
+    (tmp_path / "file.txt").write_text("hi")
+
+    r = client.get(f"/fs/list?path={tmp_path}")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["path"] == str(tmp_path.resolve())
+    assert body["parent"] == str(tmp_path.parent)
+    names = [e["name"] for e in body["entries"]]
+    # Dirs before files, alphabetical within each group; hidden excluded.
+    assert names == ["alpha", "beta", "file.txt"]
+    assert body["entries"][0]["is_dir"] is True
+    assert body["entries"][2]["is_dir"] is False
+
+    # show_hidden=true surfaces dotfiles.
+    r = client.get(f"/fs/list?path={tmp_path}&show_hidden=true")
+    names = [e["name"] for e in r.json()["entries"]]
+    assert ".hidden" in names
+
+
+def test_fs_list_defaults_to_configured_folder(tmp_path: Path) -> None:
+    fake_home = tmp_path / ".claude"
+    (fake_home / "projects").mkdir(parents=True)
+    default = tmp_path / "default_root"
+    default.mkdir()
+    (default / "child").mkdir()
+    api = svc.build_api(
+        events_store=st.JsonLinesStore(tmp_path / "events.jsonl"),
+        pane_store=st.FileStore(tmp_path / "panes", suffix=".log"),
+        claude_home=fake_home,
+        default_folder=default,
+    )
+    client = TestClient(api)
+    r = client.get("/fs/list")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["path"] == str(default.resolve())
+    assert [e["name"] for e in body["entries"]] == ["child"]
+
+
+def test_fs_list_404_on_missing_path(app_and_stores) -> None:
+    client, *_ = app_and_stores
+    r = client.get("/fs/list?path=/definitely/not/a/real/path/xa-test")
+    assert r.status_code == 404
+
+
+def test_fs_list_400_on_file_path(tmp_path: Path, app_and_stores) -> None:
+    client, *_ = app_and_stores
+    f = tmp_path / "plain.txt"
+    f.write_text("nope")
+    r = client.get(f"/fs/list?path={f}")
+    assert r.status_code == 400
+
+
 def test_webui_served_when_enabled(tmp_path: Path) -> None:
     fake_home = tmp_path / ".claude"
     (fake_home / "projects").mkdir(parents=True)

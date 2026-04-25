@@ -164,6 +164,7 @@ def build_api(
     title: str = "xa",
     version: str = "0.1",
     include_webui: bool = False,
+    default_folder: Optional[Path] = None,
 ):
     """Return a ``FastAPI`` app exposing ``xa``'s session + archive surface.
 
@@ -179,6 +180,12 @@ def build_api(
     # default store and lose the caller's one.
     events = events_store if events_store is not None else st.default_events_store()
     panes = pane_store if pane_store is not None else st.default_pane_store()
+    # Default working directory the webui prefills into the "new session"
+    # dialog and the folder chooser opens at. Resolved lazily so tests /
+    # callers can point at a tmp dir via the keyword arg.
+    _default_folder = (
+        Path(default_folder).expanduser() if default_folder else Path.home()
+    )
     app = FastAPI(title=title, version=version)
 
     def _session_dict(s: sess.Session, overlay_map: Optional[dict] = None) -> dict:
@@ -564,6 +571,55 @@ def build_api(
         def _captcha(_: str = Depends(auth)) -> dict:
             token, challenge, ttl = captcha.issue()
             return {"token": token, "challenge": challenge, "ttl_sec": ttl}
+
+    # --------------------------------------------------------------------- #
+    # filesystem browsing (for the webui folder chooser)
+    # --------------------------------------------------------------------- #
+
+    @app.get("/fs/default")
+    def fs_default(_: str = Depends(auth)) -> dict:
+        return {"path": str(_default_folder)}
+
+    @app.get("/fs/list")
+    def fs_list(
+        _: str = Depends(auth),
+        path: Optional[str] = None,
+        show_hidden: bool = False,
+    ) -> dict:
+        """List directory entries for the folder chooser.
+
+        No path-confinement: xa already grants code-execution via spawned
+        claude sessions, so restricting the browser's view would be
+        security theater. Auth is the only boundary.
+        """
+        target = Path(path).expanduser() if path else _default_folder
+        try:
+            target = target.resolve()
+        except (OSError, RuntimeError) as e:
+            raise HTTPException(400, f"Cannot resolve path: {e}")
+        if not target.exists():
+            raise HTTPException(404, f"No such path: {target}")
+        if not target.is_dir():
+            raise HTTPException(400, f"Not a directory: {target}")
+        entries: list[dict] = []
+        try:
+            children = list(target.iterdir())
+        except PermissionError as e:
+            raise HTTPException(403, str(e))
+        for child in children:
+            if not show_hidden and child.name.startswith("."):
+                continue
+            try:
+                is_dir = child.is_dir()
+            except OSError:
+                # Broken symlink or unreadable — skip silently.
+                continue
+            entries.append(
+                {"name": child.name, "path": str(child), "is_dir": is_dir}
+            )
+        entries.sort(key=lambda e: (not e["is_dir"], e["name"].lower()))
+        parent = str(target.parent) if target.parent != target else None
+        return {"path": str(target), "parent": parent, "entries": entries}
 
     @app.get("/health")
     def health() -> dict:

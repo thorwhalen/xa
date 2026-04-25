@@ -6,6 +6,7 @@ binary directly. Most ``xa`` users never instantiate any other host.
 
 from __future__ import annotations
 
+import time
 from dataclasses import replace
 from pathlib import Path
 from typing import Iterator, Optional
@@ -13,6 +14,12 @@ from typing import Iterator, Optional
 from xa import claude_cli as ccli
 from xa import claude_fs as cfs
 from xa import tmux as tm
+
+
+# Seconds a live session may exist without a transcript before we flag
+# it as likely wedged on a startup-time TUI prompt. Two minutes is well
+# past any normal first-turn latency.
+PRE_FIRST_TURN_GRACE_SEC = 120
 
 
 class LocalHost:
@@ -83,7 +90,10 @@ class LocalHost:
             else:
                 yield base
 
-        # Live sessions without a transcript yet (just-spawned).
+        # Live sessions without a transcript yet (just-spawned, or
+        # wedged on a startup-time prompt and never made it to the
+        # first turn).
+        now = time.time()
         for cs_id, eph in live_by_cs_id.items():
             if cs_id in emitted:
                 continue
@@ -92,6 +102,15 @@ class LocalHost:
             bridge = eph.get("bridgeSessionId")
             cwd = eph.get("cwd")
             slug = cfs.encode_project_slug(cwd) if cwd else ""
+            created = (
+                eph.get("startedAt") / 1000
+                if isinstance(eph.get("startedAt"), (int, float))
+                else None
+            )
+            pre_first_turn = (
+                created is not None
+                and (now - created) > PRE_FIRST_TURN_GRACE_SEC
+            )
             yield Session(
                 id=cs_id,
                 claude_session_id=cs_id,
@@ -107,15 +126,12 @@ class LocalHost:
                 first_user_message=None,
                 turn_count=0,
                 forked_from=None,
-                created=(
-                    eph.get("startedAt") / 1000
-                    if isinstance(eph.get("startedAt"), (int, float))
-                    else None
-                ),
+                created=created,
                 modified=None,
                 url=f"{ccli.CLAUDE_WEB_BASE}/{bridge}" if bridge else None,
                 url_source="session_file" if bridge else None,
                 transcript_path=None,
+                pre_first_turn=pre_first_turn,
             )
 
     # ------------------------------------------------------------------ #
@@ -123,24 +139,19 @@ class LocalHost:
     # ------------------------------------------------------------------ #
 
     def spawn(self, name: str, *, cwd: str, **opts) -> ccli.SpawnResult:
-        return ccli.spawn_session(
-            name,
-            cwd=cwd,
-            claude_bin=self.claude_bin,
-            claude_home=self.claude_home,
-            tmux_bin=self.tmux_bin,
-            **opts,
-        )
+        # Host-level defaults are overridable by the caller via opts.
+        # Without setdefault, ``**opts`` would collide with the explicit
+        # ``claude_bin=`` below (TypeError: got multiple values for …).
+        opts.setdefault("claude_bin", self.claude_bin)
+        opts.setdefault("claude_home", self.claude_home)
+        opts.setdefault("tmux_bin", self.tmux_bin)
+        return ccli.spawn_session(name, cwd=cwd, **opts)
 
     def resume(self, claude_session_id: str, *, cwd: str, **opts) -> ccli.SpawnResult:
-        return ccli.resume_session(
-            claude_session_id,
-            cwd=cwd,
-            claude_bin=self.claude_bin,
-            claude_home=self.claude_home,
-            tmux_bin=self.tmux_bin,
-            **opts,
-        )
+        opts.setdefault("claude_bin", self.claude_bin)
+        opts.setdefault("claude_home", self.claude_home)
+        opts.setdefault("tmux_bin", self.tmux_bin)
+        return ccli.resume_session(claude_session_id, cwd=cwd, **opts)
 
     def kill(self, name: str) -> None:
         tm.kill_session(name, binary=self.tmux_bin)

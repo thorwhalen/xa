@@ -600,6 +600,7 @@ def serve_cmd(
     password_env: "Optional[str]" = None,
     captcha: bool = False,
     webui: bool = True,
+    default_folder: "Optional[str]" = None,
     i_know_its_insecure: bool = False,
 ) -> None:
     """Run the xa HTTP service (requires the ``xa[service]`` extra).
@@ -619,6 +620,9 @@ def serve_cmd(
         any non-loopback deployment.
     :param webui: Serve the bundled web UI at the mount root (default on).
         Pass ``--no-webui`` to run API-only.
+    :param default_folder: Default working directory the webui prefills into
+        the "new session" dialog and the folder chooser opens at. Falls back
+        to ``$XA_DEFAULT_FOLDER`` or ``$HOME`` if unset.
     :param i_know_its_insecure: Skip the public-bind-without-auth safety check.
     """
     try:
@@ -704,7 +708,13 @@ def serve_cmd(
             )
         captcha_obj = svc.Captcha(key=key)
 
-    api = svc.build_api(auth=auth_dep, captcha=captcha_obj, include_webui=webui)
+    default_folder = default_folder or os.environ.get("XA_DEFAULT_FOLDER")
+    api = svc.build_api(
+        auth=auth_dep,
+        captcha=captcha_obj,
+        include_webui=webui,
+        default_folder=Path(default_folder) if default_folder else None,
+    )
 
     if mount:
         outer = FastAPI()

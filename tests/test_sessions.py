@@ -185,6 +185,82 @@ def test_live_only_surfaces_ephemeral_without_transcript(
     assert rows[0].transcript_path is None
 
 
+def test_pre_first_turn_flag(tmp_path: Path, monkeypatch) -> None:
+    """A live session older than the grace period with no transcript is
+    flagged as ``pre_first_turn`` (likely wedged on a startup TUI prompt).
+    A freshly-spawned one within the grace period is not."""
+    import time as _time
+    from xa import claude_cli as ccli
+    from xa import claude_fs as cfs
+    from xa import tmux as tm
+    from xa.hosts import local as local_host
+
+    empty_home = tmp_path / ".claude"
+    empty_home.mkdir()
+    fake_tmux = tm.TmuxSession(name="t", created=0, activity=0, attached=False)
+    monkeypatch.setattr(tm, "list_sessions", lambda binary=None: [fake_tmux])
+    monkeypatch.setattr(ccli, "find_claude_pid", lambda *a, **kw: 42)
+
+    # Session 1: 10 minutes old, no transcript → flagged.
+    # Session 2: just spawned, still within grace → not flagged.
+    now_ms = int(_time.time() * 1000)
+    monkeypatch.setattr(
+        cfs, "iter_ephemeral_sessions",
+        lambda claude_home=None: iter([
+            {
+                "pid": 42,
+                "sessionId": "11111111-1111-1111-1111-111111111111",
+                "bridgeSessionId": "session_old",
+                "cwd": "/tmp/a",
+                "startedAt": now_ms - 10 * 60 * 1000,  # 10 min ago
+            },
+            {
+                "pid": 42,
+                "sessionId": "22222222-2222-2222-2222-222222222222",
+                "bridgeSessionId": "session_fresh",
+                "cwd": "/tmp/b",
+                "startedAt": now_ms - 5 * 1000,  # 5 s ago
+            },
+        ]),
+    )
+    by_id = {r.id: r for r in sess.list_sessions(claude_home=empty_home)}
+    assert by_id["11111111-1111-1111-1111-111111111111"].pre_first_turn is True
+    assert by_id["22222222-2222-2222-2222-222222222222"].pre_first_turn is False
+    # Grace threshold constant is the single source of truth.
+    assert local_host.PRE_FIRST_TURN_GRACE_SEC > 5
+
+
+def test_pre_first_turn_never_set_when_transcript_exists(
+    fake_home: Path, monkeypatch
+) -> None:
+    """A live session matched to an existing transcript must never be
+    flagged — it has clearly completed at least one turn."""
+    from xa import claude_cli as ccli
+    from xa import claude_fs as cfs
+    from xa import tmux as tm
+
+    fake_tmux = tm.TmuxSession(name="t", created=0, activity=0, attached=False)
+    monkeypatch.setattr(tm, "list_sessions", lambda binary=None: [fake_tmux])
+    monkeypatch.setattr(ccli, "find_claude_pid", lambda *a, **kw: 1)
+    monkeypatch.setattr(
+        cfs, "iter_ephemeral_sessions",
+        # SID_A has a transcript in fake_home; starting "1970" is billions
+        # of seconds ago, well past the grace period — still must be False.
+        lambda claude_home=None: iter([
+            {
+                "pid": 1,
+                "sessionId": SID_A,
+                "bridgeSessionId": "session_a",
+                "startedAt": 1_000,
+            }
+        ]),
+    )
+    rows = sess.list_sessions(claude_home=fake_home)
+    live = [r for r in rows if r.state == "live"]
+    assert len(live) == 1
+    assert live[0].pre_first_turn is False
+
+
 def test_no_live_flag_skips_tmux_scan(fake_home: Path, monkeypatch) -> None:
     """include_live=False must not touch tmux."""
     from xa import claude_cli as ccli

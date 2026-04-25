@@ -69,8 +69,39 @@
     .tag.ok { color: var(--ok); border-color: #2a4a3a; }
     .tag.warn { color: var(--warn); border-color: #4a3d2a; }
     .tag.bad { color: var(--danger); border-color: #4a2a2a; }
-    .status { margin: 8px 0; color: var(--muted); font-size: 13px; }
-    .status.err { color: var(--danger); }
+    /* Toast-style status notifications — fixed so they stay visible when
+       the user has scrolled; auto-dismiss for info/success, click or ×
+       to dismiss an error. */
+    #toasts { position: fixed; top: 12px; right: 12px; z-index: 1000;
+      display: flex; flex-direction: column; gap: 8px; max-width: min(92vw, 460px);
+      pointer-events: none; }
+    .toast { pointer-events: auto; border-radius: 8px; padding: 10px 14px;
+      background: var(--panel); border: 1px solid var(--border); color: var(--text);
+      box-shadow: 0 6px 20px rgba(0,0,0,.45); font-size: 14px; line-height: 1.35;
+      display: flex; align-items: flex-start; gap: 10px;
+      animation: toast-in .18s ease-out; }
+    .toast.info    { border-color: #2a3a4a; }
+    .toast.success { border-color: #2a4a3a; background: #15231a; }
+    .toast.error   { border-color: #5a2a2a; background: #2a1515;
+      box-shadow: 0 6px 22px rgba(200,60,60,.35); }
+    .toast .msg { flex: 1; white-space: pre-wrap; word-break: break-word; }
+    .toast .x { cursor: pointer; color: var(--muted); font-weight: bold;
+      line-height: 1; font-size: 18px; padding: 0 2px; }
+    .toast .x:hover { color: var(--text); }
+    .toast.leaving { animation: toast-out .18s ease-in forwards; }
+    @keyframes toast-in  { from { opacity: 0; transform: translateY(-6px); }
+                            to { opacity: 1; transform: translateY(0); } }
+    @keyframes toast-out { from { opacity: 1; transform: translateY(0); }
+                            to { opacity: 0; transform: translateY(-6px); } }
+    /* Quiet inline footer status (last-sync etc.) — always present,
+       minimal, distinct from toasts. */
+    .status { margin: 8px 0; color: var(--muted); font-size: 12px; }
+    /* "Other live" section gets a softer look than real Live, plus a
+       one-line explainer above its cards. */
+    .section-note { color: var(--muted); font-size: 12px;
+      margin: 4px 0 8px; padding: 0 2px; }
+    .card.local-only { border-style: dashed; opacity: .9; }
+    .card.local-only h3 .dot { background: var(--muted); }
     dialog { background: var(--panel); color: var(--text);
       border: 1px solid var(--border); border-radius: 10px; padding: 16px; max-width: 440px; }
     dialog::backdrop { background: rgba(0,0,0,.5); }
@@ -84,17 +115,29 @@
     .grow { flex: 1; }
     label { min-width: 60px; color: var(--muted); font-size: 13px; }
     a { color: var(--accent); }
+    .fs-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+      cursor: pointer; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .fs-row:last-child { border-bottom: none; }
+    .fs-row:hover { background: var(--panel); }
+    .fs-row.file { opacity: .55; cursor: default; }
+    .fs-row.file:hover { background: transparent; }
+    .fs-row .icon { width: 16px; text-align: center; color: var(--muted); }
+    .fs-row .name { flex: 1; word-break: break-all; }
+    .fs-empty { padding: 14px; text-align: center; color: var(--muted);
+      font-size: 13px; }
   </style>
 </head>
 <body>
   <header>
     <h1>xa <small>Claude Code sessions</small></h1>
     <div class="row">
+      <button id="settings" title="Settings">⚙</button>
       <button id="refresh">↻</button>
       <button id="new" class="primary">+ New</button>
     </div>
   </header>
   <main>
+    <div id="toasts" aria-live="polite"></div>
     <div id="status" class="status"></div>
 
     <div class="section" id="liveSection">
@@ -102,6 +145,19 @@
         <span class="chev">▼</span> Live <span class="count" id="liveCount">0</span>
       </div>
       <div class="card-list" id="liveList"></div>
+    </div>
+
+    <div class="section collapsed" id="localOnlySection" hidden>
+      <div class="section-header" data-toggle="localOnlySection">
+        <span class="chev">▼</span> Other live <small style="color:var(--muted); font-weight:normal; margin-left:6px">(no remote URL)</small>
+        <span class="count" id="localOnlyCount">0</span>
+      </div>
+      <div class="section-note">
+        Live Claude processes on this machine that aren't accessible via a remote URL
+        — either started outside xa or without <code>/remote-control</code>. To make
+        one reachable, open its terminal and run <code>/remote-control</code>.
+      </div>
+      <div class="card-list" id="localOnlyList"></div>
     </div>
 
     <div class="section collapsed" id="deadSection">
@@ -125,11 +181,52 @@
       Leave name blank for an auto-generated one.</p>
     <div class="row" style="margin-bottom:8px"><label>Name</label>
       <input type="text" id="newName" placeholder="auto" class="grow" /></div>
-    <div class="row" style="margin-bottom:12px"><label>Cwd</label>
-      <input type="text" id="newCwd" placeholder="(default)" class="grow" /></div>
+    <div class="row" style="margin-bottom:12px"><label>Folder</label>
+      <input type="text" id="newCwd" placeholder="(default)" class="grow" />
+      <button class="small" id="newBrowse" type="button">Browse…</button></div>
     <div class="row" style="justify-content:flex-end">
       <button onclick="document.getElementById('newDialog').close()">Cancel</button>
       <button class="primary" id="newSubmit">Create</button>
+    </div>
+  </dialog>
+
+  <dialog id="settingsDialog">
+    <h3 style="margin:0 0 10px">Settings</h3>
+    <p class="muted" style="margin:0 0 10px; color: var(--muted); font-size:13px">
+      Preferences are stored in this browser's local storage.</p>
+    <div class="row" style="margin-bottom:10px">
+      <label style="min-width: 160px">Default working directory</label></div>
+    <div class="row" style="margin-bottom:12px">
+      <input type="text" id="prefFolder" placeholder="(server default)" class="grow" />
+      <button class="small" id="prefBrowse" type="button">Browse…</button></div>
+    <div class="row" style="justify-content:space-between; margin-top:8px">
+      <button class="small" id="prefClear" type="button">Clear</button>
+      <div class="row" style="gap:6px">
+        <button onclick="document.getElementById('settingsDialog').close()">Cancel</button>
+        <button class="primary" id="prefSave">Save</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="chooserDialog" style="max-width: 560px; width: 90vw">
+    <h3 style="margin:0 0 10px">Choose a folder</h3>
+    <div class="row" style="margin-bottom:8px">
+      <button class="small" id="chooserUp" type="button" title="Parent folder">↑ Up</button>
+      <input type="text" id="chooserPath" class="grow" />
+      <button class="small" id="chooserGo" type="button">Go</button>
+    </div>
+    <div class="row" style="margin-bottom:8px; font-size: 13px; color: var(--muted)">
+      <label style="display:flex; align-items:center; gap:6px; min-width:0">
+        <input type="checkbox" id="chooserHidden" /> Show hidden
+      </label>
+      <span id="chooserStatus" class="grow" style="text-align:right"></span>
+    </div>
+    <div id="chooserList" style="max-height: 45vh; overflow-y: auto;
+      border: 1px solid var(--border); border-radius: 8px;
+      background: var(--panel-2); padding: 4px 0"></div>
+    <div class="row" style="justify-content:flex-end; margin-top:12px; gap:6px">
+      <button onclick="document.getElementById('chooserDialog').close()">Cancel</button>
+      <button class="primary" id="chooserSelect">Select this folder</button>
     </div>
   </dialog>
 
@@ -187,6 +284,35 @@ const API = _resolveApiBase();
 
 function rel(p) { return API + p; }
 
+// ---- preferences (localStorage) ----------------------------------------- //
+// The only client-side setting so far is `defaultFolder` — the working
+// directory pre-filled into the "new session" dialog and the folder
+// chooser's opening path. Stored per-browser; falls back to the server's
+// /fs/default (set by `xa serve --default-folder …` or $XA_DEFAULT_FOLDER).
+const PREFS_KEY = "xa.prefs";
+function loadPrefs() {
+  try { return JSON.parse(localStorage.getItem(PREFS_KEY)) || {}; }
+  catch { return {}; }
+}
+function savePrefs(p) {
+  localStorage.setItem(PREFS_KEY, JSON.stringify(p || {}));
+}
+
+let _serverDefaultFolder = null;
+async function getServerDefaultFolder() {
+  if (_serverDefaultFolder !== null) return _serverDefaultFolder;
+  try {
+    const r = await api("/fs/default");
+    _serverDefaultFolder = r.path || "";
+  } catch { _serverDefaultFolder = ""; }
+  return _serverDefaultFolder;
+}
+async function effectiveDefaultFolder() {
+  const p = loadPrefs();
+  if (p.defaultFolder) return p.defaultFolder;
+  return await getServerDefaultFolder();
+}
+
 async function api(path, opts = {}) {
   const res = await fetch(rel(path), { credentials: "include", ...opts });
   if (res.status === 401) {
@@ -202,10 +328,44 @@ async function api(path, opts = {}) {
   return body;
 }
 
+// Toast-style notifications. Keep setStatus(msg, err) API for callers,
+// but layer a more visible toast on top and also keep the quiet inline
+// footer as a rolling summary.
+const TOAST_TTL = { info: 3500, success: 3500, error: 0 };  // 0 = sticky
+function showToast(msg, level = "info") {
+  if (!msg) return;
+  const host = document.getElementById("toasts");
+  const el = document.createElement("div");
+  el.className = "toast " + level;
+  el.innerHTML = `<div class="msg"></div><div class="x" title="Dismiss">×</div>`;
+  el.querySelector(".msg").textContent = msg;
+  const dismiss = () => {
+    if (el.classList.contains("leaving")) return;
+    el.classList.add("leaving");
+    el.addEventListener("animationend", () => el.remove(), { once: true });
+  };
+  el.querySelector(".x").addEventListener("click", dismiss);
+  el.addEventListener("click", (e) => {
+    if (e.target.classList.contains("x")) return;
+    if (level !== "error") dismiss();
+  });
+  host.appendChild(el);
+  const ttl = TOAST_TTL[level] ?? 0;
+  if (ttl > 0) setTimeout(dismiss, ttl);
+}
 function setStatus(msg, err = false) {
+  // The inline footer gets the rolling one-liner (session counts etc).
+  // Errors + explicit user-facing messages also fire a toast.
   const el = document.getElementById("status");
   el.textContent = msg || "";
-  el.className = "status" + (err ? " err" : "");
+  el.className = "status";
+  if (!msg) return;
+  if (err) showToast(msg, "error");
+  // Heuristic: action outcomes ("created X", "killed Y", "renamed…",
+  // "resumed as Z", "hid/unhid", "fork …") deserve a visible toast;
+  // the passive "N live · M ended" recap does not.
+  else if (/^(created|killed|renamed|resumed|hid|unhid|forked)\b/i.test(msg))
+    showToast(msg, "success");
 }
 
 function fmtAgo(sec) {
@@ -239,17 +399,22 @@ function displayName(s) {
 function liveCard(s) {
   const card = document.createElement("div");
   card.className = "card";
+  // URL-less live sessions are rendered by localCard, not here.
   const url = s.url
     ? `<a class="url" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.url)}</a>`
-    : `<span class="tag warn">no URL yet</span>`;
+    : "";
   const firstMsg = s.first_user_message
     ? `<div class="meta" style="font-size:12px; color: var(--muted)">${escapeHtml(s.first_user_message).slice(0, 160)}</div>`
+    : "";
+  const wedgedBadge = s.pre_first_turn
+    ? `<span class="tag warn" title="Process is alive but no transcript has ever been written — likely wedged on a startup TUI prompt (/login, workspace-trust, /remote-control submenu, permission dialog, …). Attach the tmux pane to dismiss it: tmux attach -t ${escapeHtml(s.tmux_name || '<name>')}">⚠ no turns yet</span>`
     : "";
   card.innerHTML = `
     <h3><span class="dot"></span><span class="name" data-id="${escapeHtml(s.id)}">${escapeHtml(displayName(s))}</span></h3>
     ${url}
     <div class="meta">
       <span class="tag ok">live</span>
+      ${wedgedBadge}
       ${s.cwd ? `<span class="tag">${escapeHtml(s.cwd)}</span>` : ""}
       <span>turns ${s.turn_count || 0}</span>
       <span>modified ${fmtAgo(s.modified || s.created)}</span>
@@ -259,6 +424,35 @@ function liveCard(s) {
       <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
       <button class="small" data-info="${escapeHtml(s.id)}">Info</button>
       <button class="small danger" data-kill="${escapeHtml(s.tmux_name || s.id)}">Kill</button>
+    </div>
+  `;
+  return card;
+}
+
+// Render a live-but-bridgeless session card. These are Claude processes
+// visible to xa (session file + PID) but with no bridgeSessionId — so
+// no claude.ai URL. Cannot be "opened" from here; only observed and
+// rehomed by the user attaching their terminal and running /remote-control.
+function localCard(s) {
+  const card = document.createElement("div");
+  card.className = "card local-only";
+  const inTmux = !!s.tmux_name;
+  const hint = inTmux
+    ? `In tmux as <code>${escapeHtml(s.tmux_name)}</code> — attach with <code>tmux attach -t ${escapeHtml(s.tmux_name)}</code> and run <code>/remote-control</code>.`
+    : `Not in a tmux session — attach to the terminal that started this <code>claude</code> (pid ${s.live_pid ?? "?"}) and run <code>/remote-control</code> there.`;
+  card.innerHTML = `
+    <h3><span class="dot"></span><span class="name" data-id="${escapeHtml(s.id)}">${escapeHtml(displayName(s))}</span></h3>
+    <div class="meta">
+      <span class="tag">local-only</span>
+      ${s.cwd ? `<span class="tag">${escapeHtml(s.cwd)}</span>` : ""}
+      ${s.live_pid ? `<span class="tag">pid ${s.live_pid}</span>` : ""}
+      <span>started ${fmtAgo(s.created)}</span>
+    </div>
+    <div class="meta" style="font-size:12px; color:var(--muted); margin-top:6px">${hint}</div>
+    <div class="actions">
+      <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
+      <button class="small" data-info="${escapeHtml(s.id)}">Info</button>
+      ${s.tmux_name ? `<button class="small danger" data-kill="${escapeHtml(s.tmux_name)}">Kill</button>` : ""}
     </div>
   `;
   return card;
@@ -369,24 +563,35 @@ async function load() {
       if (r.claude_session_id) archByClaude.set(r.claude_session_id, r);
     }
 
-    const live = sessions.filter(s => s.state === "live" && !s.hidden);
+    // Live splits on whether the session has a remote URL. Without one
+    // there is nothing to "open", and the cards need different actions +
+    // explanatory text. All live sessions — bridged or not — dedupe
+    // against the dead list by claude_session_id.
+    const allLive = sessions.filter(s => s.state === "live" && !s.hidden);
+    const live       = allLive.filter(s => !!s.url);
+    const localOnly  = allLive.filter(s => !s.url);
     const hiddenLive = sessions.filter(s => s.state === "live" && s.hidden);
 
     // Dead = archive records with gone_reason, excluding live dupes.
-    const liveClaudeIds = new Set(live.map(s => s.claude_session_id).filter(Boolean));
+    const liveClaudeIds = new Set(allLive.map(s => s.claude_session_id).filter(Boolean));
     const dead = records
       .filter(r => r.gone_reason && !liveClaudeIds.has(r.claude_session_id) && !r.hidden)
       .sort((a, b) => (b.gone || 0) - (a.gone || 0));
     const hiddenDead = records.filter(r => r.hidden);
 
     renderSection("liveList", "liveCount", live, liveCard);
+    renderSection("localOnlyList", "localOnlyCount", localOnly, localCard);
+    document.getElementById("localOnlySection").hidden = localOnly.length === 0;
     renderSection("deadList", "deadCount", dead, deadCard);
     const hidden = [...hiddenLive, ...hiddenDead];
     renderSection("hiddenList", "hiddenCount", hidden, r =>
-      r.state === "live" ? liveCard(r) : deadCard(r));
+      r.state === "live" ? (r.url ? liveCard(r) : localCard(r)) : deadCard(r));
     document.getElementById("hiddenSection").hidden = hidden.length === 0;
 
-    setStatus(`${live.length} live · ${dead.length} ended${hidden.length ? " · " + hidden.length + " hidden" : ""}`);
+    setStatus(
+      `${live.length} live · ${localOnly.length ? localOnly.length + " local-only · " : ""}`
+      + `${dead.length} ended${hidden.length ? " · " + hidden.length + " hidden" : ""}`
+    );
   } catch (e) {
     if (e.message !== "unauthorized") setStatus("load failed: " + e.message, true);
   }
@@ -421,7 +626,68 @@ document.addEventListener("click", async (ev) => {
   const b = closestBtn;
 
   if (b.id === "refresh") return load();
-  if (b.id === "new") return document.getElementById("newDialog").showModal();
+  if (b.id === "new") {
+    const input = document.getElementById("newCwd");
+    // Prefill with effective default so the user can just hit Create.
+    const def = await effectiveDefaultFolder();
+    input.value = def || "";
+    input.placeholder = def ? def : "(default)";
+    return document.getElementById("newDialog").showModal();
+  }
+  if (b.id === "settings") return openSettings();
+
+  // Browse buttons inside an already-modal <dialog>. iOS Safari mis-renders
+  // nested modal dialogs, so close the outer one, run the chooser, then
+  // reopen. Form field values persist across close()/showModal().
+  if (b.id === "newBrowse") {
+    const outer = document.getElementById("newDialog");
+    const cur = document.getElementById("newCwd").value.trim();
+    const start = cur || (await effectiveDefaultFolder()) || "";
+    outer.close();
+    const picked = await pickFolder(start);
+    if (picked != null) document.getElementById("newCwd").value = picked;
+    outer.showModal();
+    return;
+  }
+
+  if (b.id === "prefBrowse") {
+    const outer = document.getElementById("settingsDialog");
+    const cur = document.getElementById("prefFolder").value.trim();
+    const start = cur || (await effectiveDefaultFolder()) || "";
+    outer.close();
+    const picked = await pickFolder(start);
+    if (picked != null) document.getElementById("prefFolder").value = picked;
+    outer.showModal();
+    return;
+  }
+
+  if (b.id === "prefSave") {
+    const val = document.getElementById("prefFolder").value.trim();
+    const prefs = loadPrefs();
+    if (val) prefs.defaultFolder = val;
+    else delete prefs.defaultFolder;
+    savePrefs(prefs);
+    document.getElementById("settingsDialog").close();
+    setStatus(val
+      ? `default folder set to ${val}`
+      : "default folder cleared (using server default)");
+    return;
+  }
+
+  if (b.id === "prefClear") {
+    document.getElementById("prefFolder").value = "";
+    return;
+  }
+
+  if (b.id === "chooserUp") return chooserGo(chooserState.parent || chooserState.path);
+  if (b.id === "chooserGo")
+    return chooserGo(document.getElementById("chooserPath").value.trim());
+  if (b.id === "chooserSelect") {
+    chooserState.resolve(chooserState.path);
+    chooserState.resolve = null;
+    document.getElementById("chooserDialog").close();
+    return;
+  }
 
   if (b.id === "newSubmit") {
     const name = document.getElementById("newName").value.trim() || null;
@@ -592,7 +858,107 @@ async function openInfoModal({ title, url, errPrefix, hintField }) {
   }
 }
 
+// ---- settings ----------------------------------------------------------- //
+async function openSettings() {
+  const prefs = loadPrefs();
+  const input = document.getElementById("prefFolder");
+  input.value = prefs.defaultFolder || "";
+  const serverDefault = await getServerDefaultFolder();
+  input.placeholder = serverDefault
+    ? `server default: ${serverDefault}` : "(server default)";
+  document.getElementById("settingsDialog").showModal();
+}
+
+// ---- folder chooser ----------------------------------------------------- //
+// `pickFolder(start)` opens the chooser and resolves to the absolute path
+// the user selected, or null if cancelled. Implemented with a single
+// mutable `chooserState` because <dialog> is modal — no re-entrancy.
+const chooserState = { path: "", parent: null, resolve: null, showHidden: false };
+
+function pickFolder(start) {
+  return new Promise((resolve) => {
+    chooserState.resolve = resolve;
+    const dlg = document.getElementById("chooserDialog");
+    // If the dialog closes without an explicit Select, resolve with null.
+    const onClose = () => {
+      dlg.removeEventListener("close", onClose);
+      if (chooserState.resolve) {
+        chooserState.resolve(null);
+        chooserState.resolve = null;
+      }
+    };
+    dlg.addEventListener("close", onClose);
+    document.getElementById("chooserHidden").checked = chooserState.showHidden;
+    dlg.showModal();
+    chooserGo(start || "");
+  });
+}
+
+async function chooserGo(path) {
+  const list = document.getElementById("chooserList");
+  const status = document.getElementById("chooserStatus");
+  const pathInput = document.getElementById("chooserPath");
+  status.textContent = "loading…";
+  list.innerHTML = "";
+  try {
+    const qs = new URLSearchParams();
+    if (path) qs.set("path", path);
+    if (chooserState.showHidden) qs.set("show_hidden", "true");
+    const data = await api("/fs/list?" + qs.toString());
+    chooserState.path = data.path;
+    chooserState.parent = data.parent;
+    pathInput.value = data.path;
+    status.textContent = `${data.entries.length} item${data.entries.length === 1 ? "" : "s"}`;
+    if (!data.entries.length) {
+      list.innerHTML = `<div class="fs-empty">empty</div>`;
+      return;
+    }
+    for (const e of data.entries) {
+      const row = document.createElement("div");
+      row.className = "fs-row" + (e.is_dir ? "" : " file");
+      row.innerHTML = `<span class="icon">${e.is_dir ? "📁" : "·"}</span>
+        <span class="name">${escapeHtml(e.name)}</span>`;
+      if (e.is_dir) {
+        row.addEventListener("click", () => chooserGo(e.path));
+      }
+      list.appendChild(row);
+    }
+  } catch (err) {
+    status.textContent = "";
+    list.innerHTML =
+      `<div class="fs-empty">error: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+document.getElementById("chooserHidden").addEventListener("change", (ev) => {
+  chooserState.showHidden = ev.target.checked;
+  chooserGo(chooserState.path);
+});
+document.getElementById("chooserPath").addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter") { ev.preventDefault(); chooserGo(ev.target.value.trim()); }
+});
+
 load();
+
+// Keep the list fresh: a live card can go stale (process dies, bridge
+// disconnects) or a dead one come back via resume — without the user
+// touching the refresh button. Poll on a gentle cadence only while the
+// tab is visible, and refresh immediately when it regains focus so
+// returning from a backgrounded phone tab is always up-to-date.
+const REFRESH_INTERVAL_MS = 30_000;
+let refreshTimer = null;
+function startAutoRefresh() {
+  if (refreshTimer) return;
+  refreshTimer = setInterval(load, REFRESH_INTERVAL_MS);
+}
+function stopAutoRefresh() {
+  if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { stopAutoRefresh(); }
+  else { load(); startAutoRefresh(); }
+});
+if (!document.hidden) startAutoRefresh();
 </script>
 </body>
 </html>
