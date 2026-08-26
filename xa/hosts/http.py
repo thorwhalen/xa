@@ -142,6 +142,7 @@ class HTTPHost:
                     pre_first_turn=bool(row.get("pre_first_turn", False)),
                     attention=row.get("attention"),
                     attention_hint=row.get("attention_hint"),
+                    tmux_pane=row.get("tmux_pane"),
                 )
             except TypeError:
                 # Server's Session shape drifted — skip rather than raise.

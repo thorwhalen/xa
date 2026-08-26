@@ -18,7 +18,6 @@ import shlex
 import subprocess
 import time
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -56,15 +55,28 @@ class SpawnResult:
 # --------------------------------------------------------------------------- #
 
 
-@lru_cache(maxsize=32)
-def supported_cli_flags(claude_bin: str = DEFAULT_CLAUDE_BIN) -> frozenset[str]:
+# Successful --help probes are cached per binary with a TTL: claude
+# self-updates while long-lived servers run, so "forever" is wrong, and
+# transient probe failures (binary mid-update, box under load) must NOT
+# be latched — a failure is simply retried on the next call.
+_FLAGS_TTL_SEC = 900.0
+_flags_cache: dict[str, tuple[float, frozenset[str]]] = {}
+
+
+def supported_cli_flags(
+    claude_bin: str = DEFAULT_CLAUDE_BIN, *, ttl_sec: float = _FLAGS_TTL_SEC
+) -> frozenset[str]:
     """Long-form flags advertised by ``<claude_bin> --help``, cached per binary.
 
     Lets spawn compose modern per-session flags (``--remote-control``,
     ``--name``, ``--model``, ``--effort``) while degrading gracefully on
     older installs. Empty set when the binary can't be executed — callers
-    then omit every optional flag, matching pre-flag behavior.
+    then omit every optional flag, matching pre-flag behavior. Only
+    successful probes are cached (for ``ttl_sec``); failures are retried.
     """
+    cached = _flags_cache.get(claude_bin)
+    if cached is not None and time.time() - cached[0] < ttl_sec:
+        return cached[1]
     try:
         out = subprocess.run(
             [claude_bin, "--help"],
@@ -75,7 +87,9 @@ def supported_cli_flags(claude_bin: str = DEFAULT_CLAUDE_BIN) -> frozenset[str]:
         )
     except (OSError, subprocess.TimeoutExpired, ValueError):
         return frozenset()
-    return frozenset(re.findall(r"--[a-z][a-z0-9-]*", out.stdout + out.stderr))
+    flags = frozenset(re.findall(r"--[a-z][a-z0-9-]*", out.stdout + out.stderr))
+    _flags_cache[claude_bin] = (time.time(), flags)
+    return flags
 
 
 def _claude_argv(
@@ -194,14 +208,61 @@ def find_claude_pid(
     *,
     tmux_bin: str = tm.DEFAULT_TMUX_BIN,
 ) -> Optional[int]:
-    """Return the ``claude`` process PID living in the session's pane."""
-    root = tm.pane_pid(session_name, binary=tmux_bin)
-    if root is None:
-        return None
-    for pid in (root, *tm.descendants(root)):
-        if tm.proc_comm(pid) == "claude":
-            return pid
+    """Return the PID of the claude process living in the tmux session.
+
+    Walks **every** pane's process tree (a claude can live in any window
+    of a multi-window session, not just the first pane). Recognizes both
+    the native binary (``comm == "claude"``) and npm/bun installs.
+    """
+    for root in tm.pane_pids(session_name, binary=tmux_bin):
+        for pid in (root, *tm.descendants(root)):
+            if cfs._looks_like_claude(pid):
+                return pid
     return None
+
+
+def pid_is_claude(pid: int) -> bool:
+    """Portable positive identity check — used before ever signaling a pid.
+
+    Liveness (:func:`xa.claude_fs.ephemeral_session_alive`) proves a
+    process exists; this proves it is actually a claude, so a stale
+    ephemeral file whose pid got recycled can never direct a kill at an
+    unrelated process. Uses ``/proc`` where available, ``ps`` otherwise.
+    """
+    if cfs._PROC_ROOT.is_dir():
+        return cfs._looks_like_claude(pid)
+    try:
+        out = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "comm=,command="],
+            capture_output=True,
+            text=True,
+            timeout=5.0,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return False
+    return any(t.rsplit("/", 1)[-1] == "claude" for t in out.stdout.split())
+
+
+def tmux_session_dedicated_to(
+    session_name: str,
+    claude_pid: Optional[int],
+    *,
+    tmux_bin: str = tm.DEFAULT_TMUX_BIN,
+) -> bool:
+    """Is killing this whole tmux session equivalent to killing this claude?
+
+    True iff the session consists of a single pane whose claude is
+    ``claude_pid``. xa-spawned sessions always qualify; a claude living in
+    one window of a user's multi-window workspace never does — killing
+    the session there would destroy unrelated panes, so callers must fall
+    back to signaling the pid instead.
+    """
+    if claude_pid is None:
+        return False
+    if len(tm.pane_pids(session_name, binary=tmux_bin)) != 1:
+        return False
+    return find_claude_pid(session_name, tmux_bin=tmux_bin) == claude_pid
 
 
 def _extract_url_from_text(text: str) -> Optional[str]:

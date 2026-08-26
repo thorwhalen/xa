@@ -49,6 +49,24 @@ def session_target(name: str) -> str:
     return f"{name}:"
 
 
+def pane_target(ref: str) -> str:
+    """Target string for pane-scoped commands (capture, send-keys).
+
+    Accepts either a bare session name or a full tmux pane ref
+    (``session:@window.%pane`` — the shape claude records in its ephemeral
+    session file). A bare name targets the session's *active* pane, which
+    may not be the claude pane in a multi-window session — pass the full
+    ref whenever you have one. Session names in xa match
+    ``[A-Za-z0-9_.-]`` so they can never contain a ``:``.
+
+    >>> pane_target('foo')
+    'foo:'
+    >>> pane_target('foo:@1.%2')
+    'foo:@1.%2'
+    """
+    return ref if ":" in ref else f"{ref}:"
+
+
 def _run(args: list[str], *, timeout: float = 10.0) -> subprocess.CompletedProcess:
     return subprocess.run(
         args, capture_output=True, text=True, timeout=timeout, check=False
@@ -120,16 +138,24 @@ def rename_session(
 
 
 def capture_pane(name: str, *, lines: int = 200, binary: str = DEFAULT_TMUX_BIN) -> str:
-    """Return the last ``lines`` of the session's first pane, or '' on failure."""
+    """Return the last ``lines`` of the targeted pane, or '' on failure.
+
+    ``name`` may be a session name (targets its active pane) or a full
+    pane ref (``session:@w.%p``) for an exact pane.
+    """
     out = _run(
-        [binary, "capture-pane", "-t", session_target(name), "-p", "-S", f"-{lines}"]
+        [binary, "capture-pane", "-t", pane_target(name), "-p", "-S", f"-{lines}"]
     )
     return out.stdout if out.returncode == 0 else ""
 
 
 def send_keys(name: str, *keys: str, binary: str = DEFAULT_TMUX_BIN) -> None:
-    """Send one or more keys/strings to the pane. Always pass ``"Enter"`` for newline."""
-    out = _run([binary, "send-keys", "-t", session_target(name), *keys])
+    """Send one or more keys/strings to the targeted pane.
+
+    Always pass ``"Enter"`` for newline. ``name`` may be a session name
+    (targets its active pane) or a full pane ref for an exact pane.
+    """
+    out = _run([binary, "send-keys", "-t", pane_target(name), *keys])
     if out.returncode != 0:
         raise RuntimeError(f"tmux send-keys failed: {out.stderr.strip()}")
 
@@ -146,17 +172,35 @@ def pipe_pane_to_file(name: str, *, path: Path, binary: str = DEFAULT_TMUX_BIN) 
         raise RuntimeError(f"tmux pipe-pane failed: {out.stderr.strip()}")
 
 
+def pane_pids(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> list[int]:
+    """PIDs of every pane program in the session (all windows, all panes).
+
+    Empty list when the session is gone. ``name`` may be a session name
+    or a full pane ref — ``-s`` scopes to the containing session either way.
+    """
+    out = _run(
+        [binary, "list-panes", "-s", "-t", pane_target(name), "-F", "#{pane_pid}"]
+    )
+    if out.returncode != 0:
+        return []
+    pids: list[int] = []
+    for line in out.stdout.splitlines():
+        try:
+            pids.append(int(line.strip()))
+        except ValueError:
+            continue
+    return pids
+
+
+def pane_count(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> int:
+    """Number of panes (across all windows) in the session; 0 if gone."""
+    return len(pane_pids(name, binary=binary))
+
+
 def pane_pid(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> Optional[int]:
     """Return the pid of the first pane's program, or None if the session is gone."""
-    out = _run(
-        [binary, "list-panes", "-s", "-t", session_target(name), "-F", "#{pane_pid}"]
-    )
-    if out.returncode != 0 or not out.stdout.strip():
-        return None
-    try:
-        return int(out.stdout.splitlines()[0].strip())
-    except ValueError:
-        return None
+    pids = pane_pids(name, binary=binary)
+    return pids[0] if pids else None
 
 
 # --------------------------------------------------------------------------- #

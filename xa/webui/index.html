@@ -455,7 +455,7 @@ function liveCard(s) {
     <div class="actions">
       <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
       <button class="small" data-info="${escapeHtml(s.id)}">Info</button>
-      <button class="small danger" data-kill="${escapeHtml(s.tmux_name || s.id)}">Kill</button>
+      <button class="small danger" data-kill="${escapeHtml(s.id)}" data-killname="${escapeHtml(displayName(s))}">Kill</button>
     </div>
   `;
   return card;
@@ -491,7 +491,7 @@ function localCard(s) {
         ? `<button class="small primary" data-enablerc="${escapeHtml(s.id)}">Enable remote</button>` : ""}
       <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
       <button class="small" data-info="${escapeHtml(s.id)}">Info</button>
-      <button class="small danger" data-kill="${escapeHtml(s.tmux_name || s.id)}">Kill</button>
+      <button class="small danger" data-kill="${escapeHtml(s.id)}" data-killname="${escapeHtml(displayName(s))}">Kill</button>
     </div>
   `;
   return card;
@@ -609,12 +609,31 @@ function cancelPendingCreate() {
 
 async function checkPendingCreate() {
   if (!pendingCreate) return;
-  const { name, startedAt } = pendingCreate;
+  const me = pendingCreate;
+  const { name, startedAt } = me;
+  // Timeout first, BEFORE the fetch — so a server that stops answering
+  // still ends the poll instead of looping forever.
+  if (Date.now() - startedAt > CREATE_TIMEOUT_MS) {
+    cancelPendingCreate();
+    showToast(`"${name}" still has no remote URL after ${
+      Math.round(CREATE_TIMEOUT_MS / 1000)}s — see its card under "Other live", `
+      + `or attach its terminal and run /remote-control.`, "error");
+    await load();
+    return;
+  }
   let sessions = [];
   try {
     const data = await api("/sessions?limit=200");
     sessions = data.sessions || [];
-  } catch { return; }  // transient — keep polling
+  } catch (e) {
+    // Auth loss is terminal (api() already showed the sticky toast once);
+    // anything else is transient — keep polling until the timeout above.
+    if (e.message === "unauthorized") cancelPendingCreate();
+    return;
+  }
+  // A newer create may have superseded this tick while we were fetching —
+  // acting on stale state here would cancel the newer create's polling.
+  if (pendingCreate !== me) return;
   const s = sessions.find(x => x.tmux_name === name);
   if (s && s.url) {
     cancelPendingCreate();
@@ -626,14 +645,6 @@ async function checkPendingCreate() {
     cancelPendingCreate();
     showToast(`"${name}" started but needs attention: ${s.attention_hint || s.attention}`,
       "error");
-    await load();
-    return;
-  }
-  if (Date.now() - startedAt > CREATE_TIMEOUT_MS) {
-    cancelPendingCreate();
-    showToast(`"${name}" still has no remote URL after ${
-      Math.round(CREATE_TIMEOUT_MS / 1000)}s — see its card under "Other live", `
-      + `or attach its terminal and run /remote-control.`, "error");
     await load();
     return;
   }
@@ -685,7 +696,11 @@ async function load() {
     // against the dead list by claude_session_id.
     const allLive = sessions.filter(s => s.state === "live" && !s.hidden);
     const live       = allLive.filter(s => !!s.url);
-    const localOnly  = allLive.filter(s => !s.url);
+    // The in-flight create renders as the pending placeholder, not as an
+    // "Other live" card — its Enable-remote/Kill actions would race the
+    // background spawn thread that is still driving the pane.
+    const localOnly  = allLive.filter(s =>
+      !s.url && !(pendingCreate && s.tmux_name === pendingCreate.name));
     const hiddenLive = sessions.filter(s => s.state === "live" && s.hidden);
 
     // Dead = archive records with gone_reason, excluding live dupes.
@@ -834,7 +849,10 @@ document.addEventListener("click", async (ev) => {
       document.getElementById("newDialog").close();
       for (const id of ["newName", "newCwd", "newModel", "newEffort"])
         document.getElementById(id).value = "";
-      if (r.warning) showToast(r.warning, "info");
+      // Real prepare-time warnings (e.g. unsupported --model) deserve a
+      // toast; the generic "Session starting…" invariant filler doesn't.
+      if (r.warning && !/^Session starting/.test(r.warning))
+        showToast(r.warning, "info");
       beginPendingCreate(r.name);
     } catch (e) {
       // Dialog stays open so the inputs survive for a retry.
@@ -863,6 +881,7 @@ document.addEventListener("click", async (ev) => {
   if (b.id === "delSubmit") {
     const dlg = document.getElementById("delDialog");
     const name = dlg.dataset.name;
+    const label = dlg.dataset.label || name;
     const token = dlg.dataset.token;
     const answer = document.getElementById("delAnswer").value.trim().toUpperCase();
     b.disabled = true;
@@ -873,7 +892,7 @@ document.addEventListener("click", async (ev) => {
         body: JSON.stringify({ captcha_token: token, captcha_answer: answer }),
       });
       dlg.close();
-      setStatus(`killed ${name}`);
+      setStatus(`killed ${label}`);
       await load();
     } catch (e) { setStatus("kill failed: " + e.message, true); }
     finally { b.disabled = false; }
@@ -881,14 +900,19 @@ document.addEventListener("click", async (ev) => {
   }
 
   if (b.dataset.kill) {
-    const name = b.dataset.kill;
+    // data-kill carries the session ID (the server resolves it and
+    // decides HOW to kill — whole tmux session only when dedicated,
+    // otherwise just the claude pid); data-killname is the display name.
+    const target = b.dataset.kill;
+    const label = b.dataset.killname || target;
     try {
       const { token, challenge } = await api("/captcha");
-      document.getElementById("delName").textContent = name;
+      document.getElementById("delName").textContent = label;
       document.getElementById("delChallenge").textContent = challenge;
       document.getElementById("delAnswer").value = "";
       const dlg = document.getElementById("delDialog");
-      dlg.dataset.name = name;
+      dlg.dataset.name = target;
+      dlg.dataset.label = label;
       dlg.dataset.token = token;
       dlg.showModal();
     } catch (e) { setStatus("captcha failed: " + e.message, true); }

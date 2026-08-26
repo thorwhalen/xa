@@ -74,30 +74,43 @@ class LocalHost:
                 if pid is not None:
                     tmux_by_pid[pid] = t
 
-        def _tmux_name_for(eph: dict) -> Optional[str]:
+        def _tmux_target_for(eph: dict) -> tuple[Optional[str], Optional[str]]:
+            """Return ``(tmux_name, tmux_pane)`` for an ephemeral session.
+
+            ``tmux_name`` (session-scoped: kill decisions, attach hints)
+            comes from the pid walk, or from the session part of the
+            pane ref newer claudes record in the ephemeral file.
+            ``tmux_pane`` is that full pane ref ("name:@w.%p") — the only
+            target that reliably addresses the *claude* pane in a
+            multi-window workspace.
+            """
+            pane_ref = eph.get("tmux")
+            tmux_pane = (
+                pane_ref if isinstance(pane_ref, str) and ":" in pane_ref else None
+            )
             pid = eph.get("pid")
             tmux_row = tmux_by_pid.get(pid) if isinstance(pid, int) else None
             if tmux_row is not None:
-                return tmux_row.name
-            # Newer claude versions record their tmux pane ("name:@w.%p")
-            # in the ephemeral file — use it when the pid walk misses.
-            pane_ref = eph.get("tmux")
-            if isinstance(pane_ref, str) and pane_ref:
-                return pane_ref.split(":", 1)[0] or None
-            return None
+                return tmux_row.name, tmux_pane
+            if tmux_pane:
+                return tmux_pane.split(":", 1)[0] or None, tmux_pane
+            return None, None
 
         def _attention_for(
-            eph: dict, tmux_name: Optional[str]
+            eph: dict, tmux_name: Optional[str], tmux_pane: Optional[str]
         ) -> tuple[Optional[str], Optional[str]]:
             """Adverse-TUI classification — only for bridgeless sessions.
 
             A bridged session's pane renders conversation text, which can
             legitimately mention /login; classifying it would produce
-            false alarms.
+            false alarms. Captures the exact claude pane when known — a
+            bare session name resolves to the *active* pane, which could
+            be an unrelated window of a shared workspace.
             """
-            if eph.get("bridgeSessionId") or not tmux_name:
+            target = tmux_pane or tmux_name
+            if eph.get("bridgeSessionId") or not target:
                 return None, None
-            pane = tm.capture_pane(tmux_name, lines=60, binary=self.tmux_bin)
+            pane = tm.capture_pane(target, lines=60, binary=self.tmux_bin)
             attention = ccli.classify_pane_attention(pane)
             return attention, ccli.attention_hint(attention, tmux_name=tmux_name)
 
@@ -112,13 +125,16 @@ class LocalHost:
                 eph = live_by_cs_id[cs_id]
                 pid = eph.get("pid")
                 bridge = eph.get("bridgeSessionId")
-                tmux_name = _tmux_name_for(eph)
-                attention, attention_hint = _attention_for(eph, tmux_name)
+                tmux_name, tmux_pane = _tmux_target_for(eph)
+                attention, attention_hint = _attention_for(
+                    eph, tmux_name, tmux_pane
+                )
                 yield replace(
                     base,
                     state="live",
                     live_pid=pid if isinstance(pid, int) else None,
                     tmux_name=tmux_name,
+                    tmux_pane=tmux_pane,
                     bridge_session_id=bridge,
                     name=base.name or eph.get("name"),
                     url=f"{ccli.CLAUDE_WEB_BASE}/{bridge}" if bridge else None,
@@ -139,8 +155,8 @@ class LocalHost:
                 continue
             pid = eph.get("pid")
             bridge = eph.get("bridgeSessionId")
-            tmux_name = _tmux_name_for(eph)
-            attention, attention_hint = _attention_for(eph, tmux_name)
+            tmux_name, tmux_pane = _tmux_target_for(eph)
+            attention, attention_hint = _attention_for(eph, tmux_name, tmux_pane)
             cwd = eph.get("cwd")
             slug = cfs.encode_project_slug(cwd) if cwd else ""
             created = (
@@ -174,6 +190,7 @@ class LocalHost:
                 pre_first_turn=pre_first_turn,
                 attention=attention,
                 attention_hint=attention_hint,
+                tmux_pane=tmux_pane,
             )
 
     # ------------------------------------------------------------------ #

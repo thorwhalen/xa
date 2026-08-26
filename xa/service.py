@@ -42,10 +42,11 @@ try:  # pragma: no cover - optional dep
         cwd: Optional[str] = None
         model: Optional[str] = None  # per-session claude --model (no flag if empty)
         effort: Optional[str] = None  # per-session claude --effort (no flag if empty)
-        # False (default): return as soon as the tmux session exists and
-        # poll the listing for the URL. True: block until the bridge URL
-        # appears (the pre-0.2 synchronous contract).
-        wait: bool = False
+        # True (default): block until the bridge URL appears — the
+        # original synchronous wire contract, preserved for API users.
+        # False: return as soon as the tmux session exists and poll
+        # GET /sessions for the URL (what the bundled webui does).
+        wait: bool = True
 
     class DeleteReq(BaseModel):
         captcha_token: Optional[str] = None
@@ -350,7 +351,12 @@ def build_api(
             "url": None,
             "url_source": None,
             "claude_session_id": None,
-            "warning": pending.warning,
+            # Every create response honors the url-or-warning invariant.
+            "warning": pending.warning
+            or (
+                "Session starting — remote-control URL not ready yet; "
+                "poll GET /sessions for the url."
+            ),
             "attention": None,
         }
 
@@ -385,9 +391,19 @@ def build_api(
         except LookupError as e:
             raise HTTPException(400, str(e))
         if s is not None and s.state == "live":
-            if s.tmux_name and s.tmux_name in existing:
+            # Kill the whole tmux session only when it is DEDICATED to
+            # this claude (single pane, claude verified in it) — a claude
+            # living in one window of a shared workspace must not take
+            # the workspace down with it.
+            if (
+                s.tmux_name
+                and s.tmux_name in existing
+                and ccli.tmux_session_dedicated_to(s.tmux_name, s.live_pid)
+            ):
                 return _tmux_kill(s.tmux_name)
-            if s.live_pid:
+            # Otherwise signal exactly the one claude — identity-verified
+            # so a recycled pid can never direct a kill at a bystander.
+            if s.live_pid and ccli.pid_is_claude(s.live_pid):
                 try:
                     os.kill(s.live_pid, signal.SIGTERM)
                 except ProcessLookupError:
@@ -418,8 +434,10 @@ def build_api(
                 if out["forensics"]["transcript_path"]
                 else None
             )
-        if s.state == "live" and s.tmux_name:
-            out["pane_tail"] = tm.capture_pane(s.tmux_name, lines=80)
+        if s.state == "live" and (s.tmux_pane or s.tmux_name):
+            # Prefer the exact claude pane — a bare session name targets
+            # the *active* pane, which may be a different window.
+            out["pane_tail"] = tm.capture_pane(s.tmux_pane or s.tmux_name, lines=80)
         return out
 
     @app.get("/sessions/{id}/diagnose")
@@ -468,8 +486,8 @@ def build_api(
         # Pane tail. Live: capture from tmux. Archived: read from pane store.
         oom_markers: tuple[str, ...] = ()
         pane_tail: Optional[str] = None
-        if s.state == "live" and s.tmux_name:
-            pane_tail = tm.capture_pane(s.tmux_name, lines=80)
+        if s.state == "live" and (s.tmux_pane or s.tmux_name):
+            pane_tail = tm.capture_pane(s.tmux_pane or s.tmux_name, lines=80)
         elif archive_rec is not None and archive_rec.id in panes:
             cap = max(1024, tail_kb * 1024)
             try:
@@ -554,14 +572,16 @@ def build_api(
                 "hint": None,
                 "already_enabled": True,
             }
-        if not s.tmux_name:
+        if not (s.tmux_pane or s.tmux_name):
             raise HTTPException(
                 409,
                 "Session is not tmux-hosted — attach the terminal that "
                 "started it and run /remote-control there.",
             )
+        # Target the exact claude pane when known: sending keystrokes at
+        # the bare session name would type into whatever pane is active.
         url, src, attention = ccli.request_remote_control(
-            s.tmux_name, claude_home=claude_home
+            s.tmux_pane or s.tmux_name, claude_home=claude_home
         )
         return {
             "url": url,

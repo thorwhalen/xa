@@ -434,11 +434,15 @@ def test_create_async_returns_starting_immediately(
     monkeypatch.setattr(
         svc.ccli, "complete_spawn", lambda pending: completed.set()
     )
-    r = client.post("/sessions", json={"name": "s1", "cwd": str(tmp_path)})
+    r = client.post(
+        "/sessions", json={"name": "s1", "cwd": str(tmp_path), "wait": False}
+    )
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "starting"
     assert body["name"] == "s1" and body["url"] is None
+    # url-or-warning invariant: no-url responses always carry a warning.
+    assert body["warning"]
     # The slow half runs in a background thread.
     assert completed.wait(5)
     # The chosen name is forwarded as the claude display name too.
@@ -463,9 +467,9 @@ def test_create_wait_true_keeps_sync_contract(
     )
     monkeypatch.setattr(svc.ccli, "prepare_spawn", lambda name, **kw: object())
     monkeypatch.setattr(svc.ccli, "complete_spawn", lambda pending: fake_result)
-    r = client.post(
-        "/sessions", json={"name": "s2", "cwd": str(tmp_path), "wait": True}
-    )
+    # No `wait` field: the default preserves the original synchronous
+    # wire contract (async is opt-in via wait:false).
+    r = client.post("/sessions", json={"name": "s2", "cwd": str(tmp_path)})
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "complete"
@@ -485,9 +489,10 @@ def test_create_rejects_shell_hostile_model_value(
 
 
 def test_delete_resolves_claude_session_id(app_and_stores, monkeypatch) -> None:
-    """DELETE with a claude session id kills the backing tmux session."""
+    """DELETE with a claude session id kills the backing tmux session —
+    but only when that tmux session is dedicated to this claude."""
     client, *_ = app_and_stores
-    s = _fake_session()
+    s = _fake_session(live_pid=1234)
     monkeypatch.setattr(
         svc.tm,
         "list_sessions",
@@ -500,9 +505,59 @@ def test_delete_resolves_claude_session_id(app_and_stores, monkeypatch) -> None:
         svc.tm, "kill_session", lambda n, binary=None: killed.append(n)
     )
     monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(
+        svc.ccli, "tmux_session_dedicated_to", lambda name, pid, **kw: True
+    )
     r = client.delete("/sessions/aaaa1111-2222-3333-4444-555555555555")
     assert r.status_code == 200
     assert killed == ["txa"]
+
+
+def test_delete_shared_workspace_signals_only_the_pid(
+    app_and_stores, monkeypatch
+) -> None:
+    """A claude in one window of a multi-pane tmux workspace must NOT take
+    the whole workspace down — only its own (identity-verified) pid."""
+    client, *_ = app_and_stores
+    s = _fake_session(live_pid=1234)
+    monkeypatch.setattr(
+        svc.tm,
+        "list_sessions",
+        lambda binary=None: [
+            svc.tm.TmuxSession(name="txa", created=0, activity=0, attached=False)
+        ],
+    )
+    tmux_killed: list = []
+    monkeypatch.setattr(
+        svc.tm, "kill_session", lambda n, binary=None: tmux_killed.append(n)
+    )
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(
+        svc.ccli, "tmux_session_dedicated_to", lambda name, pid, **kw: False
+    )
+    monkeypatch.setattr(svc.ccli, "pid_is_claude", lambda pid: True)
+    sig_killed: list = []
+    monkeypatch.setattr(svc.os, "kill", lambda pid, sig: sig_killed.append(pid))
+    r = client.delete("/sessions/aaaa1111-2222-3333-4444-555555555555")
+    assert r.status_code == 200
+    assert tmux_killed == [] and sig_killed == [1234]
+
+
+def test_delete_never_signals_an_unverified_pid(
+    app_and_stores, monkeypatch
+) -> None:
+    """If the pid fails the claude-identity check (stale file, recycled
+    pid), no signal is sent — 404 instead of killing a bystander."""
+    client, *_ = app_and_stores
+    s = _fake_session(live_pid=1234)
+    monkeypatch.setattr(svc.tm, "list_sessions", lambda binary=None: [])
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(svc.ccli, "pid_is_claude", lambda pid: False)
+    sig_killed: list = []
+    monkeypatch.setattr(svc.os, "kill", lambda pid, sig: sig_killed.append(pid))
+    r = client.delete("/sessions/aaaa1111-2222-3333-4444-555555555555")
+    assert r.status_code == 404
+    assert sig_killed == []
 
 
 def test_delete_dead_session_explains_itself(app_and_stores, monkeypatch) -> None:

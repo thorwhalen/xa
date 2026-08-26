@@ -409,11 +409,11 @@ def kill_cmd(session_id: str) -> None:
         )
         sys.exit(1)
     try:
-        sess.kill_session(s)
+        what = sess.kill_session(s)
     except (ValueError, RuntimeError) as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
-    print(f"killed: {s.tmux_name} (session {s.id[:8]})")
+    print(f"killed: {what} (session {s.id[:8]})")
 
 
 # --------------------------------------------------------------------------- #

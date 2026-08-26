@@ -246,16 +246,27 @@ def _proc_comm(pid: int, *, proc_root: Path = _PROC_ROOT) -> str:
         return ""
 
 
+# Kernel comms that legitimately host the claude CLI script (npm/bun
+# installs run the js entry point under a runtime instead of the native
+# binary). Anything else with "claude" in argv (an editor opening a file
+# named claude, a grep…) is NOT a claude process.
+_JS_RUNTIME_COMMS = frozenset({"node", "nodejs", "bun"})
+
+
 def _looks_like_claude(pid: int, *, proc_root: Path = _PROC_ROOT) -> bool:
     """Identity check for pre-``procStart`` ephemeral files.
 
-    The official native binary has ``comm == "claude"``; npm installs run
-    under ``node`` with the claude script in argv — accept either. The
-    argv match requires a token whose *basename* is exactly ``claude``
-    (a bare substring would false-positive on e.g. ``test_claude_fs.py``).
+    The official native binary has ``comm == "claude"``; npm/bun installs
+    run under a JS runtime with the claude script in argv — accept either.
+    The argv match requires the comm to be a JS runtime AND a token whose
+    *basename* is exactly ``claude`` (a bare substring would
+    false-positive on e.g. ``vim ~/notes/claude`` or ``test_claude_fs.py``).
     """
-    if _proc_comm(pid, proc_root=proc_root) == "claude":
+    comm = _proc_comm(pid, proc_root=proc_root)
+    if comm == "claude":
         return True
+    if comm not in _JS_RUNTIME_COMMS:
+        return False
     try:
         raw = (proc_root / str(pid) / "cmdline").read_bytes()
     except (OSError, ValueError):
