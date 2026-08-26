@@ -246,6 +246,24 @@ def _proc_comm(pid: int, *, proc_root: Path = _PROC_ROOT) -> str:
         return ""
 
 
+def _looks_like_claude(pid: int, *, proc_root: Path = _PROC_ROOT) -> bool:
+    """Identity check for pre-``procStart`` ephemeral files.
+
+    The official native binary has ``comm == "claude"``; npm installs run
+    under ``node`` with the claude script in argv — accept either. The
+    argv match requires a token whose *basename* is exactly ``claude``
+    (a bare substring would false-positive on e.g. ``test_claude_fs.py``).
+    """
+    if _proc_comm(pid, proc_root=proc_root) == "claude":
+        return True
+    try:
+        raw = (proc_root / str(pid) / "cmdline").read_bytes()
+    except (OSError, ValueError):
+        return False
+    argv = (a.decode("utf-8", errors="replace") for a in raw.split(b"\x00") if a)
+    return any(a.rsplit("/", 1)[-1] == "claude" for a in argv)
+
+
 def ephemeral_session_alive(
     eph: dict, *, proc_root: Path = _PROC_ROOT
 ) -> bool:
@@ -262,7 +280,9 @@ def ephemeral_session_alive(
     - newer claude versions write ``procStart`` (the kernel start-time
       ticks) into the file — when present, it must match
       ``/proc/<pid>/stat``, which also defeats PID reuse;
-    - otherwise the pid must exist and its ``comm`` must be ``claude``;
+    - otherwise the pid must exist and look like a claude process
+      (``comm == "claude"`` for the native binary, or ``claude`` in the
+      cmdline for npm installs running under ``node``);
     - on platforms without ``/proc`` (macOS), fall back to signal-0
       existence (no PID-reuse protection, best available).
     """
@@ -276,7 +296,7 @@ def ephemeral_session_alive(
         proc_start = eph.get("procStart")
         if proc_start is not None:
             return str(proc_start) == started
-        return _proc_comm(pid, proc_root=proc_root) == "claude"
+        return _looks_like_claude(pid, proc_root=proc_root)
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
