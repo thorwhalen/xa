@@ -59,6 +59,11 @@ class Session:
     # permission dialog, …). Purely structural — no TUI text matching.
     # Only meaningful when ``state=="live"``.
     pre_first_turn: bool = False
+    # Adverse TUI state classified from the pane of a live, *bridgeless*
+    # session (``login_required``, ``trust_prompt``, …) plus a human
+    # fix-it hint. ``None`` for healthy / non-live / bridged sessions.
+    attention: Optional[str] = None
+    attention_hint: Optional[str] = None
 
 
 def _session_from_transcript_meta(

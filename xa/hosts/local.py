@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 from dataclasses import replace
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Callable, Iterator, Optional
 
 from xa import claude_cli as ccli
 from xa import claude_fs as cfs
@@ -34,11 +34,17 @@ class LocalHost:
         claude_home: Path = cfs.DEFAULT_CLAUDE_HOME,
         claude_bin: str = ccli.DEFAULT_CLAUDE_BIN,
         tmux_bin: str = tm.DEFAULT_TMUX_BIN,
+        alive_predicate: Optional[Callable[[dict], bool]] = None,
     ) -> None:
         self.name = name
         self.claude_home = Path(claude_home)
         self.claude_bin = claude_bin
         self.tmux_bin = tmux_bin
+        # DI seam: how to decide an ephemeral session dict is backed by a
+        # real process. Defaults to the /proc-verified check; tests (and
+        # exotic hosts) inject their own. Resolved at construction time so
+        # a monkeypatched ``cfs.ephemeral_session_alive`` still takes.
+        self.alive_predicate = alive_predicate or cfs.ephemeral_session_alive
 
     # ------------------------------------------------------------------ #
     # discovery
@@ -58,12 +64,42 @@ class LocalHost:
         if include_live:
             for eph in cfs.iter_ephemeral_sessions(claude_home=self.claude_home):
                 cs = eph.get("sessionId")
-                if cs:
+                # A stale ephemeral file (claude crashed / was killed /
+                # host rebooted) must not surface as a live session — the
+                # transcript path below still emits it as transcript_only.
+                if cs and self.alive_predicate(eph):
                     live_by_cs_id[cs] = eph
             for t in tm.list_sessions(binary=self.tmux_bin):
                 pid = ccli.find_claude_pid(t.name, tmux_bin=self.tmux_bin)
                 if pid is not None:
                     tmux_by_pid[pid] = t
+
+        def _tmux_name_for(eph: dict) -> Optional[str]:
+            pid = eph.get("pid")
+            tmux_row = tmux_by_pid.get(pid) if isinstance(pid, int) else None
+            if tmux_row is not None:
+                return tmux_row.name
+            # Newer claude versions record their tmux pane ("name:@w.%p")
+            # in the ephemeral file — use it when the pid walk misses.
+            pane_ref = eph.get("tmux")
+            if isinstance(pane_ref, str) and pane_ref:
+                return pane_ref.split(":", 1)[0] or None
+            return None
+
+        def _attention_for(
+            eph: dict, tmux_name: Optional[str]
+        ) -> tuple[Optional[str], Optional[str]]:
+            """Adverse-TUI classification — only for bridgeless sessions.
+
+            A bridged session's pane renders conversation text, which can
+            legitimately mention /login; classifying it would produce
+            false alarms.
+            """
+            if eph.get("bridgeSessionId") or not tmux_name:
+                return None, None
+            pane = tm.capture_pane(tmux_name, lines=60, binary=self.tmux_bin)
+            attention = ccli.classify_pane_attention(pane)
+            return attention, ccli.attention_hint(attention, tmux_name=tmux_name)
 
         emitted: set[str] = set()
         for path in cfs.iter_transcript_files(
@@ -75,16 +111,20 @@ class LocalHost:
             if cs_id and cs_id in live_by_cs_id:
                 eph = live_by_cs_id[cs_id]
                 pid = eph.get("pid")
-                tmux_row = tmux_by_pid.get(pid) if isinstance(pid, int) else None
                 bridge = eph.get("bridgeSessionId")
+                tmux_name = _tmux_name_for(eph)
+                attention, attention_hint = _attention_for(eph, tmux_name)
                 yield replace(
                     base,
                     state="live",
                     live_pid=pid if isinstance(pid, int) else None,
-                    tmux_name=tmux_row.name if tmux_row else None,
+                    tmux_name=tmux_name,
                     bridge_session_id=bridge,
+                    name=base.name or eph.get("name"),
                     url=f"{ccli.CLAUDE_WEB_BASE}/{bridge}" if bridge else None,
                     url_source="session_file" if bridge else None,
+                    attention=attention,
+                    attention_hint=attention_hint,
                 )
                 emitted.add(cs_id)
             else:
@@ -98,8 +138,9 @@ class LocalHost:
             if cs_id in emitted:
                 continue
             pid = eph.get("pid")
-            tmux_row = tmux_by_pid.get(pid) if isinstance(pid, int) else None
             bridge = eph.get("bridgeSessionId")
+            tmux_name = _tmux_name_for(eph)
+            attention, attention_hint = _attention_for(eph, tmux_name)
             cwd = eph.get("cwd")
             slug = cfs.encode_project_slug(cwd) if cwd else ""
             created = (
@@ -119,8 +160,8 @@ class LocalHost:
                 project_slug=slug,
                 state="live",
                 live_pid=pid if isinstance(pid, int) else None,
-                tmux_name=tmux_row.name if tmux_row else None,
-                name=None,
+                tmux_name=tmux_name,
+                name=eph.get("name"),
                 summary=None,
                 first_user_message=None,
                 turn_count=0,
@@ -131,6 +172,8 @@ class LocalHost:
                 url_source="session_file" if bridge else None,
                 transcript_path=None,
                 pre_first_turn=pre_first_turn,
+                attention=attention,
+                attention_hint=attention_hint,
             )
 
     # ------------------------------------------------------------------ #

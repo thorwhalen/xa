@@ -139,6 +139,9 @@ class HTTPHost:
                     url=row.get("url"),
                     url_source=row.get("url_source"),
                     transcript_path=None,
+                    pre_first_turn=bool(row.get("pre_first_turn", False)),
+                    attention=row.get("attention"),
+                    attention_hint=row.get("attention_hint"),
                 )
             except TypeError:
                 # Server's Session shape drifted — skip rather than raise.
@@ -149,7 +152,20 @@ class HTTPHost:
     # ------------------------------------------------------------------ #
 
     def spawn(self, name: str, *, cwd: str, **opts) -> SpawnResult:
-        body = self._request("POST", "/sessions", body={"name": name, "cwd": cwd})
+        # ``wait: true`` keeps the synchronous contract this method
+        # promises (URL in the return value) now that the server defaults
+        # to async creation.
+        body = self._request(
+            "POST",
+            "/sessions",
+            body={
+                "name": name,
+                "cwd": cwd,
+                "model": opts.get("model"),
+                "effort": opts.get("effort"),
+                "wait": True,
+            },
+        )
         return SpawnResult(
             name=body.get("name", name),
             cwd=body.get("cwd", cwd),
@@ -159,6 +175,7 @@ class HTTPHost:
             url=body.get("url"),
             url_source=body.get("url_source"),
             warning=body.get("warning"),
+            attention=body.get("attention"),
         )
 
     def resume(self, claude_session_id: str, *, cwd: str, **opts) -> SpawnResult:
@@ -167,7 +184,11 @@ class HTTPHost:
         body = self._request(
             "POST",
             f"/sessions/{claude_session_id}/resume",
-            body={"name": opts.get("name")},
+            body={
+                "name": opts.get("name"),
+                "model": opts.get("model"),
+                "effort": opts.get("effort"),
+            },
         )
         return SpawnResult(
             name=body.get("name", ""),
@@ -178,6 +199,7 @@ class HTTPHost:
             url=body.get("url"),
             url_source=body.get("url_source"),
             warning=body.get("warning"),
+            attention=body.get("attention"),
         )
 
     def kill(self, name: str) -> None:
