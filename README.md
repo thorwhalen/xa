@@ -285,7 +285,7 @@ print(result.url)
 
 # Read the archive.
 events = xa.default_events_store()
-panes  = xa.default_pane_store()
+panes = xa.default_pane_store()
 for rec in xa.records(events, panes):
     print(rec.id, rec.gone_reason, rec.url)
 ```

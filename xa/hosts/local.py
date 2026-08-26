@@ -126,9 +126,7 @@ class LocalHost:
                 pid = eph.get("pid")
                 bridge = eph.get("bridgeSessionId")
                 tmux_name, tmux_pane = _tmux_target_for(eph)
-                attention, attention_hint = _attention_for(
-                    eph, tmux_name, tmux_pane
-                )
+                attention, attention_hint = _attention_for(eph, tmux_name, tmux_pane)
                 yield replace(
                     base,
                     state="live",

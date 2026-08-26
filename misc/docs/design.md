@@ -65,14 +65,20 @@ Candidate signatures (keyword-only from 2nd arg):
 
 ```python
 def iter_transcript_files(claude_home: Path = ...) -> Iterator[Path]: ...
-def parse_project_slug(slug: str) -> str: ...       # "-root-py-proj-x" → "/root/py/proj/x"
-def encode_project_slug(cwd: str) -> str: ...       # inverse
+def parse_project_slug(slug: str) -> str: ...  # "-root-py-proj-x" → "/root/py/proj/x"
+def encode_project_slug(cwd: str) -> str: ...  # inverse
 def read_ephemeral_session(pid: int, *, claude_home: Path = ...) -> dict | None: ...
 def iter_ephemeral_sessions(*, claude_home: Path = ...) -> Iterator[dict]: ...
-def transcript_metadata(path: Path) -> TranscriptMeta: ...   # cwd, summary, name, fork_of, turn_count, first_user_message
+def transcript_metadata(
+    path: Path,
+) -> TranscriptMeta: ...  # cwd, summary, name, fork_of, turn_count, first_user_message
 def iter_transcript_events(path: Path) -> Iterator[TranscriptEvent]: ...
-def transcript_forensics(path: Path) -> TranscriptForensics: ...  # last_tool_use, last_tool_result, exit_code, markers
-def history_iter(*, claude_home: Path = ...) -> Iterator[HistoryEntry]: ...   # ~/.claude/history.jsonl
+def transcript_forensics(
+    path: Path,
+) -> TranscriptForensics: ...  # last_tool_use, last_tool_result, exit_code, markers
+def history_iter(
+    *, claude_home: Path = ...
+) -> Iterator[HistoryEntry]: ...  # ~/.claude/history.jsonl
 ```
 
 Key invariants worth encoding:
@@ -93,8 +99,8 @@ def tmux_kill_session(name: str, *, binary: str = "tmux") -> None: ...
 def tmux_capture_pane(name: str, *, lines: int = 200, binary: str = "tmux") -> str: ...
 def tmux_pipe_pane_to_file(name: str, *, path: Path, binary: str = "tmux") -> None: ...
 def tmux_pane_pid(name: str, *, binary: str = "tmux") -> int | None: ...
-def tmux_descendants(pid: int) -> list[int]: ...        # via /proc, no pstree dep
-def tmux_session_target(name: str) -> str: ...          # the ":" trick — critical
+def tmux_descendants(pid: int) -> list[int]: ...  # via /proc, no pstree dep
+def tmux_session_target(name: str) -> str: ...  # the ":" trick — critical
 ```
 
 Lessons to enshrine:
@@ -116,19 +122,24 @@ def spawn_session(
     url_timeout_sec: float = 120.0,
     auto_remote_control: bool = True,
     pane_log_path: Path | None = None,
-) -> SpawnResult: ...   # name, pid, url, url_source, claude_session_id
+) -> SpawnResult: ...  # name, pid, url, url_source, claude_session_id
+
 
 def resume_session(
     claude_session_id: str,
     *,
     cwd: str,
-    name: str | None = None,          # auto: "{base}-r{n}"
+    name: str | None = None,  # auto: "{base}-r{n}"
     claude_bin: str = "claude",
     url_timeout_sec: float = 120.0,
 ) -> SpawnResult: ...
 
+
 def resolve_bridge_url(session_name: str) -> tuple[str | None, str | None]: ...
+
+
 # returns (url, source) where source ∈ {"session_file", "pane_capture", None}
+
 
 def send_remote_control(session_name: str) -> None: ...
 ```
@@ -152,8 +163,8 @@ class Host(Protocol):
     name: str
     kind: Literal["local", "ssh", "http"]
 
-    def transcripts_root(self) -> Path: ...          # local path (possibly cached)
-    def ephemeral_root(self) -> Path | None: ...     # None if not directly readable
+    def transcripts_root(self) -> Path: ...  # local path (possibly cached)
+    def ephemeral_root(self) -> Path | None: ...  # None if not directly readable
     def list_live_tmux(self) -> list[TmuxSession]: ...
     def spawn(self, name: str, cwd: str, **opts) -> SpawnResult: ...
     def resume(self, claude_session_id: str, cwd: str, **opts) -> SpawnResult: ...
@@ -187,7 +198,7 @@ Ultra-thin wrapper over [`dol`](https://github.com/i2mint/dol) `KV` stores:
 Two stores are enough for v1:
 
 ```python
-events_store: MutableMapping[str, dict]     # one dict per event; iterable in order
+events_store: MutableMapping[str, dict]  # one dict per event; iterable in order
 pane_log_store: MutableMapping[str, bytes]  # session_id → pane log bytes
 ```
 
@@ -202,11 +213,18 @@ independent of FastAPI / HTTP.
 
 ```python
 def append_event(store, event: dict) -> None: ...
-def reconcile(store, live_sessions: list[TmuxSession], *, now: float = ...) -> list[dict]: ...
-def classify_death(pane_log_bytes: bytes, forensics: TranscriptForensics | None) -> DeathReason: ...
+def reconcile(
+    store, live_sessions: list[TmuxSession], *, now: float = ...
+) -> list[dict]: ...
+def classify_death(
+    pane_log_bytes: bytes, forensics: TranscriptForensics | None
+) -> DeathReason: ...
 def session_records(store) -> list[SessionRecord]: ...
 
-DeathReason = Literal["clean_exit", "abrupt", "interrupted", "tool_crash", "replaced", "missing"]
+
+DeathReason = Literal[
+    "clean_exit", "abrupt", "interrupted", "tool_crash", "replaced", "missing"
+]
 ```
 
 Death-time is always **pane-log mtime**, never reconcile-run time. The
@@ -222,11 +240,11 @@ Single dataclass. Everything above collapses into this.
 @dataclass(frozen=True)
 class Session:
     # identity
-    id: str                              # tmux-session-ish, or synthetic for pure-transcript
-    claude_session_id: str | None        # UUID from claude; identifies the transcript
-    bridge_session_id: str | None        # the phone URL's tail
+    id: str  # tmux-session-ish, or synthetic for pure-transcript
+    claude_session_id: str | None  # UUID from claude; identifies the transcript
+    bridge_session_id: str | None  # the phone URL's tail
     # location
-    host: str                            # Host.name
+    host: str  # Host.name
     cwd: str
     project_slug: str
     # status
@@ -234,7 +252,7 @@ class Session:
     live_pid: int | None
     death_reason: DeathReason | None
     # content
-    name: str | None                     # custom title via /rename
+    name: str | None  # custom title via /rename
     summary: str | None
     first_user_message: str | None
     turn_count: int
@@ -244,7 +262,7 @@ class Session:
     modified: float | None
     gone: float | None
     # derived
-    url: str | None                      # https://claude.ai/code/...
+    url: str | None  # https://claude.ai/code/...
     url_source: Literal["session_file", "pane_capture"] | None
 ```
 
@@ -254,12 +272,13 @@ Discovery API:
 def list_sessions(
     hosts: Iterable[Host] = (LocalHost(),),
     *,
-    state: Collection[str] | None = None,        # filter
+    state: Collection[str] | None = None,  # filter
     project: str | None = None,
     include_forks: bool = False,
-    search: str | None = None,                    # full-text over transcripts
+    search: str | None = None,  # full-text over transcripts
     limit: int | None = None,
 ) -> list[Session]: ...
+
 
 def resume(session: Session, *, host: Host | None = None, **opts) -> SpawnResult: ...
 def kill(session: Session, *, host: Host | None = None) -> None: ...
@@ -278,9 +297,9 @@ standalone `uvicorn` launch.
 ```python
 def build_api(
     *,
-    hosts: dict[str, Host],                      # named hosts (incl. "local")
+    hosts: dict[str, Host],  # named hosts (incl. "local")
     archive_store,
-    auth: Callable[..., Any],                    # FastAPI dependency
+    auth: Callable[..., Any],  # FastAPI dependency
     mount_prefix: str = "/api/xa",
     include_webui: bool = False,
 ) -> FastAPI: ...

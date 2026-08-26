@@ -444,8 +444,8 @@ def prepare_spawn(
         remote_control=auto_remote_control,
     )
     rc_via_flag = auto_remote_control and "--remote-control" not in skipped
-    shell_cmd = (
-        f"cd {shlex.quote(cwd)} && exec " + " ".join(shlex.quote(a) for a in argv)
+    shell_cmd = f"cd {shlex.quote(cwd)} && exec " + " ".join(
+        shlex.quote(a) for a in argv
     )
 
     ctx, ctx_pane_log, _sid = _build_archive_ctx(

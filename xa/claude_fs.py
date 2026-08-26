@@ -275,9 +275,7 @@ def _looks_like_claude(pid: int, *, proc_root: Path = _PROC_ROOT) -> bool:
     return any(a.rsplit("/", 1)[-1] == "claude" for a in argv)
 
 
-def ephemeral_session_alive(
-    eph: dict, *, proc_root: Path = _PROC_ROOT
-) -> bool:
+def ephemeral_session_alive(eph: dict, *, proc_root: Path = _PROC_ROOT) -> bool:
     """Is the process behind an ephemeral session dict actually alive?
 
     The mere presence of ``~/.claude/sessions/<pid>.json`` proves nothing:

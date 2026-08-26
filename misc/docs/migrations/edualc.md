@@ -40,12 +40,8 @@ from xa import store as xa_store
 # Same env-var contract as before so /opt/tw_platform/.env keeps working.
 USERNAME = os.environ.get("EDUALC_USERNAME", "lkjfds")
 PASSWORD = os.environ.get("EDUALC_PASSWORD", "sdfjklsdfjkl")
-STATE_DIR = Path(
-    os.environ.get("EDUALC_STATE_DIR", str(Path.home() / ".edualc"))
-)
-CAPTCHA_KEY = os.environ.get("EDUALC_CAPTCHA_KEY") or (
-    "captcha:" + PASSWORD
-)
+STATE_DIR = Path(os.environ.get("EDUALC_STATE_DIR", str(Path.home() / ".edualc")))
+CAPTCHA_KEY = os.environ.get("EDUALC_CAPTCHA_KEY") or ("captcha:" + PASSWORD)
 
 events_store = xa_store.JsonLinesStore(STATE_DIR / "sessions.jsonl")
 pane_store = xa_store.FileStore(STATE_DIR / "panes", suffix=".log")
@@ -56,9 +52,7 @@ app = xa_service.build_api(
     events_store=events_store,
     pane_store=pane_store,
     session_prefix=os.environ.get("EDUALC_SESSION_PREFIX", "edu-"),
-    claude_bin=os.environ.get(
-        "EDUALC_CLAUDE_BIN", "/root/.local/bin/claude"
-    ),
+    claude_bin=os.environ.get("EDUALC_CLAUDE_BIN", "/root/.local/bin/claude"),
     title="edualc (powered by xa)",
 )
 ```
@@ -146,12 +140,17 @@ read/write the same files.
   ```python
   import threading, time
   from xa import tmux
+
+
   def _loop():
       while True:
           try:
               xa_service.arch.reconcile(events_store, pane_store, tmux.list_sessions())
-          except Exception: pass
+          except Exception:
+              pass
           time.sleep(60)
+
+
   threading.Thread(target=_loop, daemon=True).start()
   ```
   For most deployments the on-request freshening is enough.
