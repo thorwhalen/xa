@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.tmux &mdash; xa 0.1.4 documentation</title>
+  <title>xa.tmux &mdash; xa 0.1.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fd825880"></script>
+      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -68,7 +68,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.descendants"><code class="docutils literal notranslate"><span class="pre">descendants()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.list_sessions"><code class="docutils literal notranslate"><span class="pre">list_sessions()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.new_session"><code class="docutils literal notranslate"><span class="pre">new_session()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.tmux.pane_count"><code class="docutils literal notranslate"><span class="pre">pane_count()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.pane_pid"><code class="docutils literal notranslate"><span class="pre">pane_pid()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.tmux.pane_pids"><code class="docutils literal notranslate"><span class="pre">pane_pids()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.tmux.pane_target"><code class="docutils literal notranslate"><span class="pre">pane_target()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.pipe_pane_to_file"><code class="docutils literal notranslate"><span class="pre">pipe_pane_to_file()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.proc_comm"><code class="docutils literal notranslate"><span class="pre">proc_comm()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.tmux.rename_session"><code class="docutils literal notranslate"><span class="pre">rename_session()</span></code></a></li>
@@ -125,7 +128,9 @@ server isn’t running; tmux exits non-zero in that case and we absorb it.</p></
 <dl class="py function">
 <dt class="sig sig-object py" id="xa.tmux.capture_pane">
 <span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">capture_pane</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#capture_pane"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.capture_pane" title="Link to this definition"></a></dt>
-<dd><p>Return the last <code class="docutils literal notranslate"><span class="pre">lines</span></code> of the session’s first pane, or ‘’ on failure.</p>
+<dd><p>Return the last <code class="docutils literal notranslate"><span class="pre">lines</span></code> of the targeted pane, or ‘’ on failure.</p>
+<p><code class="docutils literal notranslate"><span class="pre">name</span></code> may be a session name (targets its active pane) or a full
+pane ref (<code class="docutils literal notranslate"><span class="pre">session:&#64;w.%p</span></code>) for an exact pane.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -152,9 +157,41 @@ Use <code class="docutils literal notranslate"><span class="pre">shlex.quote</sp
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="xa.tmux.pane_count">
+<span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">pane_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#pane_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.pane_count" title="Link to this definition"></a></dt>
+<dd><p>Number of panes (across all windows) in the session; 0 if gone.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="xa.tmux.pane_pid">
 <span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">pane_pid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#pane_pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.pane_pid" title="Link to this definition"></a></dt>
 <dd><p>Return the pid of the first pane’s program, or None if the session is gone.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.tmux.pane_pids">
+<span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">pane_pids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#pane_pids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.pane_pids" title="Link to this definition"></a></dt>
+<dd><p>PIDs of every pane program in the session (all windows, all panes).</p>
+<p>Empty list when the session is gone. <code class="docutils literal notranslate"><span class="pre">name</span></code> may be a session name
+or a full pane ref — <code class="docutils literal notranslate"><span class="pre">-s</span></code> scopes to the containing session either way.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.tmux.pane_target">
+<span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">pane_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#pane_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.pane_target" title="Link to this definition"></a></dt>
+<dd><p>Target string for pane-scoped commands (capture, send-keys).</p>
+<p>Accepts either a bare session name or a full tmux pane ref
+(<code class="docutils literal notranslate"><span class="pre">session:&#64;window.%pane</span></code> — the shape claude records in its ephemeral
+session file). A bare name targets the session’s <em>active</em> pane, which
+may not be the claude pane in a multi-window session — pass the full
+ref whenever you have one. Session names in xa match
+<code class="docutils literal notranslate"><span class="pre">[A-Za-z0-9_.-]</span></code> so they can never contain a <code class="docutils literal notranslate"><span class="pre">:</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pane_target</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">)</span>
+<span class="go">'foo:'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pane_target</span><span class="p">(</span><span class="s1">'foo:@1.%2'</span><span class="p">)</span>
+<span class="go">'foo:@1.%2'</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -182,15 +219,17 @@ used elsewhere in <code class="docutils literal notranslate"><span class="pre">x
 <dl class="py function">
 <dt class="sig sig-object py" id="xa.tmux.send_keys">
 <span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">send_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#send_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.send_keys" title="Link to this definition"></a></dt>
-<dd><p>Send one or more keys/strings to the pane. Always pass <code class="docutils literal notranslate"><span class="pre">&quot;Enter&quot;</span></code> for newline.</p>
+<dd><p>Send one or more keys/strings to the targeted pane.</p>
+<p>Always pass <code class="docutils literal notranslate"><span class="pre">&quot;Enter&quot;</span></code> for newline. <code class="docutils literal notranslate"><span class="pre">name</span></code> may be a session name
+(targets its active pane) or a full pane ref for an exact pane.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="xa.tmux.session_target">
 <span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">session_target</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#session_target"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.session_target" title="Link to this definition"></a></dt>
 <dd><p>Return the canonical target string for a session.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">session_target</span><span class="p">(</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
-<span class="go">&#39;foo:&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">session_target</span><span class="p">(</span><span class="s1">'foo'</span><span class="p">)</span>
+<span class="go">'foo:'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -207,7 +246,7 @@ used elsewhere in <code class="docutils literal notranslate"><span class="pre">x
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

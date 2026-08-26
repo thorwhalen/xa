@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.hosts &mdash; xa 0.1.4 documentation</title>
+  <title>xa.hosts &mdash; xa 0.1.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fd825880"></script>
+      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -88,18 +88,18 @@
            <div itemprop="articleBody">
              
   <h1>Source code for xa.hosts</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Host abstraction — local, SSH, HTTP backends.</span>
+<span></span><span class="sd">"""Host abstraction — local, SSH, HTTP backends.</span>
 
 <span class="sd">A ``Host`` is anything that can enumerate Claude Code sessions and</span>
 <span class="sd">perform lifecycle actions on them (spawn / resume / kill). All transports</span>
 <span class="sd">return the same :class:`xa.sessions.Session` shape so higher layers</span>
-<span class="sd">don&#39;t care whether sessions live on this machine, on another machine</span>
+<span class="sd">don't care whether sessions live on this machine, on another machine</span>
 <span class="sd">over SSH, or behind another ``xa`` server over HTTPS.</span>
 
 <span class="sd">The protocol is duck-typed (``runtime_checkable``), so user extensions</span>
 <span class="sd">only need to implement the methods they actually use — unused methods</span>
 <span class="sd">can raise ``NotImplementedError``.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -112,10 +112,10 @@
 <a class="viewcode-back" href="../../module_docs/xa/hosts.html#xa.Host">[docs]</a>
 <span class="nd">@runtime_checkable</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Host</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Duck-typed interface every transport satisfies.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Duck-typed interface every transport satisfies."""</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># &#39;local&#39; / &#39;ssh&#39; / &#39;http&#39;</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># 'local' / 'ssh' / 'http'</span>
 
     <span class="c1"># Discovery ----------------------------------------------------------- #</span>
 
@@ -124,7 +124,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">project_slug</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">include_live</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">&quot;Session&quot;</span><span class="p">]:</span>  <span class="c1"># noqa: F821 — forward-referenced</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">"Session"</span><span class="p">]:</span>  <span class="c1"># noqa: F821 — forward-referenced</span>
         <span class="o">...</span>
 
     <span class="c1"># Actions ------------------------------------------------------------- #</span>
@@ -143,7 +143,7 @@
 
 
 <span class="c1"># Concrete hosts. Imports are guarded so that installing xa without</span>
-<span class="c1"># e.g. fastapi doesn&#39;t break the basic Host protocol import.</span>
+<span class="c1"># e.g. fastapi doesn't break the basic Host protocol import.</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts.local</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalHost</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts.ssh</span><span class="w"> </span><span class="kn">import</span> <span class="n">SSHHost</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts.http</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPHost</span>  <span class="c1"># noqa: E402</span>
@@ -152,12 +152,12 @@
 <div class="viewcode-block" id="default_hosts">
 <a class="viewcode-back" href="../../module_docs/xa/hosts.html#xa.default_hosts">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">default_hosts</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Host</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The out-of-the-box registry: one local host, nothing else.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;local&quot;</span><span class="p">:</span> <span class="n">LocalHost</span><span class="p">()}</span></div>
+<span class="w">    </span><span class="sd">"""The out-of-the-box registry: one local host, nothing else."""</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"local"</span><span class="p">:</span> <span class="n">LocalHost</span><span class="p">()}</span></div>
 
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Host&quot;</span><span class="p">,</span> <span class="s2">&quot;LocalHost&quot;</span><span class="p">,</span> <span class="s2">&quot;SSHHost&quot;</span><span class="p">,</span> <span class="s2">&quot;HTTPHost&quot;</span><span class="p">,</span> <span class="s2">&quot;default_hosts&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"Host"</span><span class="p">,</span> <span class="s2">"LocalHost"</span><span class="p">,</span> <span class="s2">"SSHHost"</span><span class="p">,</span> <span class="s2">"HTTPHost"</span><span class="p">,</span> <span class="s2">"default_hosts"</span><span class="p">]</span>
 </pre></div>
 
            </div>
@@ -167,7 +167,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

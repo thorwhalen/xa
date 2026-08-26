@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.hosts.local &mdash; xa 0.1.4 documentation</title>
+  <title>xa.hosts.local &mdash; xa 0.1.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=fd825880"></script>
+      <script src="../../../_static/documentation_options.js?v=59fadc99"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -89,18 +89,18 @@
            <div itemprop="articleBody">
              
   <h1>Source code for xa.hosts.local</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Local in-process host.</span>
+<span></span><span class="sd">"""Local in-process host.</span>
 
 <span class="sd">All discovery and actions hit the local filesystem / tmux / ``claude``</span>
 <span class="sd">binary directly. Most ``xa`` users never instantiate any other host.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_cli</span> <span class="k">as</span> <span class="n">ccli</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_fs</span> <span class="k">as</span> <span class="n">cfs</span>
@@ -116,22 +116,28 @@
 <div class="viewcode-block" id="LocalHost">
 <a class="viewcode-back" href="../../../module_docs/xa/hosts/local.html#xa.LocalHost">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">LocalHost</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The machine ``xa`` is running on.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The machine ``xa`` is running on."""</span>
 
-    <span class="n">kind</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="s2">"local"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"local"</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
         <span class="n">claude_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_BIN</span><span class="p">,</span>
         <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
+        <span class="n">alive_predicate</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">dict</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">claude_home</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">claude_home</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span> <span class="o">=</span> <span class="n">claude_bin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span> <span class="o">=</span> <span class="n">tmux_bin</span>
+        <span class="c1"># DI seam: how to decide an ephemeral session dict is backed by a</span>
+        <span class="c1"># real process. Defaults to the /proc-verified check; tests (and</span>
+        <span class="c1"># exotic hosts) inject their own. Resolved at construction time so</span>
+        <span class="c1"># a monkeypatched ``cfs.ephemeral_session_alive`` still takes.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alive_predicate</span> <span class="o">=</span> <span class="n">alive_predicate</span> <span class="ow">or</span> <span class="n">cfs</span><span class="o">.</span><span class="n">ephemeral_session_alive</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
     <span class="c1"># discovery</span>
@@ -142,7 +148,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">project_slug</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">include_live</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">&quot;Session&quot;</span><span class="p">]:</span>  <span class="c1"># noqa: F821 — forward-ref</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="s2">"Session"</span><span class="p">]:</span>  <span class="c1"># noqa: F821 — forward-ref</span>
         <span class="c1"># Local import avoids an import cycle (sessions → hosts → local).</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">xa.sessions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span><span class="p">,</span> <span class="n">_session_from_transcript_meta</span>
 
@@ -150,13 +156,56 @@
         <span class="n">tmux_by_pid</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">tm</span><span class="o">.</span><span class="n">TmuxSession</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">include_live</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">eph</span> <span class="ow">in</span> <span class="n">cfs</span><span class="o">.</span><span class="n">iter_ephemeral_sessions</span><span class="p">(</span><span class="n">claude_home</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">claude_home</span><span class="p">):</span>
-                <span class="n">cs</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sessionId&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cs</span><span class="p">:</span>
+                <span class="n">cs</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sessionId"</span><span class="p">)</span>
+                <span class="c1"># A stale ephemeral file (claude crashed / was killed /</span>
+                <span class="c1"># host rebooted) must not surface as a live session — the</span>
+                <span class="c1"># transcript path below still emits it as transcript_only.</span>
+                <span class="k">if</span> <span class="n">cs</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">alive_predicate</span><span class="p">(</span><span class="n">eph</span><span class="p">):</span>
                     <span class="n">live_by_cs_id</span><span class="p">[</span><span class="n">cs</span><span class="p">]</span> <span class="o">=</span> <span class="n">eph</span>
             <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">(</span><span class="n">binary</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">):</span>
                 <span class="n">pid</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">find_claude_pid</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">tmux_by_pid</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_tmux_target_for</span><span class="p">(</span><span class="n">eph</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">            </span><span class="sd">"""Return ``(tmux_name, tmux_pane)`` for an ephemeral session.</span>
+
+<span class="sd">            ``tmux_name`` (session-scoped: kill decisions, attach hints)</span>
+<span class="sd">            comes from the pid walk, or from the session part of the</span>
+<span class="sd">            pane ref newer claudes record in the ephemeral file.</span>
+<span class="sd">            ``tmux_pane`` is that full pane ref ("name:@w.%p") — the only</span>
+<span class="sd">            target that reliably addresses the *claude* pane in a</span>
+<span class="sd">            multi-window workspace.</span>
+<span class="sd">            """</span>
+            <span class="n">pane_ref</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tmux"</span><span class="p">)</span>
+            <span class="n">tmux_pane</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">pane_ref</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pane_ref</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">":"</span> <span class="ow">in</span> <span class="n">pane_ref</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="p">)</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"pid"</span><span class="p">)</span>
+            <span class="n">tmux_row</span> <span class="o">=</span> <span class="n">tmux_by_pid</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">tmux_row</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">tmux_row</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tmux_pane</span>
+            <span class="k">if</span> <span class="n">tmux_pane</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">tmux_pane</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tmux_pane</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_attention_for</span><span class="p">(</span>
+            <span class="n">eph</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">tmux_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">tmux_pane</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">            </span><span class="sd">"""Adverse-TUI classification — only for bridgeless sessions.</span>
+
+<span class="sd">            A bridged session's pane renders conversation text, which can</span>
+<span class="sd">            legitimately mention /login; classifying it would produce</span>
+<span class="sd">            false alarms. Captures the exact claude pane when known — a</span>
+<span class="sd">            bare session name resolves to the *active* pane, which could</span>
+<span class="sd">            be an unrelated window of a shared workspace.</span>
+<span class="sd">            """</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">tmux_name</span>
+            <span class="k">if</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bridgeSessionId"</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="n">pane</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span>
+            <span class="n">attention</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">classify_pane_attention</span><span class="p">(</span><span class="n">pane</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">attention</span><span class="p">,</span> <span class="n">ccli</span><span class="o">.</span><span class="n">attention_hint</span><span class="p">(</span><span class="n">attention</span><span class="p">,</span> <span class="n">tmux_name</span><span class="o">=</span><span class="n">tmux_name</span><span class="p">)</span>
 
         <span class="n">emitted</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">cfs</span><span class="o">.</span><span class="n">iter_transcript_files</span><span class="p">(</span>
@@ -167,17 +216,24 @@
             <span class="n">cs_id</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">claude_session_id</span>
             <span class="k">if</span> <span class="n">cs_id</span> <span class="ow">and</span> <span class="n">cs_id</span> <span class="ow">in</span> <span class="n">live_by_cs_id</span><span class="p">:</span>
                 <span class="n">eph</span> <span class="o">=</span> <span class="n">live_by_cs_id</span><span class="p">[</span><span class="n">cs_id</span><span class="p">]</span>
-                <span class="n">pid</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">)</span>
-                <span class="n">tmux_row</span> <span class="o">=</span> <span class="n">tmux_by_pid</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-                <span class="n">bridge</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bridgeSessionId&quot;</span><span class="p">)</span>
+                <span class="n">pid</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"pid"</span><span class="p">)</span>
+                <span class="n">bridge</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bridgeSessionId"</span><span class="p">)</span>
+                <span class="n">tmux_name</span><span class="p">,</span> <span class="n">tmux_pane</span> <span class="o">=</span> <span class="n">_tmux_target_for</span><span class="p">(</span><span class="n">eph</span><span class="p">)</span>
+                <span class="n">attention</span><span class="p">,</span> <span class="n">attention_hint</span> <span class="o">=</span> <span class="n">_attention_for</span><span class="p">(</span>
+                    <span class="n">eph</span><span class="p">,</span> <span class="n">tmux_name</span><span class="p">,</span> <span class="n">tmux_pane</span>
+                <span class="p">)</span>
                 <span class="k">yield</span> <span class="n">replace</span><span class="p">(</span>
                     <span class="n">base</span><span class="p">,</span>
-                    <span class="n">state</span><span class="o">=</span><span class="s2">&quot;live&quot;</span><span class="p">,</span>
+                    <span class="n">state</span><span class="o">=</span><span class="s2">"live"</span><span class="p">,</span>
                     <span class="n">live_pid</span><span class="o">=</span><span class="n">pid</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">tmux_name</span><span class="o">=</span><span class="n">tmux_row</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">tmux_row</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">tmux_name</span><span class="o">=</span><span class="n">tmux_name</span><span class="p">,</span>
+                    <span class="n">tmux_pane</span><span class="o">=</span><span class="n">tmux_pane</span><span class="p">,</span>
                     <span class="n">bridge_session_id</span><span class="o">=</span><span class="n">bridge</span><span class="p">,</span>
-                    <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ccli</span><span class="o">.</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">url_source</span><span class="o">=</span><span class="s2">&quot;session_file&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">base</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+                    <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">ccli</span><span class="o">.</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">url_source</span><span class="o">=</span><span class="s2">"session_file"</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">attention</span><span class="o">=</span><span class="n">attention</span><span class="p">,</span>
+                    <span class="n">attention_hint</span><span class="o">=</span><span class="n">attention_hint</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="n">emitted</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">cs_id</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -190,14 +246,15 @@
         <span class="k">for</span> <span class="n">cs_id</span><span class="p">,</span> <span class="n">eph</span> <span class="ow">in</span> <span class="n">live_by_cs_id</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">cs_id</span> <span class="ow">in</span> <span class="n">emitted</span><span class="p">:</span>
                 <span class="k">continue</span>
-            <span class="n">pid</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pid&quot;</span><span class="p">)</span>
-            <span class="n">tmux_row</span> <span class="o">=</span> <span class="n">tmux_by_pid</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="n">bridge</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bridgeSessionId&quot;</span><span class="p">)</span>
-            <span class="n">cwd</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cwd&quot;</span><span class="p">)</span>
-            <span class="n">slug</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">encode_project_slug</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span> <span class="k">if</span> <span class="n">cwd</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">pid</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"pid"</span><span class="p">)</span>
+            <span class="n">bridge</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bridgeSessionId"</span><span class="p">)</span>
+            <span class="n">tmux_name</span><span class="p">,</span> <span class="n">tmux_pane</span> <span class="o">=</span> <span class="n">_tmux_target_for</span><span class="p">(</span><span class="n">eph</span><span class="p">)</span>
+            <span class="n">attention</span><span class="p">,</span> <span class="n">attention_hint</span> <span class="o">=</span> <span class="n">_attention_for</span><span class="p">(</span><span class="n">eph</span><span class="p">,</span> <span class="n">tmux_name</span><span class="p">,</span> <span class="n">tmux_pane</span><span class="p">)</span>
+            <span class="n">cwd</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cwd"</span><span class="p">)</span>
+            <span class="n">slug</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">encode_project_slug</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span> <span class="k">if</span> <span class="n">cwd</span> <span class="k">else</span> <span class="s2">""</span>
             <span class="n">created</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;startedAt&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;startedAt&quot;</span><span class="p">),</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+                <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"startedAt"</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"startedAt"</span><span class="p">),</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
                 <span class="k">else</span> <span class="kc">None</span>
             <span class="p">)</span>
             <span class="n">pre_first_turn</span> <span class="o">=</span> <span class="p">(</span>
@@ -210,20 +267,23 @@
                 <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
                 <span class="n">project_slug</span><span class="o">=</span><span class="n">slug</span><span class="p">,</span>
-                <span class="n">state</span><span class="o">=</span><span class="s2">&quot;live&quot;</span><span class="p">,</span>
+                <span class="n">state</span><span class="o">=</span><span class="s2">"live"</span><span class="p">,</span>
                 <span class="n">live_pid</span><span class="o">=</span><span class="n">pid</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="n">tmux_name</span><span class="o">=</span><span class="n">tmux_row</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">tmux_row</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">tmux_name</span><span class="o">=</span><span class="n">tmux_name</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
                 <span class="n">summary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">first_user_message</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">turn_count</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">forked_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">created</span><span class="o">=</span><span class="n">created</span><span class="p">,</span>
                 <span class="n">modified</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ccli</span><span class="o">.</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                <span class="n">url_source</span><span class="o">=</span><span class="s2">&quot;session_file&quot;</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">url</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">ccli</span><span class="o">.</span><span class="n">CLAUDE_WEB_BASE</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bridge</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">url_source</span><span class="o">=</span><span class="s2">"session_file"</span> <span class="k">if</span> <span class="n">bridge</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">transcript_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">pre_first_turn</span><span class="o">=</span><span class="n">pre_first_turn</span><span class="p">,</span>
+                <span class="n">attention</span><span class="o">=</span><span class="n">attention</span><span class="p">,</span>
+                <span class="n">attention_hint</span><span class="o">=</span><span class="n">attention_hint</span><span class="p">,</span>
+                <span class="n">tmux_pane</span><span class="o">=</span><span class="n">tmux_pane</span><span class="p">,</span>
             <span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------------------ #</span>
@@ -234,15 +294,15 @@
         <span class="c1"># Host-level defaults are overridable by the caller via opts.</span>
         <span class="c1"># Without setdefault, ``**opts`` would collide with the explicit</span>
         <span class="c1"># ``claude_bin=`` below (TypeError: got multiple values for …).</span>
-        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;claude_bin&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">)</span>
-        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;claude_home&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_home</span><span class="p">)</span>
-        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;tmux_bin&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span>
+        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"claude_bin"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">)</span>
+        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"claude_home"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_home</span><span class="p">)</span>
+        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"tmux_bin"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ccli</span><span class="o">.</span><span class="n">spawn_session</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">claude_session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">:</span>
-        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;claude_bin&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">)</span>
-        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;claude_home&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_home</span><span class="p">)</span>
-        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;tmux_bin&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span>
+        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"claude_bin"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_bin</span><span class="p">)</span>
+        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"claude_home"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">claude_home</span><span class="p">)</span>
+        <span class="n">opts</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"tmux_bin"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ccli</span><span class="o">.</span><span class="n">resume_session</span><span class="p">(</span><span class="n">claude_session_id</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -254,7 +314,7 @@
 <div class="viewcode-block" id="LocalHost.sync">
 <a class="viewcode-back" href="../../../module_docs/xa/hosts/local.html#xa.LocalHost.sync">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;No-op — local has nothing to sync.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">"""No-op — local has nothing to sync."""</span></div>
 </div>
 
 </pre></div>
@@ -266,7 +326,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

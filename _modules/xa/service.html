@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.service &mdash; xa 0.1.4 documentation</title>
+  <title>xa.service &mdash; xa 0.1.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fd825880"></script>
+      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -88,7 +88,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for xa.service</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;FastAPI service for ``xa``.</span>
+<span></span><span class="sd">"""FastAPI service for ``xa``.</span>
 
 <span class="sd">``build_api(...)`` returns a mountable ``FastAPI`` app that reimplements</span>
 <span class="sd">the ``edualc`` route surface on top of the ``xa`` primitives. The service</span>
@@ -98,17 +98,20 @@
 
 <span class="sd">FastAPI is an optional dependency. Import ``xa.service`` only when you</span>
 <span class="sd">have installed ``xa[service]`` (pulls in ``fastapi`` + ``uvicorn``).</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hmac</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span>
@@ -127,6 +130,13 @@
     <span class="k">class</span><span class="w"> </span><span class="nc">CreateReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
         <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># per-session claude --model (no flag if empty)</span>
+        <span class="n">effort</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># per-session claude --effort (no flag if empty)</span>
+        <span class="c1"># True (default): block until the bridge URL appears — the</span>
+        <span class="c1"># original synchronous wire contract, preserved for API users.</span>
+        <span class="c1"># False: return as soon as the tmux session exists and poll</span>
+        <span class="c1"># GET /sessions for the URL (what the bundled webui does).</span>
+        <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">DeleteReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
         <span class="n">captcha_token</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -134,9 +144,11 @@
 
     <span class="k">class</span><span class="w"> </span><span class="nc">ResumeReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
         <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">effort</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">LabelReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-        <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># null or &quot;&quot; clears</span>
+        <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># null or "" clears</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">HideReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
         <span class="n">hidden</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
@@ -152,15 +164,15 @@
 <div class="viewcode-block" id="make_basic_auth">
 <a class="viewcode-back" href="../../module_docs/xa/service.html#xa.service.make_basic_auth">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_basic_auth</span><span class="p">(</span><span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a FastAPI dependency that enforces HTTP Basic auth.</span>
+<span class="w">    </span><span class="sd">"""Build a FastAPI dependency that enforces HTTP Basic auth.</span>
 
 <span class="sd">    Returns a callable suitable for ``Depends(...)``. Uses</span>
 <span class="sd">    ``secrets.compare_digest`` to avoid timing leaks.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">status</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.security</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPBasic</span><span class="p">,</span> <span class="n">HTTPBasicCredentials</span>
 
-    <span class="n">basic</span> <span class="o">=</span> <span class="n">HTTPBasic</span><span class="p">(</span><span class="n">realm</span><span class="o">=</span><span class="s2">&quot;xa&quot;</span><span class="p">)</span>
+    <span class="n">basic</span> <span class="o">=</span> <span class="n">HTTPBasic</span><span class="p">(</span><span class="n">realm</span><span class="o">=</span><span class="s2">"xa"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_require_auth</span><span class="p">(</span><span class="n">creds</span><span class="p">:</span> <span class="n">HTTPBasicCredentials</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">basic</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">user_ok</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="n">creds</span><span class="o">.</span><span class="n">username</span><span class="p">,</span> <span class="n">username</span><span class="p">)</span>
@@ -168,8 +180,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">user_ok</span> <span class="ow">and</span> <span class="n">pass_ok</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
                 <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_401_UNAUTHORIZED</span><span class="p">,</span>
-                <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid credentials&quot;</span><span class="p">,</span>
-                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;WWW-Authenticate&quot;</span><span class="p">:</span> <span class="s1">&#39;Basic realm=&quot;xa&quot;&#39;</span><span class="p">},</span>
+                <span class="n">detail</span><span class="o">=</span><span class="s2">"Invalid credentials"</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">"WWW-Authenticate"</span><span class="p">:</span> <span class="s1">'Basic realm="xa"'</span><span class="p">},</span>
             <span class="p">)</span>
         <span class="k">return</span> <span class="n">creds</span><span class="o">.</span><span class="n">username</span>
 
@@ -180,13 +192,13 @@
 <div class="viewcode-block" id="allow_all">
 <a class="viewcode-back" href="../../module_docs/xa/service.html#xa.service.allow_all">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">allow_all</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;No-op auth dependency. Useful when the service is behind an external</span>
+<span class="w">    </span><span class="sd">"""No-op auth dependency. Useful when the service is behind an external</span>
 <span class="sd">    auth layer (enlace, reverse-proxy mTLS) that already gated the request.</span>
 
 <span class="sd">    FastAPI inspects the signature to decide what to inject; keep this</span>
-<span class="sd">    nullary so it isn&#39;t treated as query-parameter binding.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="s2">&quot;anonymous&quot;</span></div>
+<span class="sd">    nullary so it isn't treated as query-parameter binding.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="s2">"anonymous"</span></div>
 
 
 
@@ -198,13 +210,13 @@
 <div class="viewcode-block" id="Captcha">
 <a class="viewcode-back" href="../../module_docs/xa/service.html#xa.service.Captcha">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Captcha</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stateless 4-letter captcha with an HMAC-signed token.</span>
+<span class="w">    </span><span class="sd">"""Stateless 4-letter captcha with an HMAC-signed token.</span>
 
 <span class="sd">    The signing key never leaves the server. Tokens are</span>
 <span class="sd">    ``b64(CHALLENGE.EXPIRY).SIG`` where SIG = HMAC-SHA256(key, payload).</span>
 <span class="sd">    Multi-worker safe; no server-side state. Pass one instance of this</span>
 <span class="sd">    class to :func:`build_api` to enable captcha-gated deletes.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ttl_sec</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">120</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
@@ -212,18 +224,18 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_sign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">sig</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;=&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="sa">b</span><span class="s2">"="</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Captcha.issue">
 <a class="viewcode-back" href="../../module_docs/xa/service.html#xa.service.Captcha.issue">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">issue</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return ``(token, challenge, ttl_sec)``.&quot;&quot;&quot;</span>
-        <span class="n">challenge</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
+<span class="w">        </span><span class="sd">"""Return ``(token, challenge, ttl_sec)``."""</span>
+        <span class="n">challenge</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
         <span class="n">expiry</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ttl_sec</span>
-        <span class="n">payload</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">challenge</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">expiry</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+        <span class="n">payload</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">challenge</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">expiry</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
         <span class="n">token</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;=&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
-            <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+            <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64encode</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="sa">b</span><span class="s2">"="</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+            <span class="o">+</span> <span class="s2">"."</span>
             <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sign</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">token</span><span class="p">,</span> <span class="n">challenge</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ttl_sec</span></div>
@@ -231,10 +243,10 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">b64_payload</span><span class="p">,</span> <span class="n">sig</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">padded</span> <span class="o">=</span> <span class="n">b64_payload</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">b64_payload</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="n">b64_payload</span><span class="p">,</span> <span class="n">sig</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">padded</span> <span class="o">=</span> <span class="n">b64_payload</span> <span class="o">+</span> <span class="s2">"="</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">b64_payload</span><span class="p">)</span> <span class="o">%</span> <span class="mi">4</span><span class="p">)</span>
             <span class="n">payload</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">urlsafe_b64decode</span><span class="p">(</span><span class="n">padded</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
-            <span class="n">challenge</span><span class="p">,</span> <span class="n">expiry_s</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+            <span class="n">challenge</span><span class="p">,</span> <span class="n">expiry_s</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
             <span class="n">expiry</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">expiry_s</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">UnicodeDecodeError</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
@@ -242,7 +254,7 @@
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">expiry</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="n">secrets</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="n">challenge</span><span class="p">,</span> <span class="p">(</span><span class="n">answer</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span></div>
+        <span class="k">return</span> <span class="n">secrets</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span><span class="n">challenge</span><span class="p">,</span> <span class="p">(</span><span class="n">answer</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span></div>
 
 
 
@@ -251,7 +263,12 @@
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
 
-<span class="n">_NAME_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[A-Za-z0-9_.-]{1,48}$&quot;</span><span class="p">)</span>
+<span class="n">_NAME_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[A-Za-z0-9_.-]{1,48}$"</span><span class="p">)</span>
+
+<span class="c1"># Model / effort values ride into a shell command (shlex-quoted, so this</span>
+<span class="c1"># is defense-in-depth plus early typo feedback). Permissive enough for</span>
+<span class="c1"># real model ids — dots, colons, slashes, brackets (e.g. "opus[1m]").</span>
+<span class="n">_OPT_VALUE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[A-Za-z0-9._:\[\]@/-]{1,64}$"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="build_api">
@@ -264,27 +281,27 @@
     <span class="n">captcha</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Captcha</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
     <span class="n">claude_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_BIN</span><span class="p">,</span>
-    <span class="n">session_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;xa-&quot;</span><span class="p">,</span>
-    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;xa&quot;</span><span class="p">,</span>
-    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.1&quot;</span><span class="p">,</span>
+    <span class="n">session_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xa-"</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"xa"</span><span class="p">,</span>
+    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"0.1"</span><span class="p">,</span>
     <span class="n">include_webui</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">default_folder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a ``FastAPI`` app exposing ``xa``&#39;s session + archive surface.</span>
+<span class="w">    </span><span class="sd">"""Return a ``FastAPI`` app exposing ``xa``'s session + archive surface.</span>
 
 <span class="sd">    The caller composes this app into whatever process they have: mount</span>
 <span class="sd">    under ``/api/xa/`` inside enlace, or run standalone via ``uvicorn``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Body</span><span class="p">,</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">FastAPI</span><span class="p">,</span> <span class="n">HTTPException</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlainTextResponse</span>
 
     <span class="c1"># Use ``is None`` — not ``or`` — because an empty ``JsonLinesStore``</span>
     <span class="c1"># is falsy (``__len__`` == 0) which would silently substitute the</span>
-    <span class="c1"># default store and lose the caller&#39;s one.</span>
+    <span class="c1"># default store and lose the caller's one.</span>
     <span class="n">events</span> <span class="o">=</span> <span class="n">events_store</span> <span class="k">if</span> <span class="n">events_store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">st</span><span class="o">.</span><span class="n">default_events_store</span><span class="p">()</span>
     <span class="n">panes</span> <span class="o">=</span> <span class="n">pane_store</span> <span class="k">if</span> <span class="n">pane_store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">st</span><span class="o">.</span><span class="n">default_pane_store</span><span class="p">()</span>
-    <span class="c1"># Default working directory the webui prefills into the &quot;new session&quot;</span>
+    <span class="c1"># Default working directory the webui prefills into the "new session"</span>
     <span class="c1"># dialog and the folder chooser opens at. Resolved lazily so tests /</span>
     <span class="c1"># callers can point at a tmp dir via the keyword arg.</span>
     <span class="n">_default_folder</span> <span class="o">=</span> <span class="p">(</span>
@@ -294,13 +311,13 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_session_dict</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">sess</span><span class="o">.</span><span class="n">Session</span><span class="p">,</span> <span class="n">overlay_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="n">d</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">"transcript_path"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"transcript_path"</span><span class="p">])</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s2">"transcript_path"</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="p">)</span>
         <span class="c1"># Apply a label/hidden overlay if present. Lookup order goes from</span>
         <span class="c1"># most session-specific to least: archive id (= claude session id</span>
         <span class="c1"># for transcript-only sessions) → claude_session_id → tmux_name.</span>
-        <span class="c1"># tmux names get reused, so they&#39;re last to avoid an old session&#39;s</span>
+        <span class="c1"># tmux names get reused, so they're last to avoid an old session's</span>
         <span class="c1"># label leaking onto a new one of the same name.</span>
         <span class="n">ov</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">overlay_map</span><span class="p">:</span>
@@ -308,24 +325,24 @@
                 <span class="k">if</span> <span class="n">key</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">overlay_map</span><span class="p">:</span>
                     <span class="n">ov</span> <span class="o">=</span> <span class="n">overlay_map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
                     <span class="k">break</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ov</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;label&quot;</span><span class="p">)</span>
-        <span class="n">d</span><span class="p">[</span><span class="s2">&quot;hidden&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">ov</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hidden&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ov</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"label"</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">[</span><span class="s2">"hidden"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">ov</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"hidden"</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">d</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_record_dict</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">arch</span><span class="o">.</span><span class="n">ArchiveRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
 
-    <span class="n">_ARCHIVE_ID_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[0-9a-f]{6,64}$&quot;</span><span class="p">)</span>
+    <span class="n">_ARCHIVE_ID_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[0-9a-f]{6,64}$"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">sess</span><span class="o">.</span><span class="n">Session</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find a Session by tmux name, claude session id (full or prefix),</span>
+<span class="w">        </span><span class="sd">"""Find a Session by tmux name, claude session id (full or prefix),</span>
 <span class="sd">        or edualc archive id.</span>
 
 <span class="sd">        ``sess.get_session`` only knows about claude session ids and tmux</span>
 <span class="sd">        names; archive ids live in the events store. This helper bridges</span>
 <span class="sd">        the two so /info, /label and /resume all accept the same id forms</span>
 <span class="sd">        the webui already shows on its session cards.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">s</span>
@@ -344,17 +361,17 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_generate_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">()}</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
-            <span class="n">stub</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
-            <span class="n">candidate</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">session_prefix</span><span class="si">}{</span><span class="n">stub</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">stub</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span>
+            <span class="n">candidate</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">session_prefix</span><span class="si">}{</span><span class="n">stub</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">if</span> <span class="n">candidate</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">candidate</span>
-        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;Could not generate a unique session name&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="s2">"Could not generate a unique session name"</span><span class="p">)</span>
 
     <span class="c1"># --------------------------------------------------------------------- #</span>
     <span class="c1"># sessions</span>
     <span class="c1"># --------------------------------------------------------------------- #</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/sessions&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/sessions"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">list_sessions</span><span class="p">(</span>
         <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span>
         <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -375,101 +392,176 @@
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="n">overlay_map</span> <span class="o">=</span> <span class="n">arch</span><span class="o">.</span><span class="n">overlays</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;sessions&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_session_dict</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">overlay_map</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"sessions"</span><span class="p">:</span> <span class="p">[</span><span class="n">_session_dict</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">overlay_map</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/sessions&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/sessions"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_session</span><span class="p">(</span><span class="n">req</span><span class="p">:</span> <span class="n">CreateReq</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">_generate_name</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
-                <span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid name (allowed: letters, digits, _.-, max 48)&quot;</span>
+                <span class="mi">400</span><span class="p">,</span> <span class="s2">"Invalid name (allowed: letters, digits, _.-, max 48)"</span>
             <span class="p">)</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">model</span><span class="p">),</span> <span class="p">(</span><span class="s2">"effort"</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">effort</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_OPT_VALUE_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Invalid </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> value: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">()}</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">409</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Session &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; already exists&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">409</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Session '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' already exists"</span><span class="p">)</span>
         <span class="n">cwd</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">cwd</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">())</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;cwd does not exist: </span><span class="si">{</span><span class="n">cwd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"cwd does not exist: </span><span class="si">{</span><span class="n">cwd</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">spawn_session</span><span class="p">(</span>
+            <span class="c1"># Fast part: tmux session created, pane piped, `created` event</span>
+            <span class="c1"># emitted. Fails loudly here (name clash, bad cwd, no tmux).</span>
+            <span class="n">pending</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">prepare_spawn</span><span class="p">(</span>
                 <span class="n">name</span><span class="p">,</span>
                 <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
                 <span class="n">claude_bin</span><span class="o">=</span><span class="n">claude_bin</span><span class="p">,</span>
                 <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+                <span class="n">claude_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">model</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">effort</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">effort</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">archive_store</span><span class="o">=</span><span class="n">events</span><span class="p">,</span>
                 <span class="n">pane_store</span><span class="o">=</span><span class="n">panes</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">wait</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">complete_spawn</span><span class="p">(</span><span class="n">pending</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">"name"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">"cwd"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
+                <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"complete"</span><span class="p">,</span>
+                <span class="s2">"url"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="s2">"url_source"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url_source</span><span class="p">,</span>
+                <span class="s2">"claude_session_id"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
+                <span class="s2">"warning"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">,</span>
+                <span class="s2">"attention"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">attention</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="c1"># Slow part (URL wait, prompt dismissal, url_acquired event) runs in</span>
+        <span class="c1"># the background. All completion state lands in shared substrates</span>
+        <span class="c1"># (tmux, ~/.claude/sessions/, the events log), so any worker — or a</span>
+        <span class="c1"># webui poll of /sessions — observes it; no in-process registry.</span>
+        <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">ccli</span><span class="o">.</span><span class="n">complete_spawn</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">pending</span><span class="p">,),</span>
+            <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"xa-spawn-</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
-            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
-            <span class="s2">&quot;url_source&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url_source</span><span class="p">,</span>
-            <span class="s2">&quot;claude_session_id&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
-            <span class="s2">&quot;warning&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">,</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">"cwd"</span><span class="p">:</span> <span class="n">cwd</span><span class="p">,</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"starting"</span><span class="p">,</span>
+            <span class="s2">"url"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"url_source"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"claude_session_id"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="c1"># Every create response honors the url-or-warning invariant.</span>
+            <span class="s2">"warning"</span><span class="p">:</span> <span class="n">pending</span><span class="o">.</span><span class="n">warning</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="s2">"Session starting — remote-control URL not ready yet; "</span>
+                <span class="s2">"poll GET /sessions for the url."</span>
+            <span class="p">),</span>
+            <span class="s2">"attention"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{name}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">"/sessions/</span><span class="si">{name}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete_session</span><span class="p">(</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">req</span><span class="p">:</span> <span class="n">DeleteReq</span> <span class="o">=</span> <span class="n">Body</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">DeleteReq</span><span class="p">()),</span>
         <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid session name&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">"Invalid session name"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">captcha</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">captcha</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">captcha_token</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">captcha_answer</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">captcha</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">captcha_token</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">captcha_answer</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
-                    <span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Captcha failed — request a new one and try again&quot;</span>
+                    <span class="mi">400</span><span class="p">,</span> <span class="s2">"Captcha failed — request a new one and try again"</span>
                 <span class="p">)</span>
-        <span class="n">existing</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">()}</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No such session: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">tm</span><span class="o">.</span><span class="n">kill_session</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;killed&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{id}</span><span class="s2">/info&quot;</span><span class="p">)</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_tmux_kill</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">tm</span><span class="o">.</span><span class="n">kill_session</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"killed"</span><span class="p">:</span> <span class="n">target</span><span class="p">}</span>
+
+        <span class="n">existing</span> <span class="o">=</span> <span class="p">{</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">()}</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_tmux_kill</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># Not a raw tmux name — resolve like /info does (claude session id,</span>
+        <span class="c1"># full or prefix, or archive id) and kill whatever backs it.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">"live"</span><span class="p">:</span>
+            <span class="c1"># Kill the whole tmux session only when it is DEDICATED to</span>
+            <span class="c1"># this claude (single pane, claude verified in it) — a claude</span>
+            <span class="c1"># living in one window of a shared workspace must not take</span>
+            <span class="c1"># the workspace down with it.</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span>
+                <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span> <span class="ow">in</span> <span class="n">existing</span>
+                <span class="ow">and</span> <span class="n">ccli</span><span class="o">.</span><span class="n">tmux_session_dedicated_to</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">live_pid</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="k">return</span> <span class="n">_tmux_kill</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">)</span>
+            <span class="c1"># Otherwise signal exactly the one claude — identity-verified</span>
+            <span class="c1"># so a recycled pid can never direct a kill at a bystander.</span>
+            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">live_pid</span> <span class="ow">and</span> <span class="n">ccli</span><span class="o">.</span><span class="n">pid_is_claude</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">live_pid</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">live_pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ProcessLookupError</span><span class="p">:</span>
+                    <span class="k">pass</span>  <span class="c1"># already gone — fall through to 404</span>
+                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"kill pid </span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">live_pid</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">{</span><span class="s2">"killed"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"pid </span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">live_pid</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+            <span class="mi">404</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"No live session matching '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' — it may have already "</span>
+            <span class="sa">f</span><span class="s2">"exited; refresh the list."</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/sessions/</span><span class="si">{id}</span><span class="s2">/info"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">session_info</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No session matching &#39;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"No session matching '</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">_session_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">:</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;forensics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">cfs</span><span class="o">.</span><span class="n">transcript_forensics</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">))</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;forensics&quot;</span><span class="p">][</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="nb">str</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;forensics&quot;</span><span class="p">][</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;forensics&quot;</span><span class="p">][</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"forensics"</span><span class="p">]</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">cfs</span><span class="o">.</span><span class="n">transcript_forensics</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">))</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"forensics"</span><span class="p">][</span><span class="s2">"transcript_path"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">"forensics"</span><span class="p">][</span><span class="s2">"transcript_path"</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">out</span><span class="p">[</span><span class="s2">"forensics"</span><span class="p">][</span><span class="s2">"transcript_path"</span><span class="p">]</span>
                 <span class="k">else</span> <span class="kc">None</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">:</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;pane_tail&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">"live"</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">):</span>
+            <span class="c1"># Prefer the exact claude pane — a bare session name targets</span>
+            <span class="c1"># the *active* pane, which may be a different window.</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"pane_tail"</span><span class="p">]</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{id}</span><span class="s2">/diagnose&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/sessions/</span><span class="si">{id}</span><span class="s2">/diagnose"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">diagnose</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span> <span class="n">tail_kb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Single-stop &quot;what happened&quot; for a session.</span>
+<span class="w">        </span><span class="sd">"""Single-stop "what happened" for a session.</span>
 
 <span class="sd">        Accepts the same id forms as /info: tmux name, claude session id</span>
 <span class="sd">        (full or unique prefix), or archive id. Combines the existing</span>
 <span class="sd">        forensics, pane tail, and a synthesized human-readable hint. The</span>
 <span class="sd">        hint draws on the same signals ``archive.classify_death`` uses,</span>
 <span class="sd">        so it stays consistent with the death reason shown elsewhere.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No session matching &#39;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"No session matching '</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
 
-        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="n">_session_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)}</span>
+        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"session"</span><span class="p">:</span> <span class="n">_session_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)}</span>
 
         <span class="c1"># Transcript forensics — works for live and archived sessions both.</span>
         <span class="n">forensics_obj</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">cfs</span><span class="o">.</span><span class="n">TranscriptForensics</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -480,13 +572,13 @@
                 <span class="n">forensics_obj</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="n">forensics_obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">fdict</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">forensics_obj</span><span class="p">)</span>
-                <span class="n">fdict</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="nb">str</span><span class="p">(</span><span class="n">fdict</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">])</span> <span class="k">if</span> <span class="n">fdict</span><span class="p">[</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">fdict</span><span class="p">[</span><span class="s2">"transcript_path"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">fdict</span><span class="p">[</span><span class="s2">"transcript_path"</span><span class="p">])</span> <span class="k">if</span> <span class="n">fdict</span><span class="p">[</span><span class="s2">"transcript_path"</span><span class="p">]</span> <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">)</span>
-                <span class="n">out</span><span class="p">[</span><span class="s2">&quot;forensics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fdict</span>
+                <span class="n">out</span><span class="p">[</span><span class="s2">"forensics"</span><span class="p">]</span> <span class="o">=</span> <span class="n">fdict</span>
 
         <span class="c1"># Locate the matching archive record (lookup by claude_session_id</span>
-        <span class="c1"># via the records table — that&#39;s the join key the events store</span>
+        <span class="c1"># via the records table — that's the join key the events store</span>
         <span class="c1"># already exposes).</span>
         <span class="n">archive_rec</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">arch</span><span class="o">.</span><span class="n">ArchiveRecord</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
@@ -498,29 +590,29 @@
         <span class="c1"># Pane tail. Live: capture from tmux. Archived: read from pane store.</span>
         <span class="n">oom_markers</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
         <span class="n">pane_tail</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">:</span>
-            <span class="n">pane_tail</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">"live"</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">):</span>
+            <span class="n">pane_tail</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">archive_rec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">panes</span><span class="p">:</span>
             <span class="n">cap</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">tail_kb</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">pane_tail</span> <span class="o">=</span> <span class="n">panes</span><span class="p">[</span><span class="n">archive_rec</span><span class="o">.</span><span class="n">id</span><span class="p">][</span><span class="o">-</span><span class="n">cap</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span>
-                    <span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span>
+                    <span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="n">pane_tail</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">pane_tail</span><span class="p">:</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;pane_tail&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pane_tail</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"pane_tail"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pane_tail</span>
             <span class="n">oom_markers</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">arch</span><span class="o">.</span><span class="n">_OOM_PANE_MARKERS</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">pane_tail</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">oom_markers</span><span class="p">:</span>
-                <span class="n">out</span><span class="p">[</span><span class="s2">&quot;oom_signals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">oom_markers</span><span class="p">)</span>
+                <span class="n">out</span><span class="p">[</span><span class="s2">"oom_signals"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">oom_markers</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">archive_rec</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;archive_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">id</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;gone_reason&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">gone_reason</span>
-            <span class="n">out</span><span class="p">[</span><span class="s2">&quot;gone&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">gone</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"archive_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"gone_reason"</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">gone_reason</span>
+            <span class="n">out</span><span class="p">[</span><span class="s2">"gone"</span><span class="p">]</span> <span class="o">=</span> <span class="n">archive_rec</span><span class="o">.</span><span class="n">gone</span>
 
-        <span class="c1"># Synthesize the hint — consistent with classify_death&#39;s verdict.</span>
-        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;hint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arch</span><span class="o">.</span><span class="n">synthesize_diagnosis</span><span class="p">(</span>
+        <span class="c1"># Synthesize the hint — consistent with classify_death's verdict.</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">"hint"</span><span class="p">]</span> <span class="o">=</span> <span class="n">arch</span><span class="o">.</span><span class="n">synthesize_diagnosis</span><span class="p">(</span>
             <span class="n">state</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">state</span><span class="p">,</span>
             <span class="n">reason</span><span class="o">=</span><span class="n">archive_rec</span><span class="o">.</span><span class="n">gone_reason</span> <span class="k">if</span> <span class="n">archive_rec</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">forensics</span><span class="o">=</span><span class="n">forensics_obj</span><span class="p">,</span>
@@ -528,48 +620,97 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{id}</span><span class="s2">/resume&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/sessions/</span><span class="si">{id}</span><span class="s2">/resume"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">req</span><span class="p">:</span> <span class="n">ResumeReq</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No resumable session matching &#39;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"No resumable session matching '</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">model</span><span class="p">),</span> <span class="p">(</span><span class="s2">"effort"</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">effort</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_OPT_VALUE_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Invalid </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> value: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span>
                 <span class="n">s</span><span class="p">,</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">claude_bin</span><span class="o">=</span><span class="n">claude_bin</span><span class="p">,</span>
                 <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+                <span class="n">model</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">model</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">effort</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">effort</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-            <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
-            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
-            <span class="s2">&quot;url_source&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url_source</span><span class="p">,</span>
-            <span class="s2">&quot;claude_session_id&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
-            <span class="s2">&quot;warning&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">,</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">"cwd"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
+            <span class="s2">"url"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+            <span class="s2">"url_source"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url_source</span><span class="p">,</span>
+            <span class="s2">"claude_session_id"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
+            <span class="s2">"warning"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">,</span>
         <span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;/sessions/</span><span class="si">{id}</span><span class="s2">/label&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/sessions/</span><span class="si">{id}</span><span class="s2">/remote-control"</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_remote_control</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Make a live, bridgeless, tmux-hosted session remote-reachable.</span>
+
+<span class="sd">        Sends ``/remote-control`` into the pane (once, prompts permitting)</span>
+<span class="sd">        and waits briefly for the bridge URL. When it can't succeed —</span>
+<span class="sd">        logged-out claude, not tmux-hosted — the response says exactly why</span>
+<span class="sd">        and how to fix it by hand.</span>
+<span class="sd">        """</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"No session matching '</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s2">"live"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">409</span><span class="p">,</span> <span class="s2">"Session is not live"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">"url"</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                <span class="s2">"url_source"</span><span class="p">:</span> <span class="n">s</span><span class="o">.</span><span class="n">url_source</span><span class="p">,</span>
+                <span class="s2">"attention"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">"hint"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">"already_enabled"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+                <span class="mi">409</span><span class="p">,</span>
+                <span class="s2">"Session is not tmux-hosted — attach the terminal that "</span>
+                <span class="s2">"started it and run /remote-control there."</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># Target the exact claude pane when known: sending keystrokes at</span>
+        <span class="c1"># the bare session name would type into whatever pane is active.</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">attention</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">request_remote_control</span><span class="p">(</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"url"</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+            <span class="s2">"url_source"</span><span class="p">:</span> <span class="n">src</span><span class="p">,</span>
+            <span class="s2">"attention"</span><span class="p">:</span> <span class="n">attention</span><span class="p">,</span>
+            <span class="s2">"hint"</span><span class="p">:</span> <span class="n">ccli</span><span class="o">.</span><span class="n">attention_hint</span><span class="p">(</span><span class="n">attention</span><span class="p">,</span> <span class="n">tmux_name</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">),</span>
+            <span class="s2">"already_enabled"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="nd">@app</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">"/sessions/</span><span class="si">{id}</span><span class="s2">/label"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_label</span><span class="p">(</span>
         <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">req</span><span class="p">:</span> <span class="n">LabelReq</span> <span class="o">=</span> <span class="n">Body</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">LabelReq</span><span class="p">()),</span>
         <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set (or clear) a display label for a session.</span>
+<span class="w">        </span><span class="sd">"""Set (or clear) a display label for a session.</span>
 
 <span class="sd">        Accepts any of: tmux session name, archive id, claude session id.</span>
 <span class="sd">        For a live session, also renames the tmux session so lookups by</span>
 <span class="sd">        the new name work natively. For archived / transcript-only</span>
 <span class="sd">        sessions, the label is kept as an overlay only.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">label</span> <span class="o">=</span> <span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">label</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<span class="sd">        """</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">label</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">label</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">label</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Label must match [A-Za-z0-9_.-]{1,48}&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">"Label must match [A-Za-z0-9_.-]{1,48}"</span><span class="p">)</span>
 
         <span class="c1"># Try to find a matching Session (live or transcript-only). If</span>
         <span class="c1"># none, we still accept the request and record the overlay —</span>
@@ -581,11 +722,11 @@
 
         <span class="n">keys_to_label</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">id</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span> <span class="ow">and</span> <span class="n">label</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">"live"</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span> <span class="ow">and</span> <span class="n">label</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">tm</span><span class="o">.</span><span class="n">rename_session</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;tmux rename failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"tmux rename failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys_to_label</span><span class="p">:</span>
                 <span class="n">keys_to_label</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">claude_session_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keys_to_label</span><span class="p">:</span>
@@ -595,31 +736,31 @@
 
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys_to_label</span><span class="p">:</span>
             <span class="n">arch</span><span class="o">.</span><span class="n">append_label</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="nb">id</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="nb">id</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">:</span> <span class="n">label</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/archive/</span><span class="si">{archive_id}</span><span class="s2">/hide&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/archive/</span><span class="si">{archive_id}</span><span class="s2">/hide"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">hide</span><span class="p">(</span>
         <span class="n">archive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">req</span><span class="p">:</span> <span class="n">HideReq</span> <span class="o">=</span> <span class="n">Body</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">HideReq</span><span class="p">()),</span>
         <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[0-9a-f]{6,64}&quot;</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid archive id&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[0-9a-f]{6,64}"</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">"Invalid archive id"</span><span class="p">)</span>
         <span class="n">arch</span><span class="o">.</span><span class="n">append_hidden</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">archive_id</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">hidden</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">archive_id</span><span class="p">,</span> <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="n">req</span><span class="o">.</span><span class="n">hidden</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="n">archive_id</span><span class="p">,</span> <span class="s2">"hidden"</span><span class="p">:</span> <span class="n">req</span><span class="o">.</span><span class="n">hidden</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/archive/</span><span class="si">{archive_id}</span><span class="s2">/hide&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">"/archive/</span><span class="si">{archive_id}</span><span class="s2">/hide"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">unhide</span><span class="p">(</span><span class="n">archive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[0-9a-f]{6,64}&quot;</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid archive id&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[0-9a-f]{6,64}"</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">"Invalid archive id"</span><span class="p">)</span>
         <span class="n">arch</span><span class="o">.</span><span class="n">append_hidden</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">archive_id</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">archive_id</span><span class="p">,</span> <span class="s2">&quot;hidden&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="n">archive_id</span><span class="p">,</span> <span class="s2">"hidden"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
     <span class="c1"># --------------------------------------------------------------------- #</span>
     <span class="c1"># archive</span>
     <span class="c1"># --------------------------------------------------------------------- #</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/archive&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/archive"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">archive_list</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">arch</span><span class="o">.</span><span class="n">reconcile</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">panes</span><span class="p">,</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">(),</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
@@ -628,41 +769,41 @@
         <span class="n">recs</span> <span class="o">=</span> <span class="n">arch</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">panes</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
             <span class="n">recs</span> <span class="o">=</span> <span class="n">recs</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;sessions&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">_record_dict</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">recs</span><span class="p">]}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"sessions"</span><span class="p">:</span> <span class="p">[</span><span class="n">_record_dict</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">recs</span><span class="p">]}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/archive/</span><span class="si">{archive_id}</span><span class="s2">/forensics&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/archive/</span><span class="si">{archive_id}</span><span class="s2">/forensics"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">archive_forensics</span><span class="p">(</span><span class="n">archive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[0-9a-f]{6,64}&quot;</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid archive id&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[0-9a-f]{6,64}"</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">"Invalid archive id"</span><span class="p">)</span>
         <span class="n">rec</span> <span class="o">=</span> <span class="nb">next</span><span class="p">((</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">arch</span><span class="o">.</span><span class="n">records</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">panes</span><span class="p">)</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">archive_id</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="s2">&quot;No such archived session&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="s2">"No such archived session"</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">_record_dict</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">rec</span><span class="o">.</span><span class="n">cwd</span> <span class="ow">and</span> <span class="n">rec</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">(</span>
                 <span class="n">rec</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span> <span class="n">rec</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span>
             <span class="p">)</span>
             <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">out</span><span class="p">[</span><span class="s2">&quot;transcript_forensics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">cfs</span><span class="o">.</span><span class="n">transcript_forensics</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
-                <span class="n">out</span><span class="p">[</span><span class="s2">&quot;transcript_forensics&quot;</span><span class="p">][</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="nb">str</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">&quot;transcript_forensics&quot;</span><span class="p">][</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">out</span><span class="p">[</span><span class="s2">&quot;transcript_forensics&quot;</span><span class="p">][</span><span class="s2">&quot;transcript_path&quot;</span><span class="p">]</span>
+                <span class="n">out</span><span class="p">[</span><span class="s2">"transcript_forensics"</span><span class="p">]</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">cfs</span><span class="o">.</span><span class="n">transcript_forensics</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+                <span class="n">out</span><span class="p">[</span><span class="s2">"transcript_forensics"</span><span class="p">][</span><span class="s2">"transcript_path"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="s2">"transcript_forensics"</span><span class="p">][</span><span class="s2">"transcript_path"</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="n">out</span><span class="p">[</span><span class="s2">"transcript_forensics"</span><span class="p">][</span><span class="s2">"transcript_path"</span><span class="p">]</span>
                     <span class="k">else</span> <span class="kc">None</span>
                 <span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/archive/</span><span class="si">{archive_id}</span><span class="s2">/log&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/archive/</span><span class="si">{archive_id}</span><span class="s2">/log"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">archive_log</span><span class="p">(</span><span class="n">archive_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span> <span class="n">tail_kb</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">64</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[0-9a-f]{6,64}&quot;</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid archive id&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[0-9a-f]{6,64}"</span><span class="p">,</span> <span class="n">archive_id</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">"Invalid archive id"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">archive_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">panes</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="s2">&quot;No pane log for that session&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="s2">"No pane log for that session"</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">panes</span><span class="p">[</span><span class="n">archive_id</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">tail_kb</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tail_kb</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="n">tail_kb</span> <span class="o">*</span> <span class="mi">1024</span> <span class="p">:]</span>
         <span class="k">return</span> <span class="n">PlainTextResponse</span><span class="p">(</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">),</span>
-            <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;text/plain; charset=utf-8&quot;</span><span class="p">,</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">"replace"</span><span class="p">),</span>
+            <span class="n">media_type</span><span class="o">=</span><span class="s2">"text/plain; charset=utf-8"</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="c1"># --------------------------------------------------------------------- #</span>
@@ -671,61 +812,61 @@
 
     <span class="k">if</span> <span class="n">captcha</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 
-        <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/captcha&quot;</span><span class="p">)</span>
+        <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/captcha"</span><span class="p">)</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">_captcha</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
             <span class="n">token</span><span class="p">,</span> <span class="n">challenge</span><span class="p">,</span> <span class="n">ttl</span> <span class="o">=</span> <span class="n">captcha</span><span class="o">.</span><span class="n">issue</span><span class="p">()</span>
-            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span> <span class="s2">&quot;challenge&quot;</span><span class="p">:</span> <span class="n">challenge</span><span class="p">,</span> <span class="s2">&quot;ttl_sec&quot;</span><span class="p">:</span> <span class="n">ttl</span><span class="p">}</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">"token"</span><span class="p">:</span> <span class="n">token</span><span class="p">,</span> <span class="s2">"challenge"</span><span class="p">:</span> <span class="n">challenge</span><span class="p">,</span> <span class="s2">"ttl_sec"</span><span class="p">:</span> <span class="n">ttl</span><span class="p">}</span>
 
     <span class="c1"># --------------------------------------------------------------------- #</span>
     <span class="c1"># filesystem browsing (for the webui folder chooser)</span>
     <span class="c1"># --------------------------------------------------------------------- #</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/fs/default&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/fs/default"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fs_default</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">_default_folder</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"path"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">_default_folder</span><span class="p">)}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/fs/list&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/fs/list"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fs_list</span><span class="p">(</span>
         <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">),</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">show_hidden</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;List directory entries for the folder chooser.</span>
+<span class="w">        </span><span class="sd">"""List directory entries for the folder chooser.</span>
 
 <span class="sd">        No path-confinement: xa already grants code-execution via spawned</span>
-<span class="sd">        claude sessions, so restricting the browser&#39;s view would be</span>
+<span class="sd">        claude sessions, so restricting the browser's view would be</span>
 <span class="sd">        security theater. Auth is the only boundary.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">target</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">path</span> <span class="k">else</span> <span class="n">_default_folder</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Cannot resolve path: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Cannot resolve path: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No such path: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"No such path: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Not a directory: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Not a directory: </span><span class="si">{</span><span class="n">target</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">entries</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">children</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
         <span class="k">except</span> <span class="ne">PermissionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">show_hidden</span> <span class="ow">and</span> <span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">show_hidden</span> <span class="ow">and</span> <span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">is_dir</span> <span class="o">=</span> <span class="n">child</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span>
             <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
                 <span class="c1"># Broken symlink or unreadable — skip silently.</span>
                 <span class="k">continue</span>
-            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">child</span><span class="p">),</span> <span class="s2">&quot;is_dir&quot;</span><span class="p">:</span> <span class="n">is_dir</span><span class="p">})</span>
-        <span class="n">entries</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="p">(</span><span class="ow">not</span> <span class="n">e</span><span class="p">[</span><span class="s2">&quot;is_dir&quot;</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+            <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"name"</span><span class="p">:</span> <span class="n">child</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">"path"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">child</span><span class="p">),</span> <span class="s2">"is_dir"</span><span class="p">:</span> <span class="n">is_dir</span><span class="p">})</span>
+        <span class="n">entries</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="p">(</span><span class="ow">not</span> <span class="n">e</span><span class="p">[</span><span class="s2">"is_dir"</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span> <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">parent</span> <span class="o">!=</span> <span class="n">target</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="s2">&quot;parent&quot;</span><span class="p">:</span> <span class="n">parent</span><span class="p">,</span> <span class="s2">&quot;entries&quot;</span><span class="p">:</span> <span class="n">entries</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"path"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="s2">"parent"</span><span class="p">:</span> <span class="n">parent</span><span class="p">,</span> <span class="s2">"entries"</span><span class="p">:</span> <span class="n">entries</span><span class="p">}</span>
 
-    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/health&quot;</span><span class="p">)</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"/health"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">health</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;ok&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"ok"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 
     <span class="c1"># --------------------------------------------------------------------- #</span>
     <span class="c1"># optional webui</span>
@@ -738,11 +879,11 @@
     <span class="k">if</span> <span class="n">include_webui</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.staticfiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">StaticFiles</span>
 
-        <span class="n">webui_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;webui&quot;</span>
+        <span class="n">webui_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"webui"</span>
         <span class="k">if</span> <span class="n">webui_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
             <span class="c1"># `html=True` makes `/` serve `index.html` naturally.</span>
             <span class="n">app</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span>
-                <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">StaticFiles</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">webui_root</span><span class="p">),</span> <span class="n">html</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;webui&quot;</span>
+                <span class="s2">"/"</span><span class="p">,</span> <span class="n">StaticFiles</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">webui_root</span><span class="p">),</span> <span class="n">html</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">"webui"</span>
             <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">app</span></div>
@@ -756,7 +897,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

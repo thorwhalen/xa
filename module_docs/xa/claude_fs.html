@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.claude_fs &mdash; xa 0.1.4 documentation</title>
+  <title>xa.claude_fs &mdash; xa 0.1.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fd825880"></script>
+      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -58,6 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.TranscriptForensics"><code class="docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.TranscriptMeta"><code class="docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.encode_project_slug"><code class="docutils literal notranslate"><span class="pre">encode_project_slug()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.ephemeral_session_alive"><code class="docutils literal notranslate"><span class="pre">ephemeral_session_alive()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.history_iter"><code class="docutils literal notranslate"><span class="pre">history_iter()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.iter_ephemeral_sessions"><code class="docutils literal notranslate"><span class="pre">iter_ephemeral_sessions()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.claude_fs.iter_project_slugs"><code class="docutils literal notranslate"><span class="pre">iter_project_slugs()</span></code></a></li>
@@ -153,12 +154,34 @@ from it alone. Callers should corroborate against pane-log tails.</p>
 <dt class="sig sig-object py" id="xa.claude_fs.encode_project_slug">
 <span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">encode_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#encode_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.encode_project_slug" title="Link to this definition"></a></dt>
 <dd><p>Encode a cwd into the <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug form.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">&#39;/root/py/proj/tt/glossa&#39;</span><span class="p">)</span>
-<span class="go">&#39;-root-py-proj-tt-glossa&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
-<span class="go">&#39;-&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/root/py/proj/tt/glossa'</span><span class="p">)</span>
+<span class="go">'-root-py-proj-tt-glossa'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
+<span class="go">'-'</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.ephemeral_session_alive">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">ephemeral_session_alive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eph</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">proc_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/proc')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#ephemeral_session_alive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.ephemeral_session_alive" title="Link to this definition"></a></dt>
+<dd><p>Is the process behind an ephemeral session dict actually alive?</p>
+<p>The mere presence of <code class="docutils literal notranslate"><span class="pre">~/.claude/sessions/&lt;pid&gt;.json</span></code> proves nothing:
+claude removes it on clean exit, but crashes, SIGKILL, and host
+reboots leave stale files behind — and a stale file must not surface
+as a “live” session (with a dead URL, an unkillable card, and no
+postmortem).</p>
+<p>Checks, strongest first:</p>
+<ul class="simple">
+<li><p>newer claude versions write <code class="docutils literal notranslate"><span class="pre">procStart</span></code> (the kernel start-time
+ticks) into the file — when present, it must match
+<code class="docutils literal notranslate"><span class="pre">/proc/&lt;pid&gt;/stat</span></code>, which also defeats PID reuse;</p></li>
+<li><p>otherwise the pid must exist and look like a claude process
+(<code class="docutils literal notranslate"><span class="pre">comm</span> <span class="pre">==</span> <span class="pre">&quot;claude&quot;</span></code> for the native binary, or <code class="docutils literal notranslate"><span class="pre">claude</span></code> in the
+cmdline for npm installs running under <code class="docutils literal notranslate"><span class="pre">node</span></code>);</p></li>
+<li><p>on platforms without <code class="docutils literal notranslate"><span class="pre">/proc</span></code> (macOS), fall back to signal-0
+existence (no PID-reuse protection, best available).</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py function">
@@ -174,7 +197,10 @@ every transcript.</p>
 <span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">iter_ephemeral_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#iter_ephemeral_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.iter_ephemeral_sessions" title="Link to this definition"></a></dt>
 <dd><p>Yield all live ephemeral session dicts.</p>
 <p>A session file disappears when claude exits, so this reflects
-momentary state only.</p>
+momentary state only. NB: claude deletes the file on <em>clean</em> exit
+only — a crash / SIGKILL / reboot leaves a stale file behind, so
+callers who care about actual liveness must validate each dict with
+<a class="reference internal" href="#xa.claude_fs.ephemeral_session_alive" title="xa.claude_fs.ephemeral_session_alive"><code class="xref py py-func docutils literal notranslate"><span class="pre">ephemeral_session_alive()</span></code></a> (or an equivalent predicate).</p>
 </dd></dl>
 
 <dl class="py function">
@@ -204,10 +230,10 @@ stores alongside transcripts.</p>
 <dt class="sig sig-object py" id="xa.claude_fs.parse_project_slug">
 <span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">parse_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slug</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/claude_fs.html#parse_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.parse_project_slug" title="Link to this definition"></a></dt>
 <dd><p>Decode a <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug back to a cwd.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">&#39;-root-py-proj-tt-glossa&#39;</span><span class="p">)</span>
-<span class="go">&#39;/root/py/proj/tt/glossa&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">&#39;-Users-thorwhalen-tw-server&#39;</span><span class="p">)</span>
-<span class="go">&#39;/Users/thorwhalen/tw/server&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">'-root-py-proj-tt-glossa'</span><span class="p">)</span>
+<span class="go">'/root/py/proj/tt/glossa'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">'-Users-thorwhalen-tw-server'</span><span class="p">)</span>
+<span class="go">'/Users/thorwhalen/tw/server'</span>
 </pre></div>
 </div>
 <p>NB: This transform is lossy — a cwd with literal <code class="docutils literal notranslate"><span class="pre">-</span></code> in segment names
@@ -249,10 +275,10 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">home</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">td</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="p">(</span><span class="n">home</span> <span class="o">/</span> <span class="s1">&#39;projects&#39;</span> <span class="o">/</span> <span class="s1">&#39;-foo-bar&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">f</span> <span class="o">=</span> <span class="n">home</span> <span class="o">/</span> <span class="s1">&#39;projects&#39;</span> <span class="o">/</span> <span class="s1">&#39;-foo-bar&#39;</span> <span class="o">/</span> <span class="s1">&#39;aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jsonl&#39;</span>
-<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">p</span> <span class="o">=</span> <span class="n">transcript_path</span><span class="p">(</span><span class="s1">&#39;/foo/bar&#39;</span><span class="p">,</span> <span class="s1">&#39;aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee&#39;</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">home</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="n">home</span> <span class="o">/</span> <span class="s1">'projects'</span> <span class="o">/</span> <span class="s1">'-foo-bar'</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">f</span> <span class="o">=</span> <span class="n">home</span> <span class="o">/</span> <span class="s1">'projects'</span> <span class="o">/</span> <span class="s1">'-foo-bar'</span> <span class="o">/</span> <span class="s1">'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jsonl'</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">p</span> <span class="o">=</span> <span class="n">transcript_path</span><span class="p">(</span><span class="s1">'/foo/bar'</span><span class="p">,</span> <span class="s1">'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">home</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">p</span> <span class="o">==</span> <span class="n">f</span>
 <span class="go">True</span>
 </pre></div>
@@ -272,7 +298,7 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.sessions &mdash; xa 0.1.4 documentation</title>
+  <title>xa.sessions &mdash; xa 0.1.5 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=fd825880"></script>
+      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -88,12 +88,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for xa.sessions</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;The unified ``Session`` domain model and multi-host discovery.</span>
+<span></span><span class="sd">"""The unified ``Session`` domain model and multi-host discovery.</span>
 
 <span class="sd">This layer is the single thing CLI / HTTP / UI renderers iterate over.</span>
 <span class="sd">Discovery and actions are delegated to :mod:`xa.hosts`; this module</span>
 <span class="sd">composes them into a host-agnostic API.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -105,19 +105,19 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_fs</span> <span class="k">as</span> <span class="n">cfs</span>
 
 
-<span class="n">SessionState</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;live&quot;</span><span class="p">,</span> <span class="s2">&quot;archived&quot;</span><span class="p">,</span> <span class="s2">&quot;transcript_only&quot;</span><span class="p">]</span>
+<span class="n">SessionState</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"live"</span><span class="p">,</span> <span class="s2">"archived"</span><span class="p">,</span> <span class="s2">"transcript_only"</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="Session">
 <a class="viewcode-back" href="../../module_docs/xa/sessions.html#xa.Session">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Session</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Canonical session record — valid across hosts and states.</span>
+<span class="w">    </span><span class="sd">"""Canonical session record — valid across hosts and states.</span>
 
-<span class="sd">    Fields that don&#39;t apply to a given state are ``None``. Discovery</span>
+<span class="sd">    Fields that don't apply to a given state are ``None``. Discovery</span>
 <span class="sd">    functions return fresh instances; callers should treat it as</span>
 <span class="sd">    immutable.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="c1"># identity</span>
     <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
@@ -142,22 +142,33 @@
     <span class="n">modified</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
     <span class="c1"># derived</span>
     <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">url_source</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;session_file&quot;</span><span class="p">,</span> <span class="s2">&quot;pane_capture&quot;</span><span class="p">]]</span>
+    <span class="n">url_source</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">"session_file"</span><span class="p">,</span> <span class="s2">"pane_capture"</span><span class="p">]]</span>
     <span class="c1"># provenance</span>
     <span class="n">transcript_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span>
     <span class="c1"># A live session old enough to have completed a turn but with no</span>
     <span class="c1"># transcript on disk — almost certainly wedged on a startup-time</span>
     <span class="c1"># TUI prompt (/login, workspace-trust, /remote-control submenu,</span>
     <span class="c1"># permission dialog, …). Purely structural — no TUI text matching.</span>
-    <span class="c1"># Only meaningful when ``state==&quot;live&quot;``.</span>
-    <span class="n">pre_first_turn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span></div>
+    <span class="c1"># Only meaningful when ``state=="live"``.</span>
+    <span class="n">pre_first_turn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># Adverse TUI state classified from the pane of a live, *bridgeless*</span>
+    <span class="c1"># session (``login_required``, ``trust_prompt``, …) plus a human</span>
+    <span class="c1"># fix-it hint. ``None`` for healthy / non-live / bridged sessions.</span>
+    <span class="n">attention</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">attention_hint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># Full tmux pane ref ("session:@window.%pane") of the claude pane,</span>
+    <span class="c1"># from the ephemeral session file. ``tmux_name`` targets the session</span>
+    <span class="c1"># (kill, attach hints); this targets the exact pane (capture,</span>
+    <span class="c1"># send-keys) — a bare session name resolves to the *active* pane,</span>
+    <span class="c1"># which may be a different window in a shared workspace.</span>
+    <span class="n">tmux_pane</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_session_from_transcript_meta</span><span class="p">(</span>
-    <span class="n">meta</span><span class="p">:</span> <span class="n">cfs</span><span class="o">.</span><span class="n">TranscriptMeta</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;local&quot;</span>
+    <span class="n">meta</span><span class="p">:</span> <span class="n">cfs</span><span class="o">.</span><span class="n">TranscriptMeta</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"local"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Session</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a transcript-only ``Session`` from a parsed transcript.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Build a transcript-only ``Session`` from a parsed transcript."""</span>
     <span class="k">return</span> <span class="n">Session</span><span class="p">(</span>
         <span class="nb">id</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">session_id</span> <span class="ow">or</span> <span class="n">meta</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
         <span class="n">claude_session_id</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">session_id</span> <span class="ow">or</span> <span class="n">meta</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
@@ -165,7 +176,7 @@
         <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
         <span class="n">cwd</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
         <span class="n">project_slug</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">project_slug</span><span class="p">,</span>
-        <span class="n">state</span><span class="o">=</span><span class="s2">&quot;transcript_only&quot;</span><span class="p">,</span>
+        <span class="n">state</span><span class="o">=</span><span class="s2">"transcript_only"</span><span class="p">,</span>
         <span class="n">live_pid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">tmux_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">custom_title</span><span class="p">,</span>
@@ -186,7 +197,7 @@
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_default_hosts</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Host&quot;</span><span class="p">]:</span>  <span class="c1"># noqa: F821</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_hosts</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">"Host"</span><span class="p">]:</span>  <span class="c1"># noqa: F821</span>
     <span class="c1"># Local import — avoid the sessions ↔ hosts cycle at module load.</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_hosts</span>
 
@@ -207,10 +218,10 @@
     <span class="n">claude_home</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">tmux_bin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Session</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return sessions sorted by recency (live first, then newest-modified).</span>
+<span class="w">    </span><span class="sd">"""Return sessions sorted by recency (live first, then newest-modified).</span>
 
 <span class="sd">    When ``hosts`` is ``None`` we default to a single :class:`LocalHost`.</span>
-<span class="sd">    If ``claude_home`` or ``tmux_bin`` are given, they&#39;re forwarded into</span>
+<span class="sd">    If ``claude_home`` or ``tmux_bin`` are given, they're forwarded into</span>
 <span class="sd">    that default :class:`LocalHost` — handy for fixture-based tests.</span>
 
 <span class="sd">    Filters:</span>
@@ -218,17 +229,17 @@
 <span class="sd">    - ``project`` — substring match against ``cwd`` (case-insensitive)</span>
 <span class="sd">    - ``include_forks=False`` — drop sessions with a ``forked_from``</span>
 <span class="sd">    - ``include_live=False`` — skip live discovery (per host)</span>
-<span class="sd">    - ``state`` — one of ``&quot;live&quot;`` / ``&quot;archived&quot;`` / ``&quot;transcript_only&quot;``</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    - ``state`` — one of ``"live"`` / ``"archived"`` / ``"transcript_only"``</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">hosts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">claude_home</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tmux_bin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalHost</span>
 
             <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">if</span> <span class="n">claude_home</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;claude_home&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">claude_home</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">"claude_home"</span><span class="p">]</span> <span class="o">=</span> <span class="n">claude_home</span>
             <span class="k">if</span> <span class="n">tmux_bin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;tmux_bin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmux_bin</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">"tmux_bin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmux_bin</span>
             <span class="n">hosts</span> <span class="o">=</span> <span class="p">[</span><span class="n">LocalHost</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">hosts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_default_hosts</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
@@ -247,7 +258,7 @@
         <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">state</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_recency</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">Session</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="n">base</span> <span class="o">=</span> <span class="mf">2e10</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;live&quot;</span> <span class="k">else</span> <span class="mf">0.0</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="mf">2e10</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">"live"</span> <span class="k">else</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="n">base</span> <span class="o">+</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">modified</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">created</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span>
 
     <span class="n">rows</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">_recency</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -266,17 +277,17 @@
     <span class="n">include_live</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">tmux_bin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Session</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Legacy local-only iterator.</span>
+<span class="w">    </span><span class="sd">"""Legacy local-only iterator.</span>
 
 <span class="sd">    Retained for backward compatibility and because some tests construct</span>
 <span class="sd">    sessions directly from a fake ``~/.claude/``. Wraps a fresh</span>
 <span class="sd">    :class:`LocalHost`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalHost</span>
 
-    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;claude_home&quot;</span><span class="p">:</span> <span class="n">claude_home</span><span class="p">}</span>
+    <span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"claude_home"</span><span class="p">:</span> <span class="n">claude_home</span><span class="p">}</span>
     <span class="k">if</span> <span class="n">tmux_bin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;tmux_bin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmux_bin</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"tmux_bin"</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmux_bin</span>
     <span class="k">yield from</span> <span class="n">LocalHost</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">iter_sessions</span><span class="p">(</span>
         <span class="n">project_slug</span><span class="o">=</span><span class="n">project_slug</span><span class="p">,</span> <span class="n">include_live</span><span class="o">=</span><span class="n">include_live</span>
     <span class="p">)</span></div>
@@ -296,10 +307,10 @@
     <span class="n">hosts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">claude_home</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Session</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find one session by full ID or unique prefix.</span>
+<span class="w">    </span><span class="sd">"""Find one session by full ID or unique prefix.</span>
 
 <span class="sd">    Raises ``LookupError`` if the prefix is ambiguous.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rows</span> <span class="o">=</span> <span class="n">list_sessions</span><span class="p">(</span>
         <span class="n">hosts</span><span class="o">=</span><span class="n">hosts</span><span class="p">,</span>
         <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
@@ -312,9 +323,9 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="n">prefix</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">names</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">[:</span><span class="mi">12</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">prefix</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
-        <span class="n">more</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">5</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">&quot; (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="si">}</span><span class="s2"> more)&quot;</span>
-        <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ambiguous session id &#39;</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">&#39; matches: </span><span class="si">{</span><span class="n">names</span><span class="si">}{</span><span class="n">more</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">id</span><span class="p">[:</span><span class="mi">12</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">prefix</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+        <span class="n">more</span> <span class="o">=</span> <span class="s2">""</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">5</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">" (+</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">5</span><span class="si">}</span><span class="s2"> more)"</span>
+        <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Ambiguous session id '</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">' matches: </span><span class="si">{</span><span class="n">names</span><span class="si">}{</span><span class="n">more</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
@@ -325,12 +336,41 @@
     <span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">hosts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Kill the backing tmux session of a live ``Session``.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s2">&quot;live&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;session is not live — nothing to kill&quot;</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Kill a live ``Session``, scoped to what actually belongs to it.</span>
+
+<span class="sd">    Kills the backing tmux session only when it is *dedicated* to this</span>
+<span class="sd">    claude (single pane, claude verified in it) — a claude living in one</span>
+<span class="sd">    window of a shared multi-window workspace must not take the whole</span>
+<span class="sd">    workspace down, so there we SIGTERM the identity-verified pid</span>
+<span class="sd">    instead. Remote hosts keep the name-kill contract (their server</span>
+<span class="sd">    applies its own scoping). Returns a short description of what was</span>
+<span class="sd">    killed (e.g. ``"tmux:mysess"`` / ``"pid:1234"``).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s2">"live"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"session is not live — nothing to kill"</span><span class="p">)</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">_host_for</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">hosts</span><span class="p">)</span>
-    <span class="n">h</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">)</span></div>
+    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="s2">"kind"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"local"</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
+
+        <span class="n">tmux_bin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="s2">"tmux_bin"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"tmux"</span>
+        <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span> <span class="ow">and</span> <span class="n">ccli</span><span class="o">.</span><span class="n">tmux_session_dedicated_to</span><span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">live_pid</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span>
+        <span class="p">):</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"tmux:</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">live_pid</span> <span class="ow">and</span> <span class="n">ccli</span><span class="o">.</span><span class="n">pid_is_claude</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">live_pid</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">live_pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"pid:</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">live_pid</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">"cannot kill safely: the session shares its tmux workspace and "</span>
+            <span class="s2">"no verified claude pid is available"</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"session has no tmux name — nothing to kill"</span><span class="p">)</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"tmux:</span><span class="si">{</span><span class="n">session</span><span class="o">.</span><span class="n">tmux_name</span><span class="si">}</span><span class="s2">"</span></div>
 
 
 
@@ -344,25 +384,25 @@
     <span class="n">hosts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">opts</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resume a transcript / archived session on its originating host.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Resume a transcript / archived session on its originating host."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;session has no claude_session_id — cannot resume&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"session has no claude_session_id — cannot resume"</span><span class="p">)</span>
     <span class="n">target_cwd</span> <span class="o">=</span> <span class="n">cwd</span> <span class="ow">or</span> <span class="n">session</span><span class="o">.</span><span class="n">cwd</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">target_cwd</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot infer cwd — pass cwd=...&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"cannot infer cwd — pass cwd=..."</span><span class="p">)</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">_host_for</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">hosts</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">target_cwd</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_host_for</span><span class="p">(</span><span class="n">session</span><span class="p">:</span> <span class="n">Session</span><span class="p">,</span> <span class="n">hosts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve ``session.host`` to a concrete Host instance.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Resolve ``session.host`` to a concrete Host instance."""</span>
     <span class="k">if</span> <span class="n">hosts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">hosts</span> <span class="o">=</span> <span class="n">_default_hosts</span><span class="p">()</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">hosts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">h</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># Fall back to a default local host when the session&#39;s host name</span>
-        <span class="c1"># isn&#39;t in the registry — keeps single-host CLI calls working.</span>
+        <span class="c1"># Fall back to a default local host when the session's host name</span>
+        <span class="c1"># isn't in the registry — keeps single-host CLI calls working.</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalHost</span>
 
         <span class="n">h</span> <span class="o">=</span> <span class="n">LocalHost</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">session</span><span class="o">.</span><span class="n">host</span><span class="p">)</span>
@@ -376,7 +416,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
