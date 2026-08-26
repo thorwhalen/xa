@@ -378,3 +378,236 @@ def test_captcha_endpoint_and_gated_delete(tmp_path: Path) -> None:
         json={"captcha_token": cap["token"], "captcha_answer": cap["challenge"]},
     )
     assert r.status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# session creation (async default / wait=true) + kill resolution + enable-RC
+# --------------------------------------------------------------------------- #
+
+
+def _fake_session(**overrides):
+    from xa.sessions import Session
+
+    base = dict(
+        id="aaaa1111-2222-3333-4444-555555555555",
+        claude_session_id="aaaa1111-2222-3333-4444-555555555555",
+        bridge_session_id=None,
+        host="local",
+        cwd="/w",
+        project_slug="-w",
+        state="live",
+        live_pid=None,
+        tmux_name="txa",
+        name=None,
+        summary=None,
+        first_user_message=None,
+        turn_count=1,
+        forked_from=None,
+        created=None,
+        modified=None,
+        url=None,
+        url_source=None,
+        transcript_path=None,
+    )
+    base.update(overrides)
+    return Session(**base)
+
+
+def test_create_async_returns_starting_immediately(
+    app_and_stores, monkeypatch, tmp_path: Path
+) -> None:
+    import threading
+
+    client, *_ = app_and_stores
+    seen = {}
+    completed = threading.Event()
+
+    class FakePending:
+        warning = None
+
+    def fake_prepare(name, **kw):
+        seen["name"] = name
+        seen["kw"] = kw
+        return FakePending()
+
+    monkeypatch.setattr(svc.ccli, "prepare_spawn", fake_prepare)
+    monkeypatch.setattr(
+        svc.ccli, "complete_spawn", lambda pending: completed.set()
+    )
+    r = client.post(
+        "/sessions", json={"name": "s1", "cwd": str(tmp_path), "wait": False}
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "starting"
+    assert body["name"] == "s1" and body["url"] is None
+    # url-or-warning invariant: no-url responses always carry a warning.
+    assert body["warning"]
+    # The slow half runs in a background thread.
+    assert completed.wait(5)
+    # The chosen name is forwarded as the claude display name too.
+    assert seen["kw"]["claude_name"] == "s1"
+
+
+def test_create_wait_true_keeps_sync_contract(
+    app_and_stores, monkeypatch, tmp_path: Path
+) -> None:
+    from xa import claude_cli as ccli_mod
+
+    client, *_ = app_and_stores
+    fake_result = ccli_mod.SpawnResult(
+        name="s2",
+        cwd=str(tmp_path),
+        claude_pid=1,
+        claude_session_id="cs-id",
+        bridge_session_id="session_x",
+        url="https://claude.ai/code/session_x",
+        url_source="session_file",
+        warning=None,
+    )
+    monkeypatch.setattr(svc.ccli, "prepare_spawn", lambda name, **kw: object())
+    monkeypatch.setattr(svc.ccli, "complete_spawn", lambda pending: fake_result)
+    # No `wait` field: the default preserves the original synchronous
+    # wire contract (async is opt-in via wait:false).
+    r = client.post("/sessions", json={"name": "s2", "cwd": str(tmp_path)})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "complete"
+    assert body["url"] == "https://claude.ai/code/session_x"
+
+
+def test_create_rejects_shell_hostile_model_value(
+    app_and_stores, tmp_path: Path
+) -> None:
+    client, *_ = app_and_stores
+    r = client.post(
+        "/sessions",
+        json={"name": "s3", "cwd": str(tmp_path), "model": "bad value; rm"},
+    )
+    assert r.status_code == 400
+    assert "model" in r.json()["detail"]
+
+
+def test_delete_resolves_claude_session_id(app_and_stores, monkeypatch) -> None:
+    """DELETE with a claude session id kills the backing tmux session —
+    but only when that tmux session is dedicated to this claude."""
+    client, *_ = app_and_stores
+    s = _fake_session(live_pid=1234)
+    monkeypatch.setattr(
+        svc.tm,
+        "list_sessions",
+        lambda binary=None: [
+            svc.tm.TmuxSession(name="txa", created=0, activity=0, attached=False)
+        ],
+    )
+    killed: list = []
+    monkeypatch.setattr(
+        svc.tm, "kill_session", lambda n, binary=None: killed.append(n)
+    )
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(
+        svc.ccli, "tmux_session_dedicated_to", lambda name, pid, **kw: True
+    )
+    r = client.delete("/sessions/aaaa1111-2222-3333-4444-555555555555")
+    assert r.status_code == 200
+    assert killed == ["txa"]
+
+
+def test_delete_shared_workspace_signals_only_the_pid(
+    app_and_stores, monkeypatch
+) -> None:
+    """A claude in one window of a multi-pane tmux workspace must NOT take
+    the whole workspace down — only its own (identity-verified) pid."""
+    client, *_ = app_and_stores
+    s = _fake_session(live_pid=1234)
+    monkeypatch.setattr(
+        svc.tm,
+        "list_sessions",
+        lambda binary=None: [
+            svc.tm.TmuxSession(name="txa", created=0, activity=0, attached=False)
+        ],
+    )
+    tmux_killed: list = []
+    monkeypatch.setattr(
+        svc.tm, "kill_session", lambda n, binary=None: tmux_killed.append(n)
+    )
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(
+        svc.ccli, "tmux_session_dedicated_to", lambda name, pid, **kw: False
+    )
+    monkeypatch.setattr(svc.ccli, "pid_is_claude", lambda pid: True)
+    sig_killed: list = []
+    monkeypatch.setattr(svc.os, "kill", lambda pid, sig: sig_killed.append(pid))
+    r = client.delete("/sessions/aaaa1111-2222-3333-4444-555555555555")
+    assert r.status_code == 200
+    assert tmux_killed == [] and sig_killed == [1234]
+
+
+def test_delete_never_signals_an_unverified_pid(
+    app_and_stores, monkeypatch
+) -> None:
+    """If the pid fails the claude-identity check (stale file, recycled
+    pid), no signal is sent — 404 instead of killing a bystander."""
+    client, *_ = app_and_stores
+    s = _fake_session(live_pid=1234)
+    monkeypatch.setattr(svc.tm, "list_sessions", lambda binary=None: [])
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(svc.ccli, "pid_is_claude", lambda pid: False)
+    sig_killed: list = []
+    monkeypatch.setattr(svc.os, "kill", lambda pid, sig: sig_killed.append(pid))
+    r = client.delete("/sessions/aaaa1111-2222-3333-4444-555555555555")
+    assert r.status_code == 404
+    assert sig_killed == []
+
+
+def test_delete_dead_session_explains_itself(app_and_stores, monkeypatch) -> None:
+    """A session that resolved but has no living backing → 404 with a
+    human explanation, not a parroted id."""
+    client, *_ = app_and_stores
+    monkeypatch.setattr(svc.tm, "list_sessions", lambda binary=None: [])
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: None)
+    r = client.delete("/sessions/aaaa1111-2222-3333-4444-555555555555")
+    assert r.status_code == 404
+    assert "refresh" in r.json()["detail"]
+
+
+def test_enable_remote_control_returns_url(app_and_stores, monkeypatch) -> None:
+    client, *_ = app_and_stores
+    s = _fake_session()
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(
+        svc.ccli,
+        "request_remote_control",
+        lambda name, **kw: ("https://claude.ai/code/session_y", "session_file", None),
+    )
+    r = client.post(f"/sessions/{s.id}/remote-control")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["url"] == "https://claude.ai/code/session_y"
+    assert body["attention"] is None
+
+
+def test_enable_remote_control_surfaces_login_required(
+    app_and_stores, monkeypatch
+) -> None:
+    client, *_ = app_and_stores
+    s = _fake_session()
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    monkeypatch.setattr(
+        svc.ccli,
+        "request_remote_control",
+        lambda name, **kw: (None, None, "login_required"),
+    )
+    r = client.post(f"/sessions/{s.id}/remote-control")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["attention"] == "login_required"
+    assert "/login" in body["hint"]
+
+
+def test_enable_remote_control_needs_tmux(app_and_stores, monkeypatch) -> None:
+    client, *_ = app_and_stores
+    s = _fake_session(tmux_name=None)
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    r = client.post(f"/sessions/{s.id}/remote-control")
+    assert r.status_code == 409

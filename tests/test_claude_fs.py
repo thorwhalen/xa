@@ -256,3 +256,48 @@ def test_transcript_path_found_and_missing(fake_home: Path) -> None:
     p = cfs.transcript_path("/foo/bar", SESSION_UUID, claude_home=fake_home)
     assert p is not None and p.is_file()
     assert cfs.transcript_path("/foo/bar", "nope", claude_home=fake_home) is None
+
+
+# --------------------------------------------------------------------------- #
+# ephemeral_session_alive (stale session-file detection)
+# --------------------------------------------------------------------------- #
+
+
+def test_alive_rejects_missing_or_bad_pid() -> None:
+    assert cfs.ephemeral_session_alive({}) is False
+    assert cfs.ephemeral_session_alive({"pid": "42"}) is False
+    assert cfs.ephemeral_session_alive({"pid": -3}) is False
+    assert cfs.ephemeral_session_alive({"pid": 0}) is False
+
+
+def test_alive_rejects_dead_pid() -> None:
+    # 4194303 is Linux's default pid_max ceiling — effectively never in
+    # use; on non-/proc platforms os.kill(pid, 0) raises for it the same.
+    assert cfs.ephemeral_session_alive({"pid": 4194303}) is False
+
+
+def test_alive_procstart_match_and_mismatch() -> None:
+    import os
+
+    if not Path("/proc").is_dir():
+        pytest.skip("requires /proc")
+    me = os.getpid()
+    started = cfs._proc_starttime(me)
+    assert started is not None
+    # Matching procStart proves the pid wasn't reused — alive even though
+    # this process isn't named "claude" (procStart beats the comm gate).
+    assert cfs.ephemeral_session_alive({"pid": me, "procStart": started}) is True
+    # Mismatching procStart = the recorded process died and the pid was
+    # reused — must read as dead.
+    assert cfs.ephemeral_session_alive({"pid": me, "procStart": "1"}) is False
+
+
+def test_alive_comm_gate_without_procstart() -> None:
+    import os
+
+    if not Path("/proc").is_dir():
+        pytest.skip("requires /proc")
+    # No procStart (older claude file shape): fall back to requiring
+    # comm == "claude". This test process is python — must be rejected
+    # even though the pid is alive.
+    assert cfs.ephemeral_session_alive({"pid": os.getpid()}) is False

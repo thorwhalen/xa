@@ -15,6 +15,17 @@ SID_B = "11111111-2222-3333-4444-555555555555"
 SID_C = "99999999-8888-7777-6666-555555555555"
 
 
+@pytest.fixture(autouse=True)
+def _fake_alive(monkeypatch):
+    """This module's ephemeral fixtures use made-up PIDs (1, 42, 4242, …)
+    that would fail the real process-liveness gate — trust every dict here.
+    Stale-file behavior (the gate itself) is covered in test_hosts_local.
+    """
+    from xa import claude_fs as cfs
+
+    monkeypatch.setattr(cfs, "ephemeral_session_alive", lambda eph: True)
+
+
 def _mk_transcript(home: Path, slug: str, sid: str, cwd: str, *, forked_from=None) -> Path:
     pdir = home / "projects" / slug
     pdir.mkdir(parents=True, exist_ok=True)

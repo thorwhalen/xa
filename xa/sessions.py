@@ -59,6 +59,17 @@ class Session:
     # permission dialog, …). Purely structural — no TUI text matching.
     # Only meaningful when ``state=="live"``.
     pre_first_turn: bool = False
+    # Adverse TUI state classified from the pane of a live, *bridgeless*
+    # session (``login_required``, ``trust_prompt``, …) plus a human
+    # fix-it hint. ``None`` for healthy / non-live / bridged sessions.
+    attention: Optional[str] = None
+    attention_hint: Optional[str] = None
+    # Full tmux pane ref ("session:@window.%pane") of the claude pane,
+    # from the ephemeral session file. ``tmux_name`` targets the session
+    # (kill, attach hints); this targets the exact pane (capture,
+    # send-keys) — a bare session name resolves to the *active* pane,
+    # which may be a different window in a shared workspace.
+    tmux_pane: Optional[str] = None
 
 
 def _session_from_transcript_meta(
@@ -221,12 +232,41 @@ def kill_session(
     session: Session,
     *,
     hosts: Optional[Mapping[str, object]] = None,
-) -> None:
-    """Kill the backing tmux session of a live ``Session``."""
-    if session.state != "live" or not session.tmux_name:
+) -> str:
+    """Kill a live ``Session``, scoped to what actually belongs to it.
+
+    Kills the backing tmux session only when it is *dedicated* to this
+    claude (single pane, claude verified in it) — a claude living in one
+    window of a shared multi-window workspace must not take the whole
+    workspace down, so there we SIGTERM the identity-verified pid
+    instead. Remote hosts keep the name-kill contract (their server
+    applies its own scoping). Returns a short description of what was
+    killed (e.g. ``"tmux:mysess"`` / ``"pid:1234"``).
+    """
+    if session.state != "live":
         raise ValueError("session is not live — nothing to kill")
     h = _host_for(session, hosts)
+    if getattr(h, "kind", None) == "local":
+        import os
+        import signal
+
+        tmux_bin = getattr(h, "tmux_bin", None) or "tmux"
+        if session.tmux_name and ccli.tmux_session_dedicated_to(
+            session.tmux_name, session.live_pid, tmux_bin=tmux_bin
+        ):
+            h.kill(session.tmux_name)
+            return f"tmux:{session.tmux_name}"
+        if session.live_pid and ccli.pid_is_claude(session.live_pid):
+            os.kill(session.live_pid, signal.SIGTERM)
+            return f"pid:{session.live_pid}"
+        raise ValueError(
+            "cannot kill safely: the session shares its tmux workspace and "
+            "no verified claude pid is available"
+        )
+    if not session.tmux_name:
+        raise ValueError("session has no tmux name — nothing to kill")
     h.kill(session.tmux_name)
+    return f"tmux:{session.tmux_name}"
 
 
 def resume(

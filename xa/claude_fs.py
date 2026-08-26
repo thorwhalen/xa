@@ -200,7 +200,10 @@ def iter_ephemeral_sessions(
     """Yield all live ephemeral session dicts.
 
     A session file disappears when claude exits, so this reflects
-    momentary state only.
+    momentary state only. NB: claude deletes the file on *clean* exit
+    only — a crash / SIGKILL / reboot leaves a stale file behind, so
+    callers who care about actual liveness must validate each dict with
+    :func:`ephemeral_session_alive` (or an equivalent predicate).
     """
     sdir = _sessions_dir(claude_home)
     if not sdir.is_dir():
@@ -212,6 +215,108 @@ def iter_ephemeral_sessions(
             yield json.loads(entry.read_text())
         except (OSError, json.JSONDecodeError):
             continue
+
+
+_PROC_ROOT = Path("/proc")
+
+
+def _proc_starttime(pid: int, *, proc_root: Path = _PROC_ROOT) -> Optional[str]:
+    """Return the kernel start-time ticks of ``pid`` from ``/proc/<pid>/stat``.
+
+    Field 22 of the stat line, parsed *after* the last ``)`` because the
+    ``comm`` field (2) may itself contain spaces or parentheses. Returns
+    ``None`` when unreadable (no such pid, no /proc, permission).
+    """
+    try:
+        stat = (proc_root / str(pid) / "stat").read_text()
+    except (OSError, ValueError):
+        return None
+    # pid (comm) state ppid ... starttime is overall field 22, i.e. the
+    # 20th whitespace-separated field after the closing paren.
+    _, _, rest = stat.rpartition(")")
+    fields = rest.split()
+    return fields[19] if len(fields) > 19 else None
+
+
+def _proc_comm(pid: int, *, proc_root: Path = _PROC_ROOT) -> str:
+    """Kernel-level process name of ``pid``; '' when unreadable."""
+    try:
+        return (proc_root / str(pid) / "comm").read_text().strip()
+    except (OSError, ValueError):
+        return ""
+
+
+# Kernel comms that legitimately host the claude CLI script (npm/bun
+# installs run the js entry point under a runtime instead of the native
+# binary). Anything else with "claude" in argv (an editor opening a file
+# named claude, a grep…) is NOT a claude process.
+_JS_RUNTIME_COMMS = frozenset({"node", "nodejs", "bun"})
+
+
+def _looks_like_claude(pid: int, *, proc_root: Path = _PROC_ROOT) -> bool:
+    """Identity check for pre-``procStart`` ephemeral files.
+
+    The official native binary has ``comm == "claude"``; npm/bun installs
+    run under a JS runtime with the claude script in argv — accept either.
+    The argv match requires the comm to be a JS runtime AND a token whose
+    *basename* is exactly ``claude`` (a bare substring would
+    false-positive on e.g. ``vim ~/notes/claude`` or ``test_claude_fs.py``).
+    """
+    comm = _proc_comm(pid, proc_root=proc_root)
+    if comm == "claude":
+        return True
+    if comm not in _JS_RUNTIME_COMMS:
+        return False
+    try:
+        raw = (proc_root / str(pid) / "cmdline").read_bytes()
+    except (OSError, ValueError):
+        return False
+    argv = (a.decode("utf-8", errors="replace") for a in raw.split(b"\x00") if a)
+    return any(a.rsplit("/", 1)[-1] == "claude" for a in argv)
+
+
+def ephemeral_session_alive(
+    eph: dict, *, proc_root: Path = _PROC_ROOT
+) -> bool:
+    """Is the process behind an ephemeral session dict actually alive?
+
+    The mere presence of ``~/.claude/sessions/<pid>.json`` proves nothing:
+    claude removes it on clean exit, but crashes, SIGKILL, and host
+    reboots leave stale files behind — and a stale file must not surface
+    as a "live" session (with a dead URL, an unkillable card, and no
+    postmortem).
+
+    Checks, strongest first:
+
+    - newer claude versions write ``procStart`` (the kernel start-time
+      ticks) into the file — when present, it must match
+      ``/proc/<pid>/stat``, which also defeats PID reuse;
+    - otherwise the pid must exist and look like a claude process
+      (``comm == "claude"`` for the native binary, or ``claude`` in the
+      cmdline for npm installs running under ``node``);
+    - on platforms without ``/proc`` (macOS), fall back to signal-0
+      existence (no PID-reuse protection, best available).
+    """
+    pid = eph.get("pid")
+    if not isinstance(pid, int) or pid <= 0:
+        return False
+    if proc_root.is_dir():
+        started = _proc_starttime(pid, proc_root=proc_root)
+        if started is None:
+            return False  # no such pid
+        proc_start = eph.get("procStart")
+        if proc_start is not None:
+            return str(proc_start) == started
+        return _looks_like_claude(pid, proc_root=proc_root)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True  # exists, owned by someone else
+    except OSError:
+        return False
+    return True
 
 
 # --------------------------------------------------------------------------- #

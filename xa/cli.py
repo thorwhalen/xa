@@ -287,13 +287,17 @@ def spawn_cmd(
     name: "Optional[str]" = None,
     timeout: float = 120.0,
     no_remote_control: bool = False,
+    model: "Optional[str]" = None,
+    effort: "Optional[str]" = None,
 ) -> None:
     """Spawn a detached claude-in-tmux session and print its remote URL.
 
     :param cwd: Working directory to start claude in.
-    :param name: tmux session name (auto if omitted).
+    :param name: Session name — tmux session and claude display name (auto if omitted).
     :param timeout: Seconds to wait for the bridge URL.
-    :param no_remote_control: Skip auto-issuing /remote-control.
+    :param no_remote_control: Skip enabling remote control.
+    :param model: Per-session ``claude --model`` (omitted → claude's default).
+    :param effort: Per-session ``claude --effort`` (omitted → claude's default).
     """
     import secrets
     from xa import claude_cli as ccli
@@ -316,6 +320,8 @@ def spawn_cmd(
             cwd=cwd,
             url_timeout_sec=timeout,
             auto_remote_control=not no_remote_control,
+            model=model,
+            effort=effort,
         )
     except (FileNotFoundError, RuntimeError) as e:
         print(f"error: {e}", file=sys.stderr)
@@ -339,13 +345,17 @@ def resume_cmd(
     name: "Optional[str]" = None,
     cwd: "Optional[str]" = None,
     timeout: float = 120.0,
+    model: "Optional[str]" = None,
+    effort: "Optional[str]" = None,
 ) -> None:
     """Resume a past session (``claude --resume``) in a new tmux pane.
 
     :param session_id: Full UUID or unique prefix.
-    :param name: tmux session name (auto if omitted).
+    :param name: Session name — tmux session and claude display name (auto if omitted).
     :param cwd: Override cwd (defaults to the original session's cwd).
     :param timeout: Seconds to wait for the bridge URL.
+    :param model: Per-session ``claude --model`` (omitted → claude's default).
+    :param effort: Per-session ``claude --effort`` (omitted → claude's default).
     """
     try:
         s = sess.get_session(session_id)
@@ -356,7 +366,9 @@ def resume_cmd(
         print(f"error: no session matching '{session_id}'", file=sys.stderr)
         sys.exit(1)
     try:
-        result = sess.resume(s, cwd=cwd, name=name, url_timeout_sec=timeout)
+        result = sess.resume(
+            s, cwd=cwd, name=name, url_timeout_sec=timeout, model=model, effort=effort
+        )
     except (ValueError, FileNotFoundError, RuntimeError) as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
@@ -397,11 +409,11 @@ def kill_cmd(session_id: str) -> None:
         )
         sys.exit(1)
     try:
-        sess.kill_session(s)
+        what = sess.kill_session(s)
     except (ValueError, RuntimeError) as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(1)
-    print(f"killed: {s.tmux_name} (session {s.id[:8]})")
+    print(f"killed: {what} (session {s.id[:8]})")
 
 
 # --------------------------------------------------------------------------- #

@@ -15,10 +15,13 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import os
 import random
 import re
 import secrets
+import signal
 import string
+import threading
 import time
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -37,6 +40,13 @@ try:  # pragma: no cover - optional dep
     class CreateReq(BaseModel):
         name: Optional[str] = None
         cwd: Optional[str] = None
+        model: Optional[str] = None  # per-session claude --model (no flag if empty)
+        effort: Optional[str] = None  # per-session claude --effort (no flag if empty)
+        # True (default): block until the bridge URL appears — the
+        # original synchronous wire contract, preserved for API users.
+        # False: return as soon as the tmux session exists and poll
+        # GET /sessions for the URL (what the bundled webui does).
+        wait: bool = True
 
     class DeleteReq(BaseModel):
         captcha_token: Optional[str] = None
@@ -44,6 +54,8 @@ try:  # pragma: no cover - optional dep
 
     class ResumeReq(BaseModel):
         name: Optional[str] = None
+        model: Optional[str] = None
+        effort: Optional[str] = None
 
     class LabelReq(BaseModel):
         label: Optional[str] = None  # null or "" clears
@@ -150,6 +162,11 @@ class Captcha:
 
 
 _NAME_RE = re.compile(r"^[A-Za-z0-9_.-]{1,48}$")
+
+# Model / effort values ride into a shell command (shlex-quoted, so this
+# is defense-in-depth plus early typo feedback). Permissive enough for
+# real model ids — dots, colons, slashes, brackets (e.g. "opus[1m]").
+_OPT_VALUE_RE = re.compile(r"^[A-Za-z0-9._:\[\]@/-]{1,64}$")
 
 
 def build_api(
@@ -280,6 +297,9 @@ def build_api(
             raise HTTPException(
                 400, "Invalid name (allowed: letters, digits, _.-, max 48)"
             )
+        for label, value in (("model", req.model), ("effort", req.effort)):
+            if value and not _OPT_VALUE_RE.match(value):
+                raise HTTPException(400, f"Invalid {label} value: {value!r}")
         existing = {t.name for t in tm.list_sessions()}
         if name in existing:
             raise HTTPException(409, f"Session '{name}' already exists")
@@ -287,23 +307,57 @@ def build_api(
         if not Path(cwd).is_dir():
             raise HTTPException(400, f"cwd does not exist: {cwd}")
         try:
-            result = ccli.spawn_session(
+            # Fast part: tmux session created, pane piped, `created` event
+            # emitted. Fails loudly here (name clash, bad cwd, no tmux).
+            pending = ccli.prepare_spawn(
                 name,
                 cwd=cwd,
                 claude_bin=claude_bin,
                 claude_home=claude_home,
+                claude_name=name,
+                model=req.model or None,
+                effort=req.effort or None,
                 archive_store=events,
                 pane_store=panes,
             )
         except (FileNotFoundError, RuntimeError) as e:
             raise HTTPException(500, str(e))
+        if req.wait:
+            result = ccli.complete_spawn(pending)
+            return {
+                "name": result.name,
+                "cwd": result.cwd,
+                "status": "complete",
+                "url": result.url,
+                "url_source": result.url_source,
+                "claude_session_id": result.claude_session_id,
+                "warning": result.warning,
+                "attention": result.attention,
+            }
+        # Slow part (URL wait, prompt dismissal, url_acquired event) runs in
+        # the background. All completion state lands in shared substrates
+        # (tmux, ~/.claude/sessions/, the events log), so any worker — or a
+        # webui poll of /sessions — observes it; no in-process registry.
+        threading.Thread(
+            target=ccli.complete_spawn,
+            args=(pending,),
+            daemon=True,
+            name=f"xa-spawn-{name}",
+        ).start()
         return {
-            "name": result.name,
-            "cwd": result.cwd,
-            "url": result.url,
-            "url_source": result.url_source,
-            "claude_session_id": result.claude_session_id,
-            "warning": result.warning,
+            "name": name,
+            "cwd": cwd,
+            "status": "starting",
+            "url": None,
+            "url_source": None,
+            "claude_session_id": None,
+            # Every create response honors the url-or-warning invariant.
+            "warning": pending.warning
+            or (
+                "Session starting — remote-control URL not ready yet; "
+                "poll GET /sessions for the url."
+            ),
+            "attention": None,
         }
 
     @app.delete("/sessions/{name}")
@@ -319,14 +373,50 @@ def build_api(
                 raise HTTPException(
                     400, "Captcha failed — request a new one and try again"
                 )
+
+        def _tmux_kill(target: str) -> dict:
+            try:
+                tm.kill_session(target)
+            except RuntimeError as e:
+                raise HTTPException(500, str(e))
+            return {"killed": target}
+
         existing = {t.name for t in tm.list_sessions()}
-        if name not in existing:
-            raise HTTPException(404, f"No such session: {name}")
+        if name in existing:
+            return _tmux_kill(name)
+        # Not a raw tmux name — resolve like /info does (claude session id,
+        # full or prefix, or archive id) and kill whatever backs it.
         try:
-            tm.kill_session(name)
-        except RuntimeError as e:
-            raise HTTPException(500, str(e))
-        return {"killed": name}
+            s = _resolve_session(name)
+        except LookupError as e:
+            raise HTTPException(400, str(e))
+        if s is not None and s.state == "live":
+            # Kill the whole tmux session only when it is DEDICATED to
+            # this claude (single pane, claude verified in it) — a claude
+            # living in one window of a shared workspace must not take
+            # the workspace down with it.
+            if (
+                s.tmux_name
+                and s.tmux_name in existing
+                and ccli.tmux_session_dedicated_to(s.tmux_name, s.live_pid)
+            ):
+                return _tmux_kill(s.tmux_name)
+            # Otherwise signal exactly the one claude — identity-verified
+            # so a recycled pid can never direct a kill at a bystander.
+            if s.live_pid and ccli.pid_is_claude(s.live_pid):
+                try:
+                    os.kill(s.live_pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass  # already gone — fall through to 404
+                except OSError as e:
+                    raise HTTPException(500, f"kill pid {s.live_pid} failed: {e}")
+                else:
+                    return {"killed": f"pid {s.live_pid}"}
+        raise HTTPException(
+            404,
+            f"No live session matching '{name}' — it may have already "
+            f"exited; refresh the list.",
+        )
 
     @app.get("/sessions/{id}/info")
     def session_info(id: str, _: str = Depends(auth)) -> dict:
@@ -344,8 +434,10 @@ def build_api(
                 if out["forensics"]["transcript_path"]
                 else None
             )
-        if s.state == "live" and s.tmux_name:
-            out["pane_tail"] = tm.capture_pane(s.tmux_name, lines=80)
+        if s.state == "live" and (s.tmux_pane or s.tmux_name):
+            # Prefer the exact claude pane — a bare session name targets
+            # the *active* pane, which may be a different window.
+            out["pane_tail"] = tm.capture_pane(s.tmux_pane or s.tmux_name, lines=80)
         return out
 
     @app.get("/sessions/{id}/diagnose")
@@ -394,8 +486,8 @@ def build_api(
         # Pane tail. Live: capture from tmux. Archived: read from pane store.
         oom_markers: tuple[str, ...] = ()
         pane_tail: Optional[str] = None
-        if s.state == "live" and s.tmux_name:
-            pane_tail = tm.capture_pane(s.tmux_name, lines=80)
+        if s.state == "live" and (s.tmux_pane or s.tmux_name):
+            pane_tail = tm.capture_pane(s.tmux_pane or s.tmux_name, lines=80)
         elif archive_rec is not None and archive_rec.id in panes:
             cap = max(1024, tail_kb * 1024)
             try:
@@ -432,12 +524,17 @@ def build_api(
             raise HTTPException(400, str(e))
         if s is None or not s.claude_session_id:
             raise HTTPException(404, f"No resumable session matching '{id}'")
+        for label, value in (("model", req.model), ("effort", req.effort)):
+            if value and not _OPT_VALUE_RE.match(value):
+                raise HTTPException(400, f"Invalid {label} value: {value!r}")
         try:
             result = sess.resume(
                 s,
                 name=req.name,
                 claude_bin=claude_bin,
                 claude_home=claude_home,
+                model=req.model or None,
+                effort=req.effort or None,
             )
         except (ValueError, FileNotFoundError, RuntimeError) as e:
             raise HTTPException(500, str(e))
@@ -448,6 +545,50 @@ def build_api(
             "url_source": result.url_source,
             "claude_session_id": result.claude_session_id,
             "warning": result.warning,
+        }
+
+    @app.post("/sessions/{id}/remote-control")
+    def enable_remote_control(id: str, _: str = Depends(auth)) -> dict:
+        """Make a live, bridgeless, tmux-hosted session remote-reachable.
+
+        Sends ``/remote-control`` into the pane (once, prompts permitting)
+        and waits briefly for the bridge URL. When it can't succeed —
+        logged-out claude, not tmux-hosted — the response says exactly why
+        and how to fix it by hand.
+        """
+        try:
+            s = _resolve_session(id)
+        except LookupError as e:
+            raise HTTPException(400, str(e))
+        if s is None:
+            raise HTTPException(404, f"No session matching '{id}'")
+        if s.state != "live":
+            raise HTTPException(409, "Session is not live")
+        if s.url:
+            return {
+                "url": s.url,
+                "url_source": s.url_source,
+                "attention": None,
+                "hint": None,
+                "already_enabled": True,
+            }
+        if not (s.tmux_pane or s.tmux_name):
+            raise HTTPException(
+                409,
+                "Session is not tmux-hosted — attach the terminal that "
+                "started it and run /remote-control there.",
+            )
+        # Target the exact claude pane when known: sending keystrokes at
+        # the bare session name would type into whatever pane is active.
+        url, src, attention = ccli.request_remote_control(
+            s.tmux_pane or s.tmux_name, claude_home=claude_home
+        )
+        return {
+            "url": url,
+            "url_source": src,
+            "attention": attention,
+            "hint": ccli.attention_hint(attention, tmux_name=s.tmux_name),
+            "already_enabled": False,
         }
 
     @app.patch("/sessions/{id}/label")

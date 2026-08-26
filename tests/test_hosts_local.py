@@ -107,3 +107,60 @@ def test_spawn_and_resume_accept_kwarg_overrides(monkeypatch) -> None:
     h.resume("abc", cwd="/tmp")
     assert captured["claude_bin"] == "/host/default/claude"
     assert captured["claude_home"] == Path("/host/default/home")
+
+
+# --------------------------------------------------------------------------- #
+# stale ephemeral files must not surface as live sessions
+# --------------------------------------------------------------------------- #
+
+
+def _write_ephemeral(home: Path, pid: int, sid: str, **extra) -> None:
+    sdir = home / "sessions"
+    sdir.mkdir(parents=True, exist_ok=True)
+    (sdir / f"{pid}.json").write_text(
+        json.dumps({"pid": pid, "sessionId": sid, **extra})
+    )
+
+
+def test_stale_ephemeral_file_not_listed_live(fake_home: Path) -> None:
+    """A sessions/<pid>.json whose pid is dead must not yield a live row —
+    the matching transcript stays transcript_only (and reconcile can then
+    classify the death instead of 'currently live, no postmortem')."""
+    _write_ephemeral(
+        fake_home, 4194303, SID_A, bridgeSessionId="session_ghost"
+    )
+    rows = list(
+        LocalHost(claude_home=fake_home, tmux_bin="/bin/false").iter_sessions()
+    )
+    assert [r.state for r in rows] == ["transcript_only"]
+    assert all(r.url is None for r in rows)
+
+
+def test_alive_predicate_is_injectable(fake_home: Path) -> None:
+    """The DI seam: an allow-all predicate resurrects the same fixture."""
+    _write_ephemeral(
+        fake_home, 4194303, SID_A, bridgeSessionId="session_ghost"
+    )
+    rows = list(
+        LocalHost(
+            claude_home=fake_home,
+            tmux_bin="/bin/false",
+            alive_predicate=lambda eph: True,
+        ).iter_sessions()
+    )
+    assert [r.state for r in rows] == ["live"]
+    assert rows[0].url == "https://claude.ai/code/session_ghost"
+
+
+def test_tmux_name_read_from_ephemeral_pane_ref(fake_home: Path) -> None:
+    """Newer claude records its tmux pane ("name:@w.%p") in the ephemeral
+    file — used when the pid→tmux walk can't see the session."""
+    _write_ephemeral(fake_home, 4194303, SID_A, tmux="mysess:@3.%7")
+    rows = list(
+        LocalHost(
+            claude_home=fake_home,
+            tmux_bin="/bin/false",
+            alive_predicate=lambda eph: True,
+        ).iter_sessions()
+    )
+    assert rows[0].tmux_name == "mysess"

@@ -153,9 +153,11 @@
         <span class="count" id="localOnlyCount">0</span>
       </div>
       <div class="section-note">
-        Live Claude processes on this machine that aren't accessible via a remote URL
-        — either started outside xa or without <code>/remote-control</code>. To make
-        one reachable, open its terminal and run <code>/remote-control</code>.
+        Live Claude processes on this machine that aren't reachable via a remote URL
+        — started outside xa, without remote control, or blocked by something that
+        needs a human (e.g. Claude needs <code>/login</code> again after an auth
+        expiry — the card's badge and hint say exactly what to do). tmux-hosted ones
+        can usually be fixed with the <b>Enable remote</b> button.
       </div>
       <div class="card-list" id="localOnlyList"></div>
     </div>
@@ -181,9 +183,28 @@
       Leave name blank for an auto-generated one.</p>
     <div class="row" style="margin-bottom:8px"><label>Name</label>
       <input type="text" id="newName" placeholder="auto" class="grow" /></div>
-    <div class="row" style="margin-bottom:12px"><label>Folder</label>
+    <div class="row" style="margin-bottom:8px"><label>Folder</label>
       <input type="text" id="newCwd" placeholder="(default)" class="grow" />
       <button class="small" id="newBrowse" type="button">Browse…</button></div>
+    <div class="row" style="margin-bottom:8px"><label>Model</label>
+      <input type="text" id="newModel" placeholder="(default)" class="grow"
+        list="modelOptions" autocomplete="off" />
+      <datalist id="modelOptions">
+        <option value="haiku"></option>
+        <option value="sonnet"></option>
+        <option value="opus"></option>
+        <option value="fable"></option>
+      </datalist></div>
+    <div class="row" style="margin-bottom:12px"><label>Effort</label>
+      <input type="text" id="newEffort" placeholder="(default)" class="grow"
+        list="effortOptions" autocomplete="off" />
+      <datalist id="effortOptions">
+        <option value="low"></option>
+        <option value="medium"></option>
+        <option value="high"></option>
+        <option value="xhigh"></option>
+        <option value="max"></option>
+      </datalist></div>
     <div class="row" style="justify-content:flex-end">
       <button onclick="document.getElementById('newDialog').close()">Cancel</button>
       <button class="primary" id="newSubmit">Create</button>
@@ -390,9 +411,19 @@ function escapeHtml(s) {
   }[c]));
 }
 
-// Pick the best display name for a session, in priority order.
+// Pick the best display name for a session, in priority order. `name` is
+// the Claude-side display name (set via `claude --name` / the /rename
+// slash command) — preferred over the tmux name when present.
 function displayName(s) {
-  return s.label || s.tmux_name || (s.id ? s.id.slice(0, 12) : "unnamed");
+  return s.label || s.name || s.tmux_name || (s.id ? s.id.slice(0, 12) : "unnamed");
+}
+
+// Badge for an adverse live-session state (login_required, trust_prompt…).
+// The server ships the matching human hint in `attention_hint`.
+function attentionBadge(s) {
+  if (!s.attention) return "";
+  return `<span class="tag bad" title="${escapeHtml(s.attention_hint || "")}">⚠ ${
+    escapeHtml(String(s.attention).replace(/_/g, " "))}</span>`;
 }
 
 // Render a live session card (live-only; no hide affordance).
@@ -415,6 +446,7 @@ function liveCard(s) {
     <div class="meta">
       <span class="tag ok">live</span>
       ${wedgedBadge}
+      ${attentionBadge(s)}
       ${s.cwd ? `<span class="tag">${escapeHtml(s.cwd)}</span>` : ""}
       <span>turns ${s.turn_count || 0}</span>
       <span>modified ${fmtAgo(s.modified || s.created)}</span>
@@ -423,7 +455,7 @@ function liveCard(s) {
     <div class="actions">
       <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
       <button class="small" data-info="${escapeHtml(s.id)}">Info</button>
-      <button class="small danger" data-kill="${escapeHtml(s.tmux_name || s.id)}">Kill</button>
+      <button class="small danger" data-kill="${escapeHtml(s.id)}" data-killname="${escapeHtml(displayName(s))}">Kill</button>
     </div>
   `;
   return card;
@@ -437,22 +469,29 @@ function localCard(s) {
   const card = document.createElement("div");
   card.className = "card local-only";
   const inTmux = !!s.tmux_name;
-  const hint = inTmux
-    ? `In tmux as <code>${escapeHtml(s.tmux_name)}</code> — attach with <code>tmux attach -t ${escapeHtml(s.tmux_name)}</code> and run <code>/remote-control</code>.`
+  // Server-side attention hint (login needed, trust prompt…) beats the
+  // generic how-to when present — it says what is actually wrong.
+  const hint = s.attention_hint
+    ? escapeHtml(s.attention_hint)
+    : inTmux
+    ? `In tmux as <code>${escapeHtml(s.tmux_name)}</code> — attach with <code>tmux attach -t ${escapeHtml(s.tmux_name)}</code> and run <code>/remote-control</code>, or use <b>Enable remote</b> below.`
     : `Not in a tmux session — attach to the terminal that started this <code>claude</code> (pid ${s.live_pid ?? "?"}) and run <code>/remote-control</code> there.`;
   card.innerHTML = `
     <h3><span class="dot"></span><span class="name" data-id="${escapeHtml(s.id)}">${escapeHtml(displayName(s))}</span></h3>
     <div class="meta">
       <span class="tag">local-only</span>
+      ${attentionBadge(s)}
       ${s.cwd ? `<span class="tag">${escapeHtml(s.cwd)}</span>` : ""}
       ${s.live_pid ? `<span class="tag">pid ${s.live_pid}</span>` : ""}
       <span>started ${fmtAgo(s.created)}</span>
     </div>
     <div class="meta" style="font-size:12px; color:var(--muted); margin-top:6px">${hint}</div>
     <div class="actions">
+      ${inTmux && s.attention !== "login_required"
+        ? `<button class="small primary" data-enablerc="${escapeHtml(s.id)}">Enable remote</button>` : ""}
       <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
       <button class="small" data-info="${escapeHtml(s.id)}">Info</button>
-      ${s.tmux_name ? `<button class="small danger" data-kill="${escapeHtml(s.tmux_name)}">Kill</button>` : ""}
+      <button class="small danger" data-kill="${escapeHtml(s.id)}" data-killname="${escapeHtml(displayName(s))}">Kill</button>
     </div>
   `;
   return card;
@@ -546,6 +585,94 @@ function beginRename(nameSpan, id) {
   input.addEventListener("blur", () => commit(true));
 }
 
+// ---- pending session creation ------------------------------------------- //
+// POST /sessions (wait:false) returns as soon as the tmux session exists;
+// the bridge URL — or an attention state explaining why there won't be
+// one — surfaces through the /sessions listing. Track the pending name,
+// poll fast, render a progress placeholder, and toast the outcome.
+const CREATE_POLL_MS = 2500;
+const CREATE_TIMEOUT_MS = 150000;
+let pendingCreate = null;  // { name, startedAt, timer }
+
+function beginPendingCreate(name) {
+  cancelPendingCreate();
+  pendingCreate = { name, startedAt: Date.now(), timer: null };
+  showToast(`Session "${name}" started — waiting for its remote URL…`, "info");
+  pendingCreate.timer = setInterval(checkPendingCreate, CREATE_POLL_MS);
+  load();
+}
+
+function cancelPendingCreate() {
+  if (pendingCreate && pendingCreate.timer) clearInterval(pendingCreate.timer);
+  pendingCreate = null;
+}
+
+async function checkPendingCreate() {
+  if (!pendingCreate) return;
+  const me = pendingCreate;
+  const { name, startedAt } = me;
+  // Timeout first, BEFORE the fetch — so a server that stops answering
+  // still ends the poll instead of looping forever.
+  if (Date.now() - startedAt > CREATE_TIMEOUT_MS) {
+    cancelPendingCreate();
+    showToast(`"${name}" still has no remote URL after ${
+      Math.round(CREATE_TIMEOUT_MS / 1000)}s — see its card under "Other live", `
+      + `or attach its terminal and run /remote-control.`, "error");
+    await load();
+    return;
+  }
+  let sessions = [];
+  try {
+    const data = await api("/sessions?limit=200");
+    sessions = data.sessions || [];
+  } catch (e) {
+    // Auth loss is terminal (api() already showed the sticky toast once);
+    // anything else is transient — keep polling until the timeout above.
+    if (e.message === "unauthorized") cancelPendingCreate();
+    return;
+  }
+  // A newer create may have superseded this tick while we were fetching —
+  // acting on stale state here would cancel the newer create's polling.
+  if (pendingCreate !== me) return;
+  const s = sessions.find(x => x.tmux_name === name);
+  if (s && s.url) {
+    cancelPendingCreate();
+    setStatus(`created ${name} — ${s.url}`);
+    await load();
+    return;
+  }
+  if (s && s.attention) {
+    cancelPendingCreate();
+    showToast(`"${name}" started but needs attention: ${s.attention_hint || s.attention}`,
+      "error");
+    await load();
+    return;
+  }
+  await load();  // refresh the placeholder's elapsed time + card states
+}
+
+// Progress placeholder shown at the top of Live while a create is pending
+// and the session hasn't produced its URL yet.
+function pendingCreateCard(allLive) {
+  const { name, startedAt } = pendingCreate;
+  const match = allLive.find(x => x.tmux_name === name);
+  if (match && match.url) return null;  // done — next poll finalizes
+  const secs = Math.round((Date.now() - startedAt) / 1000);
+  const detail = match && match.attention
+    ? escapeHtml(match.attention_hint || match.attention)
+    : "tmux session is up; waiting for Claude to register its remote-control URL";
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <h3><span class="dot" style="background:var(--warn)"></span>
+      <span class="name">${escapeHtml(name)}</span></h3>
+    <div class="meta">
+      <span class="tag warn">starting… ${secs}s</span>
+    </div>
+    <div class="meta" style="font-size:12px; color:var(--muted); margin-top:6px">${detail}</div>`;
+  return card;
+}
+
 async function load() {
   setStatus("loading…");
   try {
@@ -569,7 +696,11 @@ async function load() {
     // against the dead list by claude_session_id.
     const allLive = sessions.filter(s => s.state === "live" && !s.hidden);
     const live       = allLive.filter(s => !!s.url);
-    const localOnly  = allLive.filter(s => !s.url);
+    // The in-flight create renders as the pending placeholder, not as an
+    // "Other live" card — its Enable-remote/Kill actions would race the
+    // background spawn thread that is still driving the pane.
+    const localOnly  = allLive.filter(s =>
+      !s.url && !(pendingCreate && s.tmux_name === pendingCreate.name));
     const hiddenLive = sessions.filter(s => s.state === "live" && s.hidden);
 
     // Dead = archive records with gone_reason, excluding live dupes.
@@ -580,6 +711,14 @@ async function load() {
     const hiddenDead = records.filter(r => r.hidden);
 
     renderSection("liveList", "liveCount", live, liveCard);
+    if (pendingCreate) {
+      const ph = pendingCreateCard(allLive);
+      if (ph) {
+        const liveList = document.getElementById("liveList");
+        if (!live.length) liveList.innerHTML = "";
+        liveList.prepend(ph);
+      }
+    }
     renderSection("localOnlyList", "localOnlyCount", localOnly, localCard);
     document.getElementById("localOnlySection").hidden = localOnly.length === 0;
     renderSection("deadList", "deadCount", dead, deadCard);
@@ -627,12 +766,13 @@ document.addEventListener("click", async (ev) => {
 
   if (b.id === "refresh") return load();
   if (b.id === "new") {
+    // Open instantly (Doherty!) — fill the default folder in after.
+    document.getElementById("newDialog").showModal();
     const input = document.getElementById("newCwd");
-    // Prefill with effective default so the user can just hit Create.
     const def = await effectiveDefaultFolder();
-    input.value = def || "";
+    if (!input.value.trim()) input.value = def || "";
     input.placeholder = def ? def : "(default)";
-    return document.getElementById("newDialog").showModal();
+    return;
   }
   if (b.id === "settings") return openSettings();
 
@@ -692,28 +832,56 @@ document.addEventListener("click", async (ev) => {
   if (b.id === "newSubmit") {
     const name = document.getElementById("newName").value.trim() || null;
     const cwd = document.getElementById("newCwd").value.trim() || null;
+    const model = document.getElementById("newModel").value.trim() || null;
+    const effort = document.getElementById("newEffort").value.trim() || null;
+    // Instant acknowledgment: the button reacts before any network I/O,
+    // and `wait: false` makes the server answer as soon as the tmux
+    // session exists — the URL arrives via polling (see pending-create).
     b.disabled = true;
-    setStatus("creating session — waiting for Claude to register its URL (up to 2 min)…");
+    const origLabel = b.textContent;
+    b.textContent = "Creating…";
     try {
       const r = await api("/sessions", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, cwd }),
+        body: JSON.stringify({ name, cwd, model, effort, wait: false }),
       });
       document.getElementById("newDialog").close();
-      document.getElementById("newName").value = "";
-      document.getElementById("newCwd").value = "";
-      setStatus(`created ${r.name}${r.warning ? " — " + r.warning : ""}`);
-      await load();
+      for (const id of ["newName", "newCwd", "newModel", "newEffort"])
+        document.getElementById(id).value = "";
+      // Real prepare-time warnings (e.g. unsupported --model) deserve a
+      // toast; the generic "Session starting…" invariant filler doesn't.
+      if (r.warning && !/^Session starting/.test(r.warning))
+        showToast(r.warning, "info");
+      beginPendingCreate(r.name);
     } catch (e) {
+      // Dialog stays open so the inputs survive for a retry.
       setStatus("create failed: " + e.message, true);
-    } finally { b.disabled = false; }
+    } finally { b.disabled = false; b.textContent = origLabel; }
+    return;
+  }
+
+  if (b.dataset.enablerc) {
+    const id = b.dataset.enablerc;
+    b.disabled = true;
+    const orig = b.textContent;
+    b.textContent = "enabling…";
+    try {
+      const r = await api(`/sessions/${encodeURIComponent(id)}/remote-control`,
+        { method: "POST" });
+      if (r.url) showToast(`Remote control enabled: ${r.url}`, "success");
+      else if (r.hint) showToast(r.hint, "error");
+      else showToast("Command sent — no URL yet. Refreshing…", "info");
+      await load();
+    } catch (e) { showToast("enable remote failed: " + e.message, "error"); }
+    finally { b.disabled = false; b.textContent = orig; }
     return;
   }
 
   if (b.id === "delSubmit") {
     const dlg = document.getElementById("delDialog");
     const name = dlg.dataset.name;
+    const label = dlg.dataset.label || name;
     const token = dlg.dataset.token;
     const answer = document.getElementById("delAnswer").value.trim().toUpperCase();
     b.disabled = true;
@@ -724,7 +892,7 @@ document.addEventListener("click", async (ev) => {
         body: JSON.stringify({ captcha_token: token, captcha_answer: answer }),
       });
       dlg.close();
-      setStatus(`killed ${name}`);
+      setStatus(`killed ${label}`);
       await load();
     } catch (e) { setStatus("kill failed: " + e.message, true); }
     finally { b.disabled = false; }
@@ -732,14 +900,19 @@ document.addEventListener("click", async (ev) => {
   }
 
   if (b.dataset.kill) {
-    const name = b.dataset.kill;
+    // data-kill carries the session ID (the server resolves it and
+    // decides HOW to kill — whole tmux session only when dedicated,
+    // otherwise just the claude pid); data-killname is the display name.
+    const target = b.dataset.kill;
+    const label = b.dataset.killname || target;
     try {
       const { token, challenge } = await api("/captcha");
-      document.getElementById("delName").textContent = name;
+      document.getElementById("delName").textContent = label;
       document.getElementById("delChallenge").textContent = challenge;
       document.getElementById("delAnswer").value = "";
       const dlg = document.getElementById("delDialog");
-      dlg.dataset.name = name;
+      dlg.dataset.name = target;
+      dlg.dataset.label = label;
       dlg.dataset.token = token;
       dlg.showModal();
     } catch (e) { setStatus("captcha failed: " + e.message, true); }
