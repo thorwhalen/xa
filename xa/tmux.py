@@ -245,7 +245,14 @@ def pane_current_path(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> Optional[
     ``claude remote-control -c`` keys its per-directory record on.
     """
     out = _run(
-        [binary, "display-message", "-p", "-t", pane_target(name), "#{pane_current_path}"]
+        [
+            binary,
+            "display-message",
+            "-p",
+            "-t",
+            pane_target(name),
+            "#{pane_current_path}",
+        ]
     )
     if out.returncode != 0:
         return None

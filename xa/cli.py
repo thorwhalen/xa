@@ -820,9 +820,7 @@ def revive_cmd(
     from xa import revive as rv
 
     guard = (
-        rv.RateGuard(min_interval_sec=min_interval)
-        if min_interval
-        else rv.RateGuard()
+        rv.RateGuard(min_interval_sec=min_interval) if min_interval else rv.RateGuard()
     )
     panes = rv.SessionPanes()
     actions = rv.revive(

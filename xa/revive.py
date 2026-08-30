@@ -348,7 +348,9 @@ def classify(probe: Probe, *, rules: Sequence[Rule] = DEFAULT_RULES) -> str:
     return UNKNOWN
 
 
-def evidence_for(probe: Probe, verdict: str, *, rules: Sequence[Rule] = DEFAULT_RULES) -> Optional[str]:
+def evidence_for(
+    probe: Probe, verdict: str, *, rules: Sequence[Rule] = DEFAULT_RULES
+) -> Optional[str]:
     """The marker that earned ``verdict``, for a report a human has to trust.
 
     >>> ref = PaneRef(target='w:@1.%1', claude_pid=1)
