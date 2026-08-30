@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.cli &mdash; xa 0.1.5 documentation</title>
+  <title>xa.cli &mdash; xa 0.1.6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
+      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -66,6 +66,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.pick_cmd"><code class="docutils literal notranslate"><span class="pre">pick_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.resume_cmd"><code class="docutils literal notranslate"><span class="pre">resume_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.revive_cmd"><code class="docutils literal notranslate"><span class="pre">revive_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.serve_cmd"><code class="docutils literal notranslate"><span class="pre">serve_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.spawn_cmd"><code class="docutils literal notranslate"><span class="pre">spawn_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.sync_cmd"><code class="docutils literal notranslate"><span class="pre">sync_cmd()</span></code></a></li>
@@ -76,6 +77,7 @@
 <li class="toctree-l1"><a class="reference internal" href="hosts/http.html">xa.hosts.http</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hosts/local.html">xa.hosts.local</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="revive.html">xa.revive</a></li>
 <li class="toctree-l1"><a class="reference internal" href="service.html">xa.service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sessions.html">xa.sessions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="store.html">xa.store</a></li>
@@ -250,6 +252,28 @@ for scripting; use <strong class="command">xa pick</strong> when a human is at t
 <li><p><strong>timeout</strong> – Seconds to wait for the bridge URL.</p></li>
 <li><p><strong>model</strong> – Per-session <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--model</span></code> (omitted → claude’s default).</p></li>
 <li><p><strong>effort</strong> – Per-session <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--effort</span></code> (omitted → claude’s default).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.revive_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">revive_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">apply</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_held_elsewhere</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_interval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#revive_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.revive_cmd" title="Link to this definition"></a></dt>
+<dd><p>Report — and optionally reconnect — panes whose Remote Control dropped.</p>
+<p>Prints one line per live claude pane with its verdict, so “nothing to do”
+is legible next to how much was looked at. Sends nothing without
+<code class="docutils literal notranslate"><span class="pre">--apply</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>apply</strong> – Actually send <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code>. Off by default.</p></li>
+<li><p><strong>include_held_elsewhere</strong> – Also reconnect sessions taken over from
+another device. This steals them back — deliberate keystroke only.</p></li>
+<li><p><strong>server_mode</strong> – Also restart died <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span></code> servers.</p></li>
+<li><p><strong>min_interval</strong> – Seconds before the same pane may be touched again
+(0 uses the default guard interval).</p></li>
+<li><p><strong>json_out</strong> – Emit JSON instead of the table.</p></li>
 </ul>
 </dd>
 </dl>

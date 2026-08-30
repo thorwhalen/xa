@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to xa’s documentation! &mdash; xa 0.1.5 documentation</title>
+  <title>Welcome to xa’s documentation! &mdash; xa 0.1.6 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=59fadc99"></script>
+      <script src="_static/documentation_options.js?v=6e0256f3"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -59,6 +59,7 @@
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/xa/revive.html">xa.revive</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/service.html">xa.service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/sessions.html">xa.sessions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/store.html">xa.store</a></li>
@@ -201,6 +202,7 @@
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/cli.html#xa.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/cli.html#xa.cli.pick_cmd"><code class="docutils literal notranslate"><span class="pre">pick_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/cli.html#xa.cli.resume_cmd"><code class="docutils literal notranslate"><span class="pre">resume_cmd()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/cli.html#xa.cli.revive_cmd"><code class="docutils literal notranslate"><span class="pre">revive_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/cli.html#xa.cli.serve_cmd"><code class="docutils literal notranslate"><span class="pre">serve_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/cli.html#xa.cli.spawn_cmd"><code class="docutils literal notranslate"><span class="pre">spawn_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/cli.html#xa.cli.sync_cmd"><code class="docutils literal notranslate"><span class="pre">sync_cmd()</span></code></a></li>
@@ -232,6 +234,44 @@
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/hosts/ssh.html#xa.hosts.ssh.SSHHost"><code class="docutils literal notranslate"><span class="pre">SSHHost</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/xa/revive.html">xa.revive</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.ACTIONABLE"><code class="docutils literal notranslate"><span class="pre">ACTIONABLE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.API_STALLED"><code class="docutils literal notranslate"><span class="pre">API_STALLED</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.CONNECTED"><code class="docutils literal notranslate"><span class="pre">CONNECTED</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.DEFAULT_RULES"><code class="docutils literal notranslate"><span class="pre">DEFAULT_RULES</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.DFLT_MIN_INTERVAL_SEC"><code class="docutils literal notranslate"><span class="pre">DFLT_MIN_INTERVAL_SEC</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.HELD_ELSEWHERE"><code class="docutils literal notranslate"><span class="pre">HELD_ELSEWHERE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.MARKERS"><code class="docutils literal notranslate"><span class="pre">MARKERS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.NEEDS_HUMAN"><code class="docutils literal notranslate"><span class="pre">NEEDS_HUMAN</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.NO_CLAUDE"><code class="docutils literal notranslate"><span class="pre">NO_CLAUDE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.PROMPT_LINE"><code class="docutils literal notranslate"><span class="pre">PROMPT_LINE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.PaneRef"><code class="docutils literal notranslate"><span class="pre">PaneRef</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.PaneState"><code class="docutils literal notranslate"><span class="pre">PaneState</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.Probe"><code class="docutils literal notranslate"><span class="pre">Probe</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.RC_PILL"><code class="docutils literal notranslate"><span class="pre">RC_PILL</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.RECONNECTABLE"><code class="docutils literal notranslate"><span class="pre">RECONNECTABLE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.RECONNECTING"><code class="docutils literal notranslate"><span class="pre">RECONNECTING</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.RECONNECT_KEYS"><code class="docutils literal notranslate"><span class="pre">RECONNECT_KEYS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.REPORT_ORDER"><code class="docutils literal notranslate"><span class="pre">REPORT_ORDER</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.RateGuard"><code class="docutils literal notranslate"><span class="pre">RateGuard</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.ReviveAction"><code class="docutils literal notranslate"><span class="pre">ReviveAction</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.SERVER_MODE"><code class="docutils literal notranslate"><span class="pre">SERVER_MODE</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.SessionPanes"><code class="docutils literal notranslate"><span class="pre">SessionPanes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.TYPEABLE_STATUS"><code class="docutils literal notranslate"><span class="pre">TYPEABLE_STATUS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.UNKNOWN"><code class="docutils literal notranslate"><span class="pre">UNKNOWN</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.VERDICTS"><code class="docutils literal notranslate"><span class="pre">VERDICTS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.classify"><code class="docutils literal notranslate"><span class="pre">classify()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.evidence_for"><code class="docutils literal notranslate"><span class="pre">evidence_for()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.format_actions"><code class="docutils literal notranslate"><span class="pre">format_actions()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.has_live_claude"><code class="docutils literal notranslate"><span class="pre">has_live_claude()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.local_panes"><code class="docutils literal notranslate"><span class="pre">local_panes()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.prompt_is_clear"><code class="docutils literal notranslate"><span class="pre">prompt_is_clear()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.refusal_to_type"><code class="docutils literal notranslate"><span class="pre">refusal_to_type()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.restart_server_mode"><code class="docutils literal notranslate"><span class="pre">restart_server_mode()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.revive"><code class="docutils literal notranslate"><span class="pre">revive()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/revive.html#xa.revive.server_mode_command"><code class="docutils literal notranslate"><span class="pre">server_mode_command()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/service.html">xa.service</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/service.html#xa.service.Captcha"><code class="docutils literal notranslate"><span class="pre">Captcha</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/service.html#xa.service.allow_all"><code class="docutils literal notranslate"><span class="pre">allow_all()</span></code></a></li>
@@ -253,15 +293,19 @@
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/store.html#xa.store.JsonLinesStore"><code class="docutils literal notranslate"><span class="pre">JsonLinesStore</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/store.html#xa.store.default_events_store"><code class="docutils literal notranslate"><span class="pre">default_events_store()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/store.html#xa.store.default_pane_store"><code class="docutils literal notranslate"><span class="pre">default_pane_store()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/store.html#xa.store.default_revive_store"><code class="docutils literal notranslate"><span class="pre">default_revive_store()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/xa/tmux.html">xa.tmux</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.TmuxPane"><code class="docutils literal notranslate"><span class="pre">TmuxPane</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.TmuxSession"><code class="docutils literal notranslate"><span class="pre">TmuxSession</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.capture_pane"><code class="docutils literal notranslate"><span class="pre">capture_pane()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.descendants"><code class="docutils literal notranslate"><span class="pre">descendants()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.list_panes"><code class="docutils literal notranslate"><span class="pre">list_panes()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.list_sessions"><code class="docutils literal notranslate"><span class="pre">list_sessions()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.new_session"><code class="docutils literal notranslate"><span class="pre">new_session()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.pane_count"><code class="docutils literal notranslate"><span class="pre">pane_count()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.pane_current_path"><code class="docutils literal notranslate"><span class="pre">pane_current_path()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.pane_pid"><code class="docutils literal notranslate"><span class="pre">pane_pid()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.pane_pids"><code class="docutils literal notranslate"><span class="pre">pane_pids()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/xa/tmux.html#xa.tmux.pane_target"><code class="docutils literal notranslate"><span class="pre">pane_target()</span></code></a></li>
@@ -282,8 +326,8 @@
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
-<p>Release: 0.1.5</p>
-<p>Last change: Aug 26, 2026</p>
+<p>Release: 0.1.6</p>
+<p>Last change: Aug 30, 2026</p>
 </section>
 
 

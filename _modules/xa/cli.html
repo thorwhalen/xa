@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.cli &mdash; xa 0.1.5 documentation</title>
+  <title>xa.cli &mdash; xa 0.1.6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
+      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -57,6 +57,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/revive.html">xa.revive</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/service.html">xa.service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/sessions.html">xa.sessions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/store.html">xa.store</a></li>
@@ -918,6 +919,68 @@
 
 
 
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># revive (Remote Control reconnection)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="revive_cmd">
+<a class="viewcode-back" href="../../module_docs/xa/cli.html#xa.cli.revive_cmd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">revive_cmd</span><span class="p">(</span>
+    <span class="n">apply</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">include_held_elsewhere</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">server_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">min_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">json_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Report — and optionally reconnect — panes whose Remote Control dropped.</span>
+
+<span class="sd">    Prints one line per live claude pane with its verdict, so "nothing to do"</span>
+<span class="sd">    is legible next to how much was looked at. Sends nothing without</span>
+<span class="sd">    ``--apply``.</span>
+
+<span class="sd">    :param apply: Actually send ``/remote-control``. Off by default.</span>
+<span class="sd">    :param include_held_elsewhere: Also reconnect sessions taken over from</span>
+<span class="sd">        another device. This steals them back — deliberate keystroke only.</span>
+<span class="sd">    :param server_mode: Also restart died ``claude remote-control`` servers.</span>
+<span class="sd">    :param min_interval: Seconds before the same pane may be touched again</span>
+<span class="sd">        (0 uses the default guard interval).</span>
+<span class="sd">    :param json_out: Emit JSON instead of the table.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">revive</span> <span class="k">as</span> <span class="n">rv</span>
+
+    <span class="n">guard</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">rv</span><span class="o">.</span><span class="n">RateGuard</span><span class="p">(</span><span class="n">min_interval_sec</span><span class="o">=</span><span class="n">min_interval</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_interval</span>
+        <span class="k">else</span> <span class="n">rv</span><span class="o">.</span><span class="n">RateGuard</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">panes</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">SessionPanes</span><span class="p">()</span>
+    <span class="n">actions</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">revive</span><span class="p">(</span>
+        <span class="n">panes</span><span class="o">=</span><span class="n">panes</span><span class="p">,</span>
+        <span class="n">apply</span><span class="o">=</span><span class="n">apply</span><span class="p">,</span>
+        <span class="n">include_held_elsewhere</span><span class="o">=</span><span class="n">include_held_elsewhere</span><span class="p">,</span>
+        <span class="n">rate_guard</span><span class="o">=</span><span class="n">guard</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">server_mode</span><span class="p">:</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">actions</span> <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">verdict</span> <span class="o">!=</span> <span class="n">rv</span><span class="o">.</span><span class="n">SERVER_MODE</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span>
+            <span class="n">rv</span><span class="o">.</span><span class="n">restart_server_mode</span><span class="p">(</span><span class="n">panes</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">target</span><span class="p">],</span> <span class="n">apply</span><span class="o">=</span><span class="n">apply</span><span class="p">,</span> <span class="n">rate_guard</span><span class="o">=</span><span class="n">guard</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">actions</span>
+            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">verdict</span> <span class="o">==</span> <span class="n">rv</span><span class="o">.</span><span class="n">SERVER_MODE</span>
+        <span class="p">]</span>
+    <span class="k">if</span> <span class="n">json_out</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="n">asdict</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">],</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">actions</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"no live claude panes found (nothing under tmux on this host)"</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">rv</span><span class="o">.</span><span class="n">format_actions</span><span class="p">(</span><span class="n">actions</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">apply</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">would_send</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">(dry run — re-run with --apply to send)"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div>
+
+
+
 <span class="c1"># argh maps a function's __name__ to the subcommand name. Rename the</span>
 <span class="c1"># handler functions (stripping the _cmd suffix) so the user types</span>
 <span class="c1"># ``xa list``, not ``xa list_cmd``.</span>
@@ -931,6 +994,7 @@
 <span class="n">sync_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"sync"</span>
 <span class="n">pick_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"pick"</span>
 <span class="n">gen_secret_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"gen-secret"</span>
+<span class="n">revive_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"revive"</span>
 
 <span class="n">archive_list_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"list"</span>
 <span class="n">archive_log_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"log"</span>
@@ -947,6 +1011,7 @@
     <span class="n">sync_cmd</span><span class="p">,</span>
     <span class="n">pick_cmd</span><span class="p">,</span>
     <span class="n">gen_secret_cmd</span><span class="p">,</span>
+    <span class="n">revive_cmd</span><span class="p">,</span>
 <span class="p">]</span>
 <span class="n">_archive_funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">archive_list_cmd</span><span class="p">,</span> <span class="n">archive_log_cmd</span><span class="p">,</span> <span class="n">archive_forensics_cmd</span><span class="p">]</span>
 

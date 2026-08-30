@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.store &mdash; xa 0.1.5 documentation</title>
+  <title>xa.store &mdash; xa 0.1.6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
+      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -60,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="hosts/http.html">xa.hosts.http</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hosts/local.html">xa.hosts.local</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="revive.html">xa.revive</a></li>
 <li class="toctree-l1"><a class="reference internal" href="service.html">xa.service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sessions.html">xa.sessions</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">xa.store</a><ul>
@@ -70,6 +71,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#xa.store.JsonLinesStore"><code class="docutils literal notranslate"><span class="pre">JsonLinesStore</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.store.default_events_store"><code class="docutils literal notranslate"><span class="pre">default_events_store()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.store.default_pane_store"><code class="docutils literal notranslate"><span class="pre">default_pane_store()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.store.default_revive_store"><code class="docutils literal notranslate"><span class="pre">default_revive_store()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tmux.html">xa.tmux</a></li>
@@ -152,6 +154,16 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dt class="sig sig-object py" id="xa.store.default_pane_store">
 <span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">default_pane_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#xa.store.FileStore" title="xa.store.FileStore"><span class="pre">FileStore</span></a></span></span><a class="reference internal" href="../../_modules/xa/store.html#default_pane_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.default_pane_store" title="Link to this definition"></a></dt>
 <dd><p>Per-session pane logs at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/panes/&lt;id&gt;.log</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.store.default_revive_store">
+<span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">default_revive_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#xa.store.FileStore" title="xa.store.FileStore"><span class="pre">FileStore</span></a></span></span><a class="reference internal" href="../../_modules/xa/store.html#default_revive_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.default_revive_store" title="Link to this definition"></a></dt>
+<dd><p>Per-pane last-reconnect stamps for <a class="reference internal" href="revive.html#xa.revive.RateGuard" title="xa.revive.RateGuard"><code class="xref py py-class docutils literal notranslate"><span class="pre">xa.revive.RateGuard</span></code></a>.</p>
+<p>On disk rather than in memory on purpose: the guard exists to stop a
+cron tick, a hook and a human from each sending <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code>
+into the same pane seconds apart, and every one of those is a
+different process.</p>
 </dd></dl>
 
 </section>

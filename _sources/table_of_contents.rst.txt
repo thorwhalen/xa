@@ -13,6 +13,7 @@
    module_docs/xa/hosts/http
    module_docs/xa/hosts/local
    module_docs/xa/hosts/ssh
+   module_docs/xa/revive
    module_docs/xa/service
    module_docs/xa/sessions
    module_docs/xa/store

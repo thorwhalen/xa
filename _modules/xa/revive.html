@@ -1,0 +1,1057 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xa.revive &mdash; xa 0.1.6 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            xa
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa.html">xa</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/__main__.html">xa.__main__</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/archive.html">xa.archive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/cli.html">xa.cli</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/config.html">xa.config</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts.html">xa.hosts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/revive.html">xa.revive</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/service.html">xa.service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/sessions.html">xa.sessions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/store.html">xa.store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/tmux.html">xa.tmux</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">xa</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">xa.revive</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for xa.revive</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Detect — and reconnect — Claude Code panes whose Remote Control dropped.</span>
+
+<span class="sd">Remote Control gives up on its own: after a few minutes of failed reconnects,</span>
+<span class="sd">or roughly thirty minutes of failed presence heartbeats, it stops trying and</span>
+<span class="sd">leaves the local session running but unreachable from claude.ai. The usual</span>
+<span class="sd">cause is a network change (moving between networks, toggling a VPN) that</span>
+<span class="sd">produces a transient HTTP 403 — the same change that clears it, usually</span>
+<span class="sd">within a minute or two.</span>
+
+<span class="sd">Two facts shape everything below, and both were verified rather than assumed:</span>
+
+<span class="sd">- **Two observables, and both were checked against a live session rather</span>
+<span class="sd">  than assumed.** The footer carries a ``/rc`` *pill* that is present while</span>
+<span class="sd">  Remote Control is connected (``/rc``, or ``/rc active`` when verbose) and</span>
+<span class="sd">  **disappears** when it is not — so the pill's absence, not its presence,</span>
+<span class="sd">  is what marks a dropped session. The ephemeral session file</span>
+<span class="sd">  (``~/.claude/sessions/&lt;pid&gt;.json``) agrees from the other side: its</span>
+<span class="sd">  ``bridgeSessionId`` is a real id while connected and ``null`` once it is</span>
+<span class="sd">  not. The transcript JSONL never mentions Remote Control at all, so there</span>
+<span class="sd">  is no third source.</span>
+<span class="sd">- **``tmux send-keys`` is the only way to act.** ``/remote-control`` is a</span>
+<span class="sd">  built-in slash command; the CLI exposes no subcommand and no control</span>
+<span class="sd">  request that reconnects a *running* session (checked against</span>
+<span class="sd">  ``claude --help`` and ``claude remote-control --help``, 2.1.251 — the only</span>
+<span class="sd">  session-shaped verbs there are ``agents``/``attach``/``logs``/``stop``/</span>
+<span class="sd">  ``rm``/``respawn``, all of which are about background agents).</span>
+
+<span class="sd">The detection phrases in :data:`MARKERS` are transcribed from the strings</span>
+<span class="sd">embedded in the ``claude`` 2.1.251 binary, not guessed from screenshots.</span>
+<span class="sd">They are data, and :data:`DEFAULT_RULES` is injectable, so a wording change</span>
+<span class="sd">upstream is a one-line edit rather than a rewrite.</span>
+
+<span class="sd">Four things this module refuses to do, each deliberate:</span>
+
+<span class="sd">- **It never revives a session held elsewhere.** When a session was taken</span>
+<span class="sd">  over or ended from another device, the TUI says so (WebSocket close code</span>
+<span class="sd">  4090) and *omits* its "run /remote-control" advice. Sending the command</span>
+<span class="sd">  anyway would steal the session back from the user's phone mid-sentence.</span>
+<span class="sd">  :data:`HELD_ELSEWHERE` is therefore tested before :data:`RECONNECTABLE`</span>
+<span class="sd">  and acting on it stays opt-in.</span>
+<span class="sd">- **It never resends a prompt.** An API-stalled pane is reported and left</span>
+<span class="sd">  alone: the fix there is a real model call that can duplicate work.</span>
+<span class="sd">- **It never types into a pane waiting on a human.** A permission dialog or</span>
+<span class="sd">  a ``/login`` prompt consumes keystrokes as *answers* — sending</span>
+<span class="sd">  ``/remote-control`` into an open "Do you want to proceed?" selector would</span>
+<span class="sd">  answer it. Those panes classify as :data:`NEEDS_HUMAN` and are skipped.</span>
+<span class="sd">- **It does nothing at all unless asked.** ``apply=True`` is explicit;</span>
+<span class="sd">  every entry point is a dry run by default.</span>
+
+<span class="sd">Typical use::</span>
+
+<span class="sd">    from xa.revive import SessionPanes, revive</span>
+
+<span class="sd">    for action in revive(panes=SessionPanes()):      # dry run</span>
+<span class="sd">        print(action.target, action.verdict, action.skipped)</span>
+
+<span class="sd">Discovery does **not** enumerate tmux and guess which pane holds a claude.</span>
+<span class="sd">It reads the live ephemeral session files, each of which records its own</span>
+<span class="sd">pane as ``"tmux": "session:@window.%pane"``, so the pane refs are exact and</span>
+<span class="sd">``pane_current_command`` never enters the decision. See :func:`local_panes`.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_cli</span> <span class="k">as</span> <span class="n">ccli</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_fs</span> <span class="k">as</span> <span class="n">cfs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">store</span> <span class="k">as</span> <span class="n">st</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmux</span> <span class="k">as</span> <span class="n">tm</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># verdicts</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="c1">#: No claude process behind the pane — a shell prompt, or a session that died.</span>
+<span class="n">NO_CLAUDE</span> <span class="o">=</span> <span class="s2">"no_claude"</span>
+<span class="c1">#: Taken over or ended from another device. Never reconnect without opt-in.</span>
+<span class="n">HELD_ELSEWHERE</span> <span class="o">=</span> <span class="s2">"held_elsewhere"</span>
+<span class="c1">#: Remote Control is up. Nothing to do.</span>
+<span class="n">CONNECTED</span> <span class="o">=</span> <span class="s2">"connected"</span>
+<span class="c1">#: Remote Control is retrying right now. Leave it alone; it may well succeed.</span>
+<span class="n">RECONNECTING</span> <span class="o">=</span> <span class="s2">"reconnecting"</span>
+<span class="c1">#: Blocked on a human — login, workspace trust, or an open permission dialog.</span>
+<span class="n">NEEDS_HUMAN</span> <span class="o">=</span> <span class="s2">"needs_human"</span>
+<span class="c1">#: The API call is wedged. Reported, never acted on (the fix is a new prompt).</span>
+<span class="n">API_STALLED</span> <span class="o">=</span> <span class="s2">"api_stalled"</span>
+<span class="c1">#: A ``claude remote-control`` *server* died. See :func:`restart_server_mode`.</span>
+<span class="n">SERVER_MODE</span> <span class="o">=</span> <span class="s2">"server_mode"</span>
+<span class="c1">#: Dropped and recoverable — the one verdict :func:`revive` acts on.</span>
+<span class="n">RECONNECTABLE</span> <span class="o">=</span> <span class="s2">"reconnectable"</span>
+<span class="c1">#: The pane says nothing either way. Never acted on.</span>
+<span class="n">UNKNOWN</span> <span class="o">=</span> <span class="s2">"unknown"</span>
+
+<span class="c1">#: Every verdict :data:`DEFAULT_RULES` can produce. Custom rules may add more.</span>
+<span class="n">VERDICTS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="n">NO_CLAUDE</span><span class="p">,</span>
+        <span class="n">HELD_ELSEWHERE</span><span class="p">,</span>
+        <span class="n">CONNECTED</span><span class="p">,</span>
+        <span class="n">RECONNECTING</span><span class="p">,</span>
+        <span class="n">NEEDS_HUMAN</span><span class="p">,</span>
+        <span class="n">API_STALLED</span><span class="p">,</span>
+        <span class="n">SERVER_MODE</span><span class="p">,</span>
+        <span class="n">RECONNECTABLE</span><span class="p">,</span>
+        <span class="n">UNKNOWN</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1">#: Verdicts :func:`revive` will send ``/remote-control`` to. ``HELD_ELSEWHERE``</span>
+<span class="c1">#: is deliberately absent — it is reachable only via ``include_held_elsewhere``.</span>
+<span class="n">ACTIONABLE</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="n">RECONNECTABLE</span><span class="p">})</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># pane data (pure)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="PaneRef">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.PaneRef">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PaneRef</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Identity of one candidate pane — everything known *without* reading it.</span>
+
+<span class="sd">    ``target`` is a tmux target: a full pane ref (``session:@window.%pane``,</span>
+<span class="sd">    which is what the ephemeral session file records) or a bare session name.</span>
+<span class="sd">    """</span>
+
+    <span class="n">target</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"local"</span>
+    <span class="n">claude_pid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">bridge_session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1">#: ``idle`` / ``busy`` / ``waiting`` as the session last reported it.</span>
+    <span class="c1">#: ``None`` on a claude too old to record one.</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="Probe">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.Probe">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Probe</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The complete, pure input to a classification rule.</span>
+
+<span class="sd">    ``text`` is the pane tail, lowercased once so every rule can use a plain</span>
+<span class="sd">    substring test.</span>
+<span class="sd">    """</span>
+
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">ref</span><span class="p">:</span> <span class="n">PaneRef</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s2">"?"</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="PaneState">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.PaneState">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PaneState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A pane, as read and judged. The value type of :class:`SessionPanes`."""</span>
+
+    <span class="n">ref</span><span class="p">:</span> <span class="n">PaneRef</span>
+    <span class="n">tail</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">verdict</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">evidence</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">target</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># detection phrases (data, transcribed from the claude 2.1.251 binary)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="c1">#: Substring markers per verdict. Lowercase; matched against a lowered tail.</span>
+<span class="n">MARKERS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># WebSocket close code 4090 — someone else now owns the session, plus the</span>
+    <span class="c1"># same-machine variant where another Claude Code holds this conversation.</span>
+    <span class="n">HELD_ELSEWHERE</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"ended or archived from another device"</span><span class="p">,</span>
+        <span class="s2">"no longer the active worker for the session"</span><span class="p">,</span>
+        <span class="s2">"already has remote control for this conversation"</span><span class="p">,</span>
+        <span class="s2">"run /remote-control to move it to this terminal"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="c1"># The pill itself is matched by RC_PILL; this is the prose form.</span>
+    <span class="n">CONNECTED</span><span class="p">:</span> <span class="p">(</span><span class="s2">"remote control active"</span><span class="p">,),</span>
+    <span class="n">RECONNECTING</span><span class="p">:</span> <span class="p">(</span><span class="s2">"/rc reconnecting"</span><span class="p">,),</span>
+    <span class="c1"># Reuses claude_cli's login/trust vocabulary, plus the dialog chrome that</span>
+    <span class="c1"># proves a prompt is open and eating keystrokes.</span>
+    <span class="n">NEEDS_HUMAN</span><span class="p">:</span> <span class="n">ccli</span><span class="o">.</span><span class="n">_LOGIN_PANE_MARKERS</span>
+    <span class="o">+</span> <span class="n">ccli</span><span class="o">.</span><span class="n">_TRUST_PANE_MARKERS</span>
+    <span class="o">+</span> <span class="p">(</span>
+        <span class="s2">"do you want to proceed?"</span><span class="p">,</span>
+        <span class="s2">"esc to cancel"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">API_STALLED</span><span class="p">:</span> <span class="p">(</span><span class="s2">"api error"</span><span class="p">,</span> <span class="s2">"retrying in "</span><span class="p">,</span> <span class="s2">"overloaded"</span><span class="p">),</span>
+    <span class="c1"># Server mode prints its own retry advice; the REPL prints a slash command.</span>
+    <span class="n">SERVER_MODE</span><span class="p">:</span> <span class="p">(</span><span class="s2">"re-run `claude remote-control` to try again"</span><span class="p">,),</span>
+    <span class="n">RECONNECTABLE</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"remote control disconnected"</span><span class="p">,</span>
+        <span class="s2">"remote control not started here"</span><span class="p">,</span>
+        <span class="s2">"run /remote-control to retry"</span><span class="p">,</span>
+        <span class="s2">"/remote-control is no longer active"</span><span class="p">,</span>
+        <span class="s2">"/rc failed"</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c1">#: The footer *pill*. Present while Remote Control is connected — ``/rc`` on</span>
+<span class="c1">#: its own right-aligned line, or ``/rc active`` in verbose mode — and gone</span>
+<span class="c1">#: the moment it is not. Anchored to a line end because a bare ``"/rc" in</span>
+<span class="c1">#: text`` would also match a file path ending in ``src/rc``.</span>
+<span class="c1">#:</span>
+<span class="c1">#: The direction matters and is easy to get backwards: the pill is evidence</span>
+<span class="c1">#: of *health*. Verified by disconnecting a live session and watching the</span>
+<span class="c1">#: line vanish (claude 2.1.251).</span>
+<span class="n">RC_PILL</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(?m)^.*(?&lt;![\w/])/rc(?: active)?\s*$"</span><span class="p">)</span>
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># rules</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="n">Predicate</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Probe</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
+<span class="n">Rule</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Predicate</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">markers</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Predicate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A predicate matching any of ``markers`` (case-insensitive substrings).</span>
+
+<span class="sd">    The markers ride along on the returned function so a match can report</span>
+<span class="sd">    *which* phrase it saw, without a second table to keep in step.</span>
+
+<span class="sd">    &gt;&gt;&gt; pred = _any_of('Hello', 'Goodbye')</span>
+<span class="sd">    &gt;&gt;&gt; pred(Probe(text='well hello there'))</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; pred(Probe(text='nothing to see'))</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; pred.markers</span>
+<span class="sd">    ('hello', 'goodbye')</span>
+<span class="sd">    """</span>
+    <span class="n">lowered</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">markers</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pred</span><span class="p">(</span><span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">m</span> <span class="ow">in</span> <span class="n">probe</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">lowered</span><span class="p">)</span>
+
+    <span class="n">_pred</span><span class="o">.</span><span class="n">markers</span> <span class="o">=</span> <span class="n">lowered</span>  <span class="c1"># type: ignore[attr-defined]</span>
+    <span class="k">return</span> <span class="n">_pred</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pill_present</span><span class="p">(</span><span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""True when the footer still carries its Remote Control pill."""</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">RC_PILL</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">probe</span><span class="o">.</span><span class="n">text</span><span class="p">))</span>
+
+
+<span class="n">_pill_present</span><span class="o">.</span><span class="n">markers</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"/rc"</span><span class="p">,)</span>  <span class="c1"># type: ignore[attr-defined]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bridge_down</span><span class="p">(</span><span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Both observables agree that Remote Control is not connected.</span>
+
+<span class="sd">    Deliberately conjunctive. Either half alone has a failure direction that</span>
+<span class="sd">    costs the user something: the pill can be missed (a redraw, an unusual</span>
+<span class="sd">    width) and reconnecting a healthy session opens a modal menu in it,</span>
+<span class="sd">    while the session file is written by the session itself and cannot be</span>
+<span class="sd">    read at all for a claude too old to write one.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">probe</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">bridge_session_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_pill_present</span><span class="p">(</span><span class="n">probe</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_no_claude</span><span class="p">(</span><span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">probe</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">claude_pid</span> <span class="ow">is</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_always</span><span class="p">(</span><span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="c1">#: Ordered ``(verdict, predicate)`` pairs; **first match wins**.</span>
+<span class="c1">#:</span>
+<span class="c1">#: The order is the policy, not a style choice, and two things decide it.</span>
+<span class="c1">#:</span>
+<span class="c1">#: *Safety*: ``NO_CLAUDE`` leads, so a dead session's scrollback can never be</span>
+<span class="c1">#: read as live state — the pane this was written against still showed a</span>
+<span class="c1">#: permission dialog and a disconnect notice above a shell prompt, all true</span>
+<span class="c1">#: once and none true now. ``HELD_ELSEWHERE`` precedes every reconnect</span>
+<span class="c1">#: verdict, per the rule that a session picked up on another device is never</span>
+<span class="c1">#: taken back without asking.</span>
+<span class="c1">#:</span>
+<span class="c1">#: *Freshness*: the pill rules are **live** state and the phrase rules are</span>
+<span class="c1">#: **history**. A session that dropped and recovered still carries</span>
+<span class="c1">#: "Remote Control disconnected" in its scrollback for as long as it stays on</span>
+<span class="c1">#: screen, so a text rule placed above the pill would report a healthy</span>
+<span class="c1">#: session as broken until the line scrolled away.</span>
+<span class="n">DEFAULT_RULES</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Rule</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="n">NO_CLAUDE</span><span class="p">,</span> <span class="n">_no_claude</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">HELD_ELSEWHERE</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">HELD_ELSEWHERE</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">RECONNECTING</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">RECONNECTING</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">CONNECTED</span><span class="p">,</span> <span class="n">_pill_present</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">CONNECTED</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">CONNECTED</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">NEEDS_HUMAN</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">NEEDS_HUMAN</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">API_STALLED</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">API_STALLED</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">SERVER_MODE</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">SERVER_MODE</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">RECONNECTABLE</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">RECONNECTABLE</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">RECONNECTABLE</span><span class="p">,</span> <span class="n">_bridge_down</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">UNKNOWN</span><span class="p">,</span> <span class="n">_always</span><span class="p">),</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="classify">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.classify">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">classify</span><span class="p">(</span><span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rules</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Rule</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_RULES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Return the verdict for ``probe``. Pure — no I/O, no tmux, no clock.</span>
+
+<span class="sd">    A session whose footer pill is gone and whose session file records no</span>
+<span class="sd">    bridge id has dropped:</span>
+
+<span class="sd">    &gt;&gt;&gt; dropped = PaneRef(target='w:@1.%1', claude_pid=42)</span>
+<span class="sd">    &gt;&gt;&gt; classify(Probe(text='conversation text\n❯ ', ref=dropped))</span>
+<span class="sd">    'reconnectable'</span>
+
+<span class="sd">    One still carrying the pill has not, whatever its scrollback remembers:</span>
+
+<span class="sd">    &gt;&gt;&gt; live = PaneRef(target='w:@1.%1', claude_pid=42, bridge_session_id='s')</span>
+<span class="sd">    &gt;&gt;&gt; classify(Probe(text='remote control disconnected\n     /rc', ref=live))</span>
+<span class="sd">    'connected'</span>
+
+<span class="sd">    A session someone picked up on their phone is never reconnectable, even</span>
+<span class="sd">    though the pane also says it disconnected:</span>
+
+<span class="sd">    &gt;&gt;&gt; taken = 'remote control disconnected\nended or archived from another device'</span>
+<span class="sd">    &gt;&gt;&gt; classify(Probe(text=taken, ref=dropped))</span>
+<span class="sd">    'held_elsewhere'</span>
+
+<span class="sd">    Neither is one sitting on a permission dialog:</span>
+
+<span class="sd">    &gt;&gt;&gt; classify(Probe(text='/rc failed\ndo you want to proceed?', ref=live))</span>
+<span class="sd">    'needs_human'</span>
+
+<span class="sd">    And a healthy, quiet, connected pane is simply left alone:</span>
+
+<span class="sd">    &gt;&gt;&gt; classify(Probe(text='just some conversation\n  /rc', ref=live))</span>
+<span class="sd">    'connected'</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">verdict</span><span class="p">,</span> <span class="n">predicate</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">predicate</span><span class="p">(</span><span class="n">probe</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">verdict</span>
+    <span class="k">return</span> <span class="n">UNKNOWN</span></div>
+
+
+
+<div class="viewcode-block" id="evidence_for">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.evidence_for">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">evidence_for</span><span class="p">(</span><span class="n">probe</span><span class="p">:</span> <span class="n">Probe</span><span class="p">,</span> <span class="n">verdict</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">rules</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Rule</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_RULES</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The marker that earned ``verdict``, for a report a human has to trust.</span>
+
+<span class="sd">    &gt;&gt;&gt; ref = PaneRef(target='w:@1.%1', claude_pid=1)</span>
+<span class="sd">    &gt;&gt;&gt; evidence_for(Probe(text='/rc failed', ref=ref), 'reconnectable')</span>
+<span class="sd">    '/rc failed'</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">rule_verdict</span><span class="p">,</span> <span class="n">predicate</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">rule_verdict</span> <span class="o">!=</span> <span class="n">verdict</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">predicate</span><span class="p">(</span><span class="n">probe</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">marker</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">predicate</span><span class="p">,</span> <span class="s2">"markers"</span><span class="p">,</span> <span class="p">()):</span>
+            <span class="k">if</span> <span class="n">marker</span> <span class="ow">in</span> <span class="n">probe</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">marker</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">predicate</span><span class="p">,</span> <span class="s2">"markers"</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># discovery</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="local_panes">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.local_panes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">local_panes</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">PaneRef</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Yield one :class:`PaneRef` per live claude that records a tmux pane.</span>
+
+<span class="sd">    Derived from the ephemeral session files rather than from</span>
+<span class="sd">    ``tmux list-panes``: each file names its own pane, so no heuristic has</span>
+<span class="sd">    to decide whether a pane holds a claude. A session not under tmux (every</span>
+<span class="sd">    session on a machine that runs claude in terminal tabs) simply has no</span>
+<span class="sd">    ``tmux`` key and is skipped — there is no pane to send keys to.</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">eph</span> <span class="ow">in</span> <span class="n">cfs</span><span class="o">.</span><span class="n">iter_ephemeral_sessions</span><span class="p">(</span><span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">):</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tmux"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">yield</span> <span class="n">PaneRef</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+            <span class="n">claude_pid</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"pid"</span><span class="p">),</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cwd"</span><span class="p">),</span>
+            <span class="n">session_id</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sessionId"</span><span class="p">),</span>
+            <span class="n">bridge_session_id</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bridgeSessionId"</span><span class="p">),</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">eph</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status"</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="has_live_claude">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.has_live_claude">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">has_live_claude</span><span class="p">(</span><span class="n">ref</span><span class="p">:</span> <span class="n">PaneRef</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Default relevance test: the recorded pid is a *claude* that still exists.</span>
+
+<span class="sd">    Identity, not just liveness — a stale ephemeral file whose pid got</span>
+<span class="sd">    recycled must never direct keystrokes at an unrelated process.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">ref</span><span class="o">.</span><span class="n">claude_pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ccli</span><span class="o">.</span><span class="n">pid_is_claude</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">claude_pid</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_capture</span><span class="p">(</span><span class="n">ref</span><span class="p">:</span> <span class="n">PaneRef</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">ref</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="n">lines</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SessionPanes">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.SessionPanes">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SessionPanes</span><span class="p">(</span><span class="n">Mapping</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Live view of the panes worth judging: ``{tmux target: PaneState}``.</span>
+
+<span class="sd">    Every source of truth is injected, which is what lets the whole</span>
+<span class="sd">    classification path be tested without a tmux server:</span>
+
+<span class="sd">    - ``panes`` — callable returning :class:`PaneRef` objects (default:</span>
+<span class="sd">      :func:`local_panes`);</span>
+<span class="sd">    - ``is_relevant`` — per-ref filter (default: :func:`has_live_claude`);</span>
+<span class="sd">    - ``tail`` — callable reading a ref's pane text (default: tmux capture);</span>
+<span class="sd">    - ``rules`` — the classification table (default: :data:`DEFAULT_RULES`).</span>
+
+<span class="sd">    Pane text is read lazily and cached, so building the mapping costs</span>
+<span class="sd">    nothing and iterating it costs one capture per pane.</span>
+
+<span class="sd">    &gt;&gt;&gt; refs = [PaneRef(target='w:@1.%1', claude_pid=7, bridge_session_id='s_1')]</span>
+<span class="sd">    &gt;&gt;&gt; panes = SessionPanes(</span>
+<span class="sd">    ...     panes=lambda: refs,</span>
+<span class="sd">    ...     is_relevant=lambda ref: True,</span>
+<span class="sd">    ...     tail=lambda ref: 'Remote Control disconnected',</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; list(panes)</span>
+<span class="sd">    ['w:@1.%1']</span>
+<span class="sd">    &gt;&gt;&gt; panes['w:@1.%1'].verdict</span>
+<span class="sd">    'reconnectable'</span>
+<span class="sd">    &gt;&gt;&gt; panes.by_verdict()['reconnectable']</span>
+<span class="sd">    ['w:@1.%1']</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">panes</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">PaneRef</span><span class="p">]]</span> <span class="o">=</span> <span class="n">local_panes</span><span class="p">,</span>
+        <span class="n">is_relevant</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PaneRef</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">has_live_claude</span><span class="p">,</span>
+        <span class="n">tail</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">PaneRef</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_capture</span><span class="p">,</span>
+        <span class="n">rules</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Rule</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_RULES</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_panes</span> <span class="o">=</span> <span class="n">panes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_relevant</span> <span class="o">=</span> <span class="n">is_relevant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span> <span class="o">=</span> <span class="n">tail</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rules</span> <span class="o">=</span> <span class="n">rules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PaneRef</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_states</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PaneState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="SessionPanes.refresh">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.SessionPanes.refresh">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"SessionPanes"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Drop every cached ref and pane read. Returns self, for chaining."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_states</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ref_map</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PaneRef</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_refs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">ref</span><span class="o">.</span><span class="n">target</span><span class="p">:</span> <span class="n">ref</span> <span class="k">for</span> <span class="n">ref</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_panes</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_relevant</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refs</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_map</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_map</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PaneState</span><span class="p">:</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_map</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_states</span><span class="p">:</span>
+            <span class="n">tail</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tail</span><span class="p">(</span><span class="n">ref</span><span class="p">)</span>
+            <span class="n">probe</span> <span class="o">=</span> <span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">tail</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">)</span>
+            <span class="n">verdict</span> <span class="o">=</span> <span class="n">classify</span><span class="p">(</span><span class="n">probe</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rules</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_states</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">=</span> <span class="n">PaneState</span><span class="p">(</span>
+                <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span>
+                <span class="n">tail</span><span class="o">=</span><span class="n">tail</span><span class="p">,</span>
+                <span class="n">verdict</span><span class="o">=</span><span class="n">verdict</span><span class="p">,</span>
+                <span class="n">evidence</span><span class="o">=</span><span class="n">evidence_for</span><span class="p">(</span><span class="n">probe</span><span class="p">,</span> <span class="n">verdict</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rules</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_states</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SessionPanes.by_verdict">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.SessionPanes.by_verdict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">by_verdict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""``{verdict: [target, ...]}`` — reads every pane."""</span>
+        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="o">.</span><span class="n">verdict</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+</div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># typing safety</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="c1">#: The TUI's input line: the prompt glyph, then U+00A0, then whatever the user</span>
+<span class="c1">#: has typed. ``&gt; `` is the plain-ASCII rendering some terminals get.</span>
+<span class="n">PROMPT_LINE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">"(?m)^(?:</span><span class="se">\u276f</span><span class="s2">|&gt;)[</span><span class="se">\u00a0</span><span class="s2"> ](.*)$"</span><span class="p">)</span>
+
+<span class="c1">#: Statuses in which a keystroke is a *command*. Anything else — ``busy``,</span>
+<span class="c1">#: ``waiting`` — means the session is mid-turn or holding a dialog, and typed</span>
+<span class="c1">#: text would be queued into it. ``None`` is a claude too old to say.</span>
+<span class="n">TYPEABLE_STATUS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"idle"</span><span class="p">,</span> <span class="kc">None</span><span class="p">})</span>
+
+
+<div class="viewcode-block" id="prompt_is_clear">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.prompt_is_clear">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prompt_is_clear</span><span class="p">(</span><span class="n">tail</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""True when the pane's input line is empty and safe to type into.</span>
+
+<span class="sd">    This is the difference between reconnecting a session and destroying the</span>
+<span class="sd">    instruction its owner left half-typed: ``send-keys`` appends to whatever</span>
+<span class="sd">    is already in the buffer, so ``/remote-control`` sent at a pane whose</span>
+<span class="sd">    prompt reads ``yes, port it into the repo`` submits</span>
+<span class="sd">    ``yes, port it into the repo/remote-control``.</span>
+
+<span class="sd">    Conservative by construction — a pane whose prompt line cannot be found</span>
+<span class="sd">    is reported as not clear, because "I could not see the buffer" and "the</span>
+<span class="sd">    buffer is empty" must never collapse into the same answer.</span>
+
+<span class="sd">    &gt;&gt;&gt; prompt_is_clear('---\n❯ \n---')</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; prompt_is_clear('❯ yes, port it into the repo')</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; prompt_is_clear('no prompt line here at all')</span>
+<span class="sd">    False</span>
+<span class="sd">    """</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">PROMPT_LINE</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">tail</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">matches</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="refusal_to_type">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.refusal_to_type">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">refusal_to_type</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="s2">"PaneState"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Why typing into ``state`` would be unsafe, or ``None`` if it is fine.</span>
+
+<span class="sd">    Two independent gates, because each catches what the other misses: the</span>
+<span class="sd">    reported status catches a session mid-turn whose buffer happens to be</span>
+<span class="sd">    empty, and the buffer check catches an idle session holding text the</span>
+<span class="sd">    status knows nothing about.</span>
+
+<span class="sd">    &gt;&gt;&gt; ref = PaneRef(target='t', claude_pid=1, status='idle')</span>
+<span class="sd">    &gt;&gt;&gt; refusal_to_type(PaneState(ref=ref, tail='❯ ', verdict=RECONNECTABLE))</span>
+<span class="sd">    &gt;&gt;&gt; busy = replace(ref, status='busy')</span>
+<span class="sd">    &gt;&gt;&gt; refusal_to_type(PaneState(ref=busy, tail='❯ ', verdict=RECONNECTABLE))</span>
+<span class="sd">    'session is busy'</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">TYPEABLE_STATUS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"session is </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">prompt_is_clear</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">tail</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">"prompt holds unsent text"</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># rate guard</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="c1">#: Long enough that a cron tick can never turn into a keystroke storm, short</span>
+<span class="c1">#: enough that a real network change is followed within one settling period.</span>
+<span class="n">DFLT_MIN_INTERVAL_SEC</span> <span class="o">=</span> <span class="mf">600.0</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_store_key</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A ``FileStore``-safe key for a tmux target, collision-free.</span>
+
+<span class="sd">    tmux targets carry ``:``, ``@`` and ``%``, none of which the store's key</span>
+<span class="sd">    allowlist accepts, and squashing them would merge two panes into one</span>
+<span class="sd">    record — so the readable part is a hint and the digest carries identity.</span>
+
+<span class="sd">    &gt;&gt;&gt; _store_key('work:@1.%2')</span>
+<span class="sd">    'work..1..2.fa6511fa'</span>
+<span class="sd">    """</span>
+    <span class="n">safe</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[^A-Za-z0-9_.-]"</span><span class="p">,</span> <span class="s2">"."</span><span class="p">,</span> <span class="n">target</span><span class="p">)[:</span><span class="mi">48</span><span class="p">]</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">8</span><span class="p">]</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">safe</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">digest</span><span class="si">}</span><span class="s2">"</span>
+
+
+<div class="viewcode-block" id="RateGuard">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.RateGuard">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RateGuard</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Refuses to touch the same pane twice inside ``min_interval_sec``.</span>
+
+<span class="sd">    Without this a cron tick, a hook and an impatient human can each send</span>
+<span class="sd">    ``/remote-control`` into the same pane seconds apart. Backed by any</span>
+<span class="sd">    ``{key: bytes}`` mapping — the default is xa's on-disk</span>
+<span class="sd">    :class:`~xa.store.FileStore`, so the interval survives process exit,</span>
+<span class="sd">    which is the entire point.</span>
+
+<span class="sd">    &gt;&gt;&gt; clock = iter([100.0, 200.0, 800.0]).__next__</span>
+<span class="sd">    &gt;&gt;&gt; guard = RateGuard(store={}, min_interval_sec=600.0, clock=clock)</span>
+<span class="sd">    &gt;&gt;&gt; guard.allow('work:@1.%1')     # never attempted</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; guard.record('work:@1.%1')    # stamped at t=100</span>
+<span class="sd">    &gt;&gt;&gt; guard.allow('work:@1.%1')     # t=200 — 100s later, still held off</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; guard.allow('work:@1.%1')     # t=800 — 700s later, released</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_interval_sec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_MIN_INTERVAL_SEC</span><span class="p">,</span>
+        <span class="n">clock</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">default_revive_store</span><span class="p">()</span> <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">store</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_interval_sec</span> <span class="o">=</span> <span class="n">min_interval_sec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clock</span> <span class="o">=</span> <span class="n">clock</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">last_attempt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">_store_key</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="n">raw</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RateGuard.wait_remaining">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.RateGuard.wait_remaining">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wait_remaining</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Seconds left before ``target`` may be touched again (0.0 if now)."""</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_attempt</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">last</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_interval_sec</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="p">()</span> <span class="o">-</span> <span class="n">last</span><span class="p">))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">allow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait_remaining</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">[</span><span class="n">_store_key</span><span class="p">(</span><span class="n">target</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="p">())</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># acting</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="ReviveAction">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.ReviveAction">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReviveAction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""What was (or would be) done to one pane, and why."""</span>
+
+    <span class="n">target</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">verdict</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">keys</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">sent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">skipped</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">evidence</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">would_send</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""True when only ``apply=False`` stood in the way."""</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sent</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">skipped</span> <span class="o">==</span> <span class="s2">"dry-run"</span></div>
+
+
+
+<span class="c1">#: The keystrokes that reconnect a REPL session. ``Enter`` submits.</span>
+<span class="n">RECONNECT_KEYS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"/remote-control"</span><span class="p">,</span> <span class="s2">"Enter"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="revive">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.revive">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">revive</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">panes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">apply</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">include_held_elsewhere</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">rate_guard</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RateGuard</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">send</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">actionable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">ACTIONABLE</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ReviveAction</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Reconnect every dropped pane. **Dry run unless ``apply=True``.**</span>
+
+<span class="sd">    Returns one :class:`ReviveAction` per pane examined — including the ones</span>
+<span class="sd">    left alone, each carrying the reason, because "nothing happened" is only</span>
+<span class="sd">    useful next to what was looked at.</span>
+
+<span class="sd">    ``include_held_elsewhere=True`` opts into reconnecting sessions that were</span>
+<span class="sd">    taken over from another device. That steals the session back from</span>
+<span class="sd">    whatever device holds it; it is off by default and should stay a</span>
+<span class="sd">    deliberate keystroke.</span>
+
+<span class="sd">    &gt;&gt;&gt; refs = [</span>
+<span class="sd">    ...     PaneRef(target='a:@1.%1', claude_pid=1),</span>
+<span class="sd">    ...     PaneRef(target='b:@1.%1', claude_pid=2, bridge_session_id='s'),</span>
+<span class="sd">    ... ]</span>
+<span class="sd">    &gt;&gt;&gt; tails = {'a:@1.%1': '/rc failed\n❯ ', 'b:@1.%1': 'all quiet\n❯ \n   /rc'}</span>
+<span class="sd">    &gt;&gt;&gt; panes = SessionPanes(</span>
+<span class="sd">    ...     panes=lambda: refs,</span>
+<span class="sd">    ...     is_relevant=lambda ref: True,</span>
+<span class="sd">    ...     tail=lambda ref: tails[ref.target],</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; sent = []</span>
+<span class="sd">    &gt;&gt;&gt; actions = revive(</span>
+<span class="sd">    ...     panes=panes,</span>
+<span class="sd">    ...     apply=True,</span>
+<span class="sd">    ...     rate_guard=RateGuard(store={}, clock=lambda: 0.0),</span>
+<span class="sd">    ...     send=lambda target, *keys: sent.append((target, keys)),</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; [(a.target, a.verdict, a.sent) for a in actions]</span>
+<span class="sd">    [('a:@1.%1', 'reconnectable', True), ('b:@1.%1', 'connected', False)]</span>
+<span class="sd">    &gt;&gt;&gt; sent</span>
+<span class="sd">    [('a:@1.%1', ('/remote-control', 'Enter'))]</span>
+<span class="sd">    """</span>
+    <span class="n">panes</span> <span class="o">=</span> <span class="n">SessionPanes</span><span class="p">()</span> <span class="k">if</span> <span class="n">panes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">panes</span>
+    <span class="n">rate_guard</span> <span class="o">=</span> <span class="n">RateGuard</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate_guard</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rate_guard</span>
+    <span class="n">send</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">send_keys</span> <span class="k">if</span> <span class="n">send</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">send</span>
+    <span class="n">act_on</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">actionable</span><span class="p">)</span> <span class="o">|</span> <span class="p">({</span><span class="n">HELD_ELSEWHERE</span><span class="p">}</span> <span class="k">if</span> <span class="n">include_held_elsewhere</span> <span class="k">else</span> <span class="nb">set</span><span class="p">())</span>
+
+    <span class="n">actions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ReviveAction</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">panes</span><span class="p">):</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">panes</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+        <span class="n">common</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+            <span class="n">verdict</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">verdict</span><span class="p">,</span>
+            <span class="n">evidence</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">evidence</span><span class="p">,</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">verdict</span> <span class="o">==</span> <span class="n">SERVER_MODE</span><span class="p">:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ReviveAction</span><span class="p">(</span>
+                    <span class="n">skipped</span><span class="o">=</span><span class="s2">"server mode — use restart_server_mode()"</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">verdict</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">act_on</span><span class="p">:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ReviveAction</span><span class="p">(</span><span class="n">skipped</span><span class="o">=</span><span class="s2">"not actionable"</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">refusal</span> <span class="o">=</span> <span class="n">refusal_to_type</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">refusal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ReviveAction</span><span class="p">(</span><span class="n">skipped</span><span class="o">=</span><span class="n">refusal</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">remaining</span> <span class="o">=</span> <span class="n">rate_guard</span><span class="o">.</span><span class="n">wait_remaining</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ReviveAction</span><span class="p">(</span><span class="n">skipped</span><span class="o">=</span><span class="sa">f</span><span class="s2">"rate-limited (</span><span class="si">{</span><span class="n">remaining</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s)"</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">apply</span><span class="p">:</span>
+            <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ReviveAction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">RECONNECT_KEYS</span><span class="p">,</span> <span class="n">skipped</span><span class="o">=</span><span class="s2">"dry-run"</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">rate_guard</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="n">RECONNECT_KEYS</span><span class="p">)</span>
+        <span class="n">actions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ReviveAction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">RECONNECT_KEYS</span><span class="p">,</span> <span class="n">sent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">actions</span></div>
+
+
+
+<div class="viewcode-block" id="server_mode_command">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.server_mode_command">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">server_mode_command</span><span class="p">(</span><span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Keystrokes that restart a Remote Control *server* in ``cwd``.</span>
+
+<span class="sd">    ``claude remote-control -c`` reattaches the session the command last</span>
+<span class="sd">    recorded **for that directory** (within ~4h), which is why the directory</span>
+<span class="sd">    — and nothing else — is what a restart needs to know.</span>
+
+<span class="sd">    &gt;&gt;&gt; server_mode_command('/root/py/proj')</span>
+<span class="sd">    ('cd /root/py/proj &amp;&amp; claude remote-control -c', 'Enter')</span>
+<span class="sd">    &gt;&gt;&gt; server_mode_command(None)</span>
+<span class="sd">    ('claude remote-control -c', 'Enter')</span>
+<span class="sd">    """</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="s2">"claude remote-control -c"</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cwd</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="s2">"Enter"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">"cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;&amp; </span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"Enter"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="restart_server_mode">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.restart_server_mode">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">restart_server_mode</span><span class="p">(</span>
+    <span class="n">state</span><span class="p">:</span> <span class="n">PaneState</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">apply</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">rate_guard</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RateGuard</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">send</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">resolve_cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ReviveAction</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Restart a died ``claude remote-control`` server in its own directory.</span>
+
+<span class="sd">    The directory is **not** recorded by this package. It is read back from</span>
+<span class="sd">    what already knows it — the pane's own working directory via tmux, or</span>
+<span class="sd">    the ephemeral session file when a claude is still alive — and the</span>
+<span class="sd">    session identity is left to ``claude remote-control -c``, which keeps</span>
+<span class="sd">    its own per-directory record. Adding a fourth place to write it down</span>
+<span class="sd">    would only create something to drift.</span>
+
+<span class="sd">    Refuses whenever a live claude still owns the pane: this sends a *shell*</span>
+<span class="sd">    command, and a running TUI would take it as prompt text.</span>
+
+<span class="sd">    &gt;&gt;&gt; ref = PaneRef(target='srv:@1.%1', cwd='/srv/app')</span>
+<span class="sd">    &gt;&gt;&gt; state = PaneState(ref=ref, tail='', verdict=SERVER_MODE)</span>
+<span class="sd">    &gt;&gt;&gt; keyed = []</span>
+<span class="sd">    &gt;&gt;&gt; action = restart_server_mode(</span>
+<span class="sd">    ...     state,</span>
+<span class="sd">    ...     apply=True,</span>
+<span class="sd">    ...     rate_guard=RateGuard(store={}, clock=lambda: 0.0),</span>
+<span class="sd">    ...     send=lambda target, *keys: keyed.append((target, keys)),</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; action.sent, keyed</span>
+<span class="sd">    (True, [('srv:@1.%1', ('cd /srv/app &amp;&amp; claude remote-control -c', 'Enter'))])</span>
+
+<span class="sd">    &gt;&gt;&gt; live = PaneState(ref=replace(ref, claude_pid=9), tail='', verdict=SERVER_MODE)</span>
+<span class="sd">    &gt;&gt;&gt; restart_server_mode(live, apply=True).skipped</span>
+<span class="sd">    'a claude still owns this pane — keystrokes would land in its prompt'</span>
+<span class="sd">    """</span>
+    <span class="n">rate_guard</span> <span class="o">=</span> <span class="n">RateGuard</span><span class="p">()</span> <span class="k">if</span> <span class="n">rate_guard</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">rate_guard</span>
+    <span class="n">send</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">send_keys</span> <span class="k">if</span> <span class="n">send</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">send</span>
+    <span class="n">resolve_cwd</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">pane_current_path</span> <span class="k">if</span> <span class="n">resolve_cwd</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">resolve_cwd</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">target</span>
+    <span class="n">common</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">verdict</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">verdict</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">evidence</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">claude_pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ReviveAction</span><span class="p">(</span>
+            <span class="n">skipped</span><span class="o">=</span><span class="s2">"a claude still owns this pane — keystrokes would land in its prompt"</span><span class="p">,</span>
+            <span class="n">cwd</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">common</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">where</span> <span class="o">=</span> <span class="n">cwd</span> <span class="ow">or</span> <span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">cwd</span> <span class="ow">or</span> <span class="n">resolve_cwd</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">where</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ReviveAction</span><span class="p">(</span>
+            <span class="n">skipped</span><span class="o">=</span><span class="s2">"no directory to restart in (pass cwd=)"</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span>
+        <span class="p">)</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">server_mode_command</span><span class="p">(</span><span class="n">where</span><span class="p">)</span>
+    <span class="n">remaining</span> <span class="o">=</span> <span class="n">rate_guard</span><span class="o">.</span><span class="n">wait_remaining</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ReviveAction</span><span class="p">(</span>
+            <span class="n">skipped</span><span class="o">=</span><span class="sa">f</span><span class="s2">"rate-limited (</span><span class="si">{</span><span class="n">remaining</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">s)"</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">where</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">apply</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ReviveAction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">skipped</span><span class="o">=</span><span class="s2">"dry-run"</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">where</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span><span class="p">)</span>
+    <span class="n">rate_guard</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+    <span class="n">send</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ReviveAction</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="n">keys</span><span class="p">,</span> <span class="n">sent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">where</span><span class="p">,</span> <span class="o">**</span><span class="n">common</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># reporting</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="c1">#: Verdicts worth a human's eye, in the order a report should present them.</span>
+<span class="n">REPORT_ORDER</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">RECONNECTABLE</span><span class="p">,</span>
+    <span class="n">SERVER_MODE</span><span class="p">,</span>
+    <span class="n">HELD_ELSEWHERE</span><span class="p">,</span>
+    <span class="n">NEEDS_HUMAN</span><span class="p">,</span>
+    <span class="n">API_STALLED</span><span class="p">,</span>
+    <span class="n">RECONNECTING</span><span class="p">,</span>
+    <span class="n">NO_CLAUDE</span><span class="p">,</span>
+    <span class="n">UNKNOWN</span><span class="p">,</span>
+    <span class="n">CONNECTED</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="format_actions">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.format_actions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_actions</span><span class="p">(</span><span class="n">actions</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ReviveAction</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""One line per pane, most actionable first.</span>
+
+<span class="sd">    &gt;&gt;&gt; print(format_actions([</span>
+<span class="sd">    ...     ReviveAction('a:@1.%1', RECONNECTABLE, keys=RECONNECT_KEYS,</span>
+<span class="sd">    ...                  skipped='dry-run', evidence='/rc failed'),</span>
+<span class="sd">    ...     ReviveAction('b:@1.%1', CONNECTED),</span>
+<span class="sd">    ... ]))</span>
+<span class="sd">    reconnectable  a:@1.%1  would send /remote-control  [/rc failed]</span>
+<span class="sd">    connected      b:@1.%1</span>
+<span class="sd">    """</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="p">{</span><span class="n">verdict</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">verdict</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">REPORT_ORDER</span><span class="p">)}</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">verdict</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">verdict</span><span class="p">,</span> <span class="mi">99</span><span class="p">),</span> <span class="n">a</span><span class="o">.</span><span class="n">target</span><span class="p">)):</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">verdict</span><span class="si">:</span><span class="s2">&lt;</span><span class="si">{</span><span class="n">width</span><span class="si">}}</span><span class="s2">"</span><span class="p">,</span> <span class="n">action</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">sent</span><span class="p">:</span>
+            <span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sent </span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span><span class="o">.</span><span class="n">would_send</span><span class="p">:</span>
+            <span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"would send </span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">keys</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">action</span><span class="o">.</span><span class="n">skipped</span> <span class="ow">and</span> <span class="n">action</span><span class="o">.</span><span class="n">skipped</span> <span class="o">!=</span> <span class="s2">"not actionable"</span><span class="p">:</span>
+            <span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">skipped</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">action</span><span class="o">.</span><span class="n">evidence</span><span class="p">:</span>
+            <span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">action</span><span class="o">.</span><span class="n">evidence</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">))</span>
+    <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

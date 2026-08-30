@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.store &mdash; xa 0.1.5 documentation</title>
+  <title>xa.store &mdash; xa 0.1.6 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=59fadc99"></script>
+      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -57,6 +57,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/http.html">xa.hosts.http</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/local.html">xa.hosts.local</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/hosts/ssh.html">xa.hosts.ssh</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/revive.html">xa.revive</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/service.html">xa.service</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/sessions.html">xa.sessions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/xa/store.html">xa.store</a></li>
@@ -243,6 +244,20 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">default_pane_store</span><span class="p">(</span><span class="n">state_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_STATE_DIR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileStore</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Per-session pane logs at ``&lt;state_dir&gt;/panes/&lt;id&gt;.log``."""</span>
     <span class="k">return</span> <span class="n">FileStore</span><span class="p">(</span><span class="n">state_dir</span> <span class="o">/</span> <span class="s2">"panes"</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">".log"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="default_revive_store">
+<a class="viewcode-back" href="../../module_docs/xa/store.html#xa.default_revive_store">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">default_revive_store</span><span class="p">(</span><span class="n">state_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_STATE_DIR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileStore</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Per-pane last-reconnect stamps for :class:`xa.revive.RateGuard`.</span>
+
+<span class="sd">    On disk rather than in memory on purpose: the guard exists to stop a</span>
+<span class="sd">    cron tick, a hook and a human from each sending ``/remote-control``</span>
+<span class="sd">    into the same pane seconds apart, and every one of those is a</span>
+<span class="sd">    different process.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">FileStore</span><span class="p">(</span><span class="n">state_dir</span> <span class="o">/</span> <span class="s2">"revive"</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">".stamp"</span><span class="p">)</span></div>
 
 </pre></div>
 
