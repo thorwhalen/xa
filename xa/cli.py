@@ -1,13 +1,15 @@
 """Command-line interface for ``xa``.
 
-Exposes subcommands via ``argh``: ``list``, ``info``, ``history``.
-Later phases add ``spawn``, ``resume``, ``kill``, ``serve`` and others.
+Exposes subcommands via ``cw``: ``list``, ``info``, ``history``, ``spawn``,
+``resume``, ``kill``, ``serve``, ``sync``, ``pick``, ``gen-secret``, ``revive``,
+and the ``archive`` group (``list``, ``log``, ``forensics``).
 
 Entry point: ``xa`` (see ``[project.scripts]`` in ``pyproject.toml``).
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -846,54 +848,63 @@ def revive_cmd(
         print("\n(dry run — re-run with --apply to send)", file=sys.stderr)
 
 
-# argh maps a function's __name__ to the subcommand name. Rename the
-# handler functions (stripping the _cmd suffix) so the user types
-# ``xa list``, not ``xa list_cmd``.
-list_cmd.__name__ = "list"
-info_cmd.__name__ = "info"
-history_cmd.__name__ = "history"
-spawn_cmd.__name__ = "spawn"
-resume_cmd.__name__ = "resume"
-kill_cmd.__name__ = "kill"
-serve_cmd.__name__ = "serve"
-sync_cmd.__name__ = "sync"
-pick_cmd.__name__ = "pick"
-gen_secret_cmd.__name__ = "gen-secret"
-revive_cmd.__name__ = "revive"
+# The subcommand name is the mapping key, so the handlers keep their own
+# ``_cmd``-suffixed names (which is what the tests and the rest of the package
+# call them) and the command line reads the way a user types it. That includes
+# ``gen-secret``, which is not a Python identifier at all, and ``archive list``,
+# whose leaf name collides with the top-level ``list``.
+TOP_COMMANDS = {
+    "list": list_cmd,
+    "info": info_cmd,
+    "history": history_cmd,
+    "spawn": spawn_cmd,
+    "resume": resume_cmd,
+    "kill": kill_cmd,
+    "serve": serve_cmd,
+    "sync": sync_cmd,
+    "pick": pick_cmd,
+    "gen-secret": gen_secret_cmd,
+    "revive": revive_cmd,
+}
 
-archive_list_cmd.__name__ = "list"
-archive_log_cmd.__name__ = "log"
-archive_forensics_cmd.__name__ = "forensics"
+ARCHIVE_COMMANDS = {
+    "list": archive_list_cmd,
+    "log": archive_log_cmd,
+    "forensics": archive_forensics_cmd,
+}
 
-_top_funcs = [
-    list_cmd,
-    info_cmd,
-    history_cmd,
-    spawn_cmd,
-    resume_cmd,
-    kill_cmd,
-    serve_cmd,
-    sync_cmd,
-    pick_cmd,
-    gen_secret_cmd,
-    revive_cmd,
-]
-_archive_funcs = [archive_list_cmd, archive_log_cmd, archive_forensics_cmd]
+# NOTE: inert, and preserved as-is. The row a group gets in the *parent's*
+# --help comes from ``add_parser(help=...)``, which is fed by ``title``, not
+# ``help``; ``help`` only reaches ``add_subparsers()``, where it renders nowhere
+# a user looks. So `archive` has always been listed bare. True under argh too,
+# which is why the cw migration was byte-identical. See issue #13.
+ARCHIVE_GROUP_KWARGS = {"help": "Postmortem archive (list, log, forensics)."}
+
+
+def mk_parser() -> argparse.ArgumentParser:
+    """The ``xa`` parser -- a plain :class:`argparse.ArgumentParser`, built, not run.
+
+    Two calls rather than one ``cw.dispatch(...)`` because the ``archive`` group
+    carries ``group_kwargs`` (its one-line help in the top-level listing), and a
+    single mapping has nowhere to put those.
+    """
+    import cw
+
+    parser = cw.mk_parser(TOP_COMMANDS, prog="xa")
+    cw.add_commands(
+        parser,
+        ARCHIVE_COMMANDS,
+        group_name="archive",
+        group_kwargs=ARCHIVE_GROUP_KWARGS,
+    )
+    return parser
 
 
 def main() -> None:
     """Entry point referenced by ``pyproject.toml``'s ``[project.scripts]``."""
-    import argh
+    import cw
 
-    parser = argh.ArghParser(prog="xa")
-    argh.add_commands(parser, _top_funcs)
-    argh.add_commands(
-        parser,
-        _archive_funcs,
-        group_name="archive",
-        group_kwargs={"help": "Postmortem archive (list, log, forensics)."},
-    )
-    argh.dispatch(parser)
+    raise SystemExit(cw.run(mk_parser()))
 
 
 if __name__ == "__main__":

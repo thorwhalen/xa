@@ -323,7 +323,7 @@ host coverage, injectable auth.
 
 ### `xa.cli` — CLI interface
 
-Small `argh` or `typer` surface. cc-sessions-compatible flags where
+Small `cw` surface. cc-sessions-compatible flags where
 sensible, so users can migrate intuition:
 
 ```

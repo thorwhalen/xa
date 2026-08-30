@@ -15,7 +15,7 @@ authors = [
     { name = "Thor Whalen" },
 ]
 dependencies = [
-    "argh>=0.30",
+    "cw",
 ]
 
 [project.license]
