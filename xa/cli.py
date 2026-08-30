@@ -789,6 +789,65 @@ def archive_forensics_cmd(archive_id: str) -> None:
     print(json.dumps(out, indent=2, default=str))
 
 
+# --------------------------------------------------------------------------- #
+# revive (Remote Control reconnection)
+# --------------------------------------------------------------------------- #
+
+
+def revive_cmd(
+    apply: bool = False,
+    include_held_elsewhere: bool = False,
+    server_mode: bool = False,
+    min_interval: float = 0.0,
+    json_out: bool = False,
+) -> None:
+    """Report — and optionally reconnect — panes whose Remote Control dropped.
+
+    Prints one line per live claude pane with its verdict, so "nothing to do"
+    is legible next to how much was looked at. Sends nothing without
+    ``--apply``.
+
+    :param apply: Actually send ``/remote-control``. Off by default.
+    :param include_held_elsewhere: Also reconnect sessions taken over from
+        another device. This steals them back — deliberate keystroke only.
+    :param server_mode: Also restart died ``claude remote-control`` servers.
+    :param min_interval: Seconds before the same pane may be touched again
+        (0 uses the default guard interval).
+    :param json_out: Emit JSON instead of the table.
+    """
+    from dataclasses import asdict
+
+    from xa import revive as rv
+
+    guard = (
+        rv.RateGuard(min_interval_sec=min_interval)
+        if min_interval
+        else rv.RateGuard()
+    )
+    panes = rv.SessionPanes()
+    actions = rv.revive(
+        panes=panes,
+        apply=apply,
+        include_held_elsewhere=include_held_elsewhere,
+        rate_guard=guard,
+    )
+    if server_mode:
+        actions = [a for a in actions if a.verdict != rv.SERVER_MODE] + [
+            rv.restart_server_mode(panes[a.target], apply=apply, rate_guard=guard)
+            for a in actions
+            if a.verdict == rv.SERVER_MODE
+        ]
+    if json_out:
+        print(json.dumps([asdict(a) for a in actions], indent=2, default=str))
+        return
+    if not actions:
+        print("no live claude panes found (nothing under tmux on this host)")
+        return
+    print(rv.format_actions(actions))
+    if not apply and any(a.would_send for a in actions):
+        print("\n(dry run — re-run with --apply to send)", file=sys.stderr)
+
+
 # argh maps a function's __name__ to the subcommand name. Rename the
 # handler functions (stripping the _cmd suffix) so the user types
 # ``xa list``, not ``xa list_cmd``.
@@ -802,6 +861,7 @@ serve_cmd.__name__ = "serve"
 sync_cmd.__name__ = "sync"
 pick_cmd.__name__ = "pick"
 gen_secret_cmd.__name__ = "gen-secret"
+revive_cmd.__name__ = "revive"
 
 archive_list_cmd.__name__ = "list"
 archive_log_cmd.__name__ = "log"
@@ -818,6 +878,7 @@ _top_funcs = [
     sync_cmd,
     pick_cmd,
     gen_secret_cmd,
+    revive_cmd,
 ]
 _archive_funcs = [archive_list_cmd, archive_log_cmd, archive_forensics_cmd]
 

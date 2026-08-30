@@ -35,6 +35,16 @@ class TmuxSession:
     attached: bool
 
 
+@dataclass(frozen=True)
+class TmuxPane:
+    """Minimal view of one tmux pane, from ``list-panes -a``."""
+
+    target: str  # "session:@window.%pane"
+    pid: int
+    current_command: str
+    current_path: str
+
+
 # --------------------------------------------------------------------------- #
 # helpers
 # --------------------------------------------------------------------------- #
@@ -190,6 +200,57 @@ def pane_pids(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> list[int]:
         except ValueError:
             continue
     return pids
+
+
+def list_panes(*, binary: str = DEFAULT_TMUX_BIN) -> list[TmuxPane]:
+    """Every pane on the server, or ``[]`` when no server is running.
+
+    ``target`` is the full pane ref, the same shape claude records in its
+    ephemeral session file, so the two views join without parsing.
+    """
+    fmt = (
+        "#{session_name}:#{window_id}.#{pane_id}|#{pane_pid}"
+        "|#{pane_current_command}|#{pane_current_path}"
+    )
+    try:
+        out = _run([binary, "list-panes", "-a", "-F", fmt])
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return []
+    if out.returncode != 0:
+        return []
+    panes: list[TmuxPane] = []
+    for line in out.stdout.splitlines():
+        parts = line.split("|", 3)
+        if len(parts) < 4:
+            continue
+        target, pid, command, path = parts
+        try:
+            panes.append(
+                TmuxPane(
+                    target=target,
+                    pid=int(pid),
+                    current_command=command,
+                    current_path=path,
+                )
+            )
+        except ValueError:
+            continue
+    return panes
+
+
+def pane_current_path(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> Optional[str]:
+    """Working directory of the targeted pane's program, or None.
+
+    This is where a pane's shell would run a command, which is what
+    ``claude remote-control -c`` keys its per-directory record on.
+    """
+    out = _run(
+        [binary, "display-message", "-p", "-t", pane_target(name), "#{pane_current_path}"]
+    )
+    if out.returncode != 0:
+        return None
+    path = out.stdout.strip()
+    return path or None
 
 
 def pane_count(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> int:

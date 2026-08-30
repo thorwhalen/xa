@@ -139,3 +139,14 @@ def default_events_store(state_dir: Path = DEFAULT_STATE_DIR) -> JsonLinesStore:
 def default_pane_store(state_dir: Path = DEFAULT_STATE_DIR) -> FileStore:
     """Per-session pane logs at ``<state_dir>/panes/<id>.log``."""
     return FileStore(state_dir / "panes", suffix=".log")
+
+
+def default_revive_store(state_dir: Path = DEFAULT_STATE_DIR) -> FileStore:
+    """Per-pane last-reconnect stamps for :class:`xa.revive.RateGuard`.
+
+    On disk rather than in memory on purpose: the guard exists to stop a
+    cron tick, a hook and a human from each sending ``/remote-control``
+    into the same pane seconds apart, and every one of those is a
+    different process.
+    """
+    return FileStore(state_dir / "revive", suffix=".stamp")
