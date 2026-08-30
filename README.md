@@ -182,6 +182,51 @@ The flag exists, but it's named so the error is honest.
 
 ---
 
+## Reviving dropped Remote Control sessions
+
+Remote Control gives up on its own. A network change — moving between
+networks, toggling a VPN — produces a transient 403, Claude Code retries for
+a few minutes and then stops, and the session keeps running locally while
+becoming unreachable from claude.ai. `xa revive` finds those and reconnects
+them.
+
+```console
+$ xa revive
+reconnectable  work:@1.%1     would send /remote-control  [remote control disconnected]
+held_elsewhere phone:@1.%1    not actionable              [ended or archived from another device]
+connected      build:@2.%1    [/rc]
+
+(dry run — re-run with --apply to send)
+```
+
+```bash
+xa revive --apply                      # send /remote-control to the dropped ones
+xa revive --include-held-elsewhere     # …also take back ones held on another device
+xa revive --server-mode                # …also restart died `claude remote-control` servers
+xa revive --json-out                   # machine-readable, one record per pane
+```
+
+**It only reaches tmux-hosted sessions.** `/remote-control` is a built-in
+slash command with no CLI equivalent, so reconnecting means typing into the
+pane — a session running in a plain terminal tab has to be reconnected by
+hand.
+
+Four refusals are deliberate, and each cost something to learn:
+
+| It will not | Because |
+| --- | --- |
+| reconnect a session held on another device | it would take the session back from your phone mid-sentence |
+| type into a pane with unsent text in its prompt | `send-keys` *appends*, so it would submit your half-typed instruction with `/remote-control` glued to the end |
+| touch a busy or API-stalled session | the fix there is resending a prompt, which costs money and can duplicate work |
+| touch the same pane twice in ten minutes | so a timer, a hook and an impatient human cannot add up to a keystroke storm |
+
+Detection reads the footer's `/rc` pill, which is present while Remote
+Control is **connected** and gone when it is not, and cross-checks it
+against `bridgeSessionId` in the session's own state file. Both were
+verified against a live session rather than inferred — getting the pill
+backwards would send `/remote-control` at healthy sessions, which opens a
+modal menu inside them.
+
 ## The rest of the CLI
 
 Already have some Claude Code sessions on this machine? List them:

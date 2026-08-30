@@ -13,12 +13,13 @@ Six layers, bottom up. Each only imports from layers below (with one documented 
 
 | Layer | Module | What it does |
 | --- | --- | --- |
-| 6b | `xa.cli` | argh subcommands (`list`, `info`, `history`, `spawn`, `resume`, `kill`, `serve`, `sync`, `pick`, `archive …`) |
+| 6b | `xa.cli` | argh subcommands (`list`, `info`, `history`, `spawn`, `resume`, `kill`, `serve`, `sync`, `pick`, `revive`, `archive …`) |
 | 6a | `xa.service` | `build_api(...)` → FastAPI app (optional, requires `xa[service]`) |
 | 5  | `xa.sessions` | `Session` dataclass + `list_sessions(hosts=…)` + `get_session` / `kill_session` / `resume` |
 | 4  | `xa.hosts.*` | `Host` Protocol + `LocalHost` / `SSHHost` / `HTTPHost` |
 | 4  | `xa.archive` | event log + `reconcile` + `classify_death` + `records` |
 | 3b | `xa.claude_cli` | `spawn_session` / `resume_session` / `resolve_bridge_url` / readiness handshake |
+| 3b | `xa.revive` | dropped-Remote-Control detection + reconnection: `SessionPanes`, `classify`, `DEFAULT_RULES`, `RateGuard`, `revive`, `restart_server_mode` |
 | 3a | `xa.tmux` | pure tmux wrappers (nothing Claude-specific) |
 | 2  | `xa.claude_fs` | read-only view of `~/.claude/` — transcripts, ephemeral files, history |
 | 1  | `xa.store`, `xa.config` | JsonLinesStore, FileStore, TOML loader |
