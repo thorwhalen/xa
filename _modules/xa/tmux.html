@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.tmux &mdash; xa 0.1.6 documentation</title>
+  <title>xa.tmux &mdash; xa 0.1.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+      <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -374,7 +374,14 @@
 <span class="sd">    ``claude remote-control -c`` keys its per-directory record on.</span>
 <span class="sd">    """</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">binary</span><span class="p">,</span> <span class="s2">"display-message"</span><span class="p">,</span> <span class="s2">"-p"</span><span class="p">,</span> <span class="s2">"-t"</span><span class="p">,</span> <span class="n">pane_target</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="s2">"#</span><span class="si">{pane_current_path}</span><span class="s2">"</span><span class="p">]</span>
+        <span class="p">[</span>
+            <span class="n">binary</span><span class="p">,</span>
+            <span class="s2">"display-message"</span><span class="p">,</span>
+            <span class="s2">"-p"</span><span class="p">,</span>
+            <span class="s2">"-t"</span><span class="p">,</span>
+            <span class="n">pane_target</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+            <span class="s2">"#</span><span class="si">{pane_current_path}</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">]</span>
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>

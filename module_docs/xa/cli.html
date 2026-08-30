@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.cli &mdash; xa 0.1.6 documentation</title>
+  <title>xa.cli &mdash; xa 0.1.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+      <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -64,6 +64,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.kill_cmd"><code class="docutils literal notranslate"><span class="pre">kill_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.list_cmd"><code class="docutils literal notranslate"><span class="pre">list_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.cli.mk_parser"><code class="docutils literal notranslate"><span class="pre">mk_parser()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.pick_cmd"><code class="docutils literal notranslate"><span class="pre">pick_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.resume_cmd"><code class="docutils literal notranslate"><span class="pre">resume_cmd()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.cli.revive_cmd"><code class="docutils literal notranslate"><span class="pre">revive_cmd()</span></code></a></li>
@@ -111,8 +112,9 @@
   <section id="module-xa.cli">
 <span id="xa-cli"></span><h1>xa.cli<a class="headerlink" href="#module-xa.cli" title="Link to this heading"></a></h1>
 <p>Command-line interface for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p>
-<p>Exposes subcommands via <code class="docutils literal notranslate"><span class="pre">argh</span></code>: <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">info</span></code>, <code class="docutils literal notranslate"><span class="pre">history</span></code>.
-Later phases add <code class="docutils literal notranslate"><span class="pre">spawn</span></code>, <code class="docutils literal notranslate"><span class="pre">resume</span></code>, <code class="docutils literal notranslate"><span class="pre">kill</span></code>, <code class="docutils literal notranslate"><span class="pre">serve</span></code> and others.</p>
+<p>Exposes subcommands via <code class="docutils literal notranslate"><span class="pre">cw</span></code>: <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">info</span></code>, <code class="docutils literal notranslate"><span class="pre">history</span></code>, <code class="docutils literal notranslate"><span class="pre">spawn</span></code>,
+<code class="docutils literal notranslate"><span class="pre">resume</span></code>, <code class="docutils literal notranslate"><span class="pre">kill</span></code>, <code class="docutils literal notranslate"><span class="pre">serve</span></code>, <code class="docutils literal notranslate"><span class="pre">sync</span></code>, <code class="docutils literal notranslate"><span class="pre">pick</span></code>, <code class="docutils literal notranslate"><span class="pre">gen-secret</span></code>, <code class="docutils literal notranslate"><span class="pre">revive</span></code>,
+and the <code class="docutils literal notranslate"><span class="pre">archive</span></code> group (<code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">log</span></code>, <code class="docutils literal notranslate"><span class="pre">forensics</span></code>).</p>
 <p>Entry point: <code class="docutils literal notranslate"><span class="pre">xa</span></code> (see <code class="docutils literal notranslate"><span class="pre">[project.scripts]</span></code> in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="xa.cli.archive_forensics_cmd">
@@ -229,6 +231,15 @@ is to stdout with a trailing newline; pipe it into anything.</p>
 <dt class="sig sig-object py" id="xa.cli.main">
 <span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.main" title="Link to this definition"></a></dt>
 <dd><p>Entry point referenced by <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>’s <code class="docutils literal notranslate"><span class="pre">[project.scripts]</span></code>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.mk_parser">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">mk_parser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArgumentParser</span></span></span><a class="reference internal" href="../../_modules/xa/cli.html#mk_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.mk_parser" title="Link to this definition"></a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">xa</span></code> parser – a plain <code class="xref py py-class docutils literal notranslate"><span class="pre">argparse.ArgumentParser</span></code>, built, not run.</p>
+<p>Two calls rather than one <code class="docutils literal notranslate"><span class="pre">cw.dispatch(...)</span></code> because the <code class="docutils literal notranslate"><span class="pre">archive</span></code> group
+carries <code class="docutils literal notranslate"><span class="pre">group_kwargs</span></code> (its one-line help in the top-level listing), and a
+single mapping has nowhere to put those.</p>
 </dd></dl>
 
 <dl class="py function">

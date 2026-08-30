@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.cli &mdash; xa 0.1.6 documentation</title>
+  <title>xa.cli &mdash; xa 0.1.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
+      <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -91,14 +91,16 @@
   <h1>Source code for xa.cli</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Command-line interface for ``xa``.</span>
 
-<span class="sd">Exposes subcommands via ``argh``: ``list``, ``info``, ``history``.</span>
-<span class="sd">Later phases add ``spawn``, ``resume``, ``kill``, ``serve`` and others.</span>
+<span class="sd">Exposes subcommands via ``cw``: ``list``, ``info``, ``history``, ``spawn``,</span>
+<span class="sd">``resume``, ``kill``, ``serve``, ``sync``, ``pick``, ``gen-secret``, ``revive``,</span>
+<span class="sd">and the ``archive`` group (``list``, ``log``, ``forensics``).</span>
 
 <span class="sd">Entry point: ``xa`` (see ``[project.scripts]`` in ``pyproject.toml``).</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
@@ -952,9 +954,7 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">revive</span> <span class="k">as</span> <span class="n">rv</span>
 
     <span class="n">guard</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">rv</span><span class="o">.</span><span class="n">RateGuard</span><span class="p">(</span><span class="n">min_interval_sec</span><span class="o">=</span><span class="n">min_interval</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">min_interval</span>
-        <span class="k">else</span> <span class="n">rv</span><span class="o">.</span><span class="n">RateGuard</span><span class="p">()</span>
+        <span class="n">rv</span><span class="o">.</span><span class="n">RateGuard</span><span class="p">(</span><span class="n">min_interval_sec</span><span class="o">=</span><span class="n">min_interval</span><span class="p">)</span> <span class="k">if</span> <span class="n">min_interval</span> <span class="k">else</span> <span class="n">rv</span><span class="o">.</span><span class="n">RateGuard</span><span class="p">()</span>
     <span class="p">)</span>
     <span class="n">panes</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">SessionPanes</span><span class="p">()</span>
     <span class="n">actions</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">revive</span><span class="p">(</span>
@@ -981,56 +981,68 @@
 
 
 
-<span class="c1"># argh maps a function's __name__ to the subcommand name. Rename the</span>
-<span class="c1"># handler functions (stripping the _cmd suffix) so the user types</span>
-<span class="c1"># ``xa list``, not ``xa list_cmd``.</span>
-<span class="n">list_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"list"</span>
-<span class="n">info_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"info"</span>
-<span class="n">history_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"history"</span>
-<span class="n">spawn_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"spawn"</span>
-<span class="n">resume_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"resume"</span>
-<span class="n">kill_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"kill"</span>
-<span class="n">serve_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"serve"</span>
-<span class="n">sync_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"sync"</span>
-<span class="n">pick_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"pick"</span>
-<span class="n">gen_secret_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"gen-secret"</span>
-<span class="n">revive_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"revive"</span>
+<span class="c1"># The subcommand name is the mapping key, so the handlers keep their own</span>
+<span class="c1"># ``_cmd``-suffixed names (which is what the tests and the rest of the package</span>
+<span class="c1"># call them) and the command line reads the way a user types it. That includes</span>
+<span class="c1"># ``gen-secret``, which is not a Python identifier at all, and ``archive list``,</span>
+<span class="c1"># whose leaf name collides with the top-level ``list``.</span>
+<span class="n">TOP_COMMANDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"list"</span><span class="p">:</span> <span class="n">list_cmd</span><span class="p">,</span>
+    <span class="s2">"info"</span><span class="p">:</span> <span class="n">info_cmd</span><span class="p">,</span>
+    <span class="s2">"history"</span><span class="p">:</span> <span class="n">history_cmd</span><span class="p">,</span>
+    <span class="s2">"spawn"</span><span class="p">:</span> <span class="n">spawn_cmd</span><span class="p">,</span>
+    <span class="s2">"resume"</span><span class="p">:</span> <span class="n">resume_cmd</span><span class="p">,</span>
+    <span class="s2">"kill"</span><span class="p">:</span> <span class="n">kill_cmd</span><span class="p">,</span>
+    <span class="s2">"serve"</span><span class="p">:</span> <span class="n">serve_cmd</span><span class="p">,</span>
+    <span class="s2">"sync"</span><span class="p">:</span> <span class="n">sync_cmd</span><span class="p">,</span>
+    <span class="s2">"pick"</span><span class="p">:</span> <span class="n">pick_cmd</span><span class="p">,</span>
+    <span class="s2">"gen-secret"</span><span class="p">:</span> <span class="n">gen_secret_cmd</span><span class="p">,</span>
+    <span class="s2">"revive"</span><span class="p">:</span> <span class="n">revive_cmd</span><span class="p">,</span>
+<span class="p">}</span>
 
-<span class="n">archive_list_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"list"</span>
-<span class="n">archive_log_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"log"</span>
-<span class="n">archive_forensics_cmd</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="s2">"forensics"</span>
+<span class="n">ARCHIVE_COMMANDS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"list"</span><span class="p">:</span> <span class="n">archive_list_cmd</span><span class="p">,</span>
+    <span class="s2">"log"</span><span class="p">:</span> <span class="n">archive_log_cmd</span><span class="p">,</span>
+    <span class="s2">"forensics"</span><span class="p">:</span> <span class="n">archive_forensics_cmd</span><span class="p">,</span>
+<span class="p">}</span>
 
-<span class="n">_top_funcs</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">list_cmd</span><span class="p">,</span>
-    <span class="n">info_cmd</span><span class="p">,</span>
-    <span class="n">history_cmd</span><span class="p">,</span>
-    <span class="n">spawn_cmd</span><span class="p">,</span>
-    <span class="n">resume_cmd</span><span class="p">,</span>
-    <span class="n">kill_cmd</span><span class="p">,</span>
-    <span class="n">serve_cmd</span><span class="p">,</span>
-    <span class="n">sync_cmd</span><span class="p">,</span>
-    <span class="n">pick_cmd</span><span class="p">,</span>
-    <span class="n">gen_secret_cmd</span><span class="p">,</span>
-    <span class="n">revive_cmd</span><span class="p">,</span>
-<span class="p">]</span>
-<span class="n">_archive_funcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">archive_list_cmd</span><span class="p">,</span> <span class="n">archive_log_cmd</span><span class="p">,</span> <span class="n">archive_forensics_cmd</span><span class="p">]</span>
+<span class="c1"># NOTE: inert, and preserved as-is. The row a group gets in the *parent's*</span>
+<span class="c1"># --help comes from ``add_parser(help=...)``, which is fed by ``title``, not</span>
+<span class="c1"># ``help``; ``help`` only reaches ``add_subparsers()``, where it renders nowhere</span>
+<span class="c1"># a user looks. So `archive` has always been listed bare. True under argh too,</span>
+<span class="c1"># which is why the cw migration was byte-identical. See issue #13.</span>
+<span class="n">ARCHIVE_GROUP_KWARGS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"help"</span><span class="p">:</span> <span class="s2">"Postmortem archive (list, log, forensics)."</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="mk_parser">
+<a class="viewcode-back" href="../../module_docs/xa/cli.html#xa.cli.mk_parser">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mk_parser</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The ``xa`` parser -- a plain :class:`argparse.ArgumentParser`, built, not run.</span>
+
+<span class="sd">    Two calls rather than one ``cw.dispatch(...)`` because the ``archive`` group</span>
+<span class="sd">    carries ``group_kwargs`` (its one-line help in the top-level listing), and a</span>
+<span class="sd">    single mapping has nowhere to put those.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cw</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">cw</span><span class="o">.</span><span class="n">mk_parser</span><span class="p">(</span><span class="n">TOP_COMMANDS</span><span class="p">,</span> <span class="n">prog</span><span class="o">=</span><span class="s2">"xa"</span><span class="p">)</span>
+    <span class="n">cw</span><span class="o">.</span><span class="n">add_commands</span><span class="p">(</span>
+        <span class="n">parser</span><span class="p">,</span>
+        <span class="n">ARCHIVE_COMMANDS</span><span class="p">,</span>
+        <span class="n">group_name</span><span class="o">=</span><span class="s2">"archive"</span><span class="p">,</span>
+        <span class="n">group_kwargs</span><span class="o">=</span><span class="n">ARCHIVE_GROUP_KWARGS</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span></div>
+
 
 
 <div class="viewcode-block" id="main">
 <a class="viewcode-back" href="../../module_docs/xa/cli.html#xa.cli.main">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Entry point referenced by ``pyproject.toml``'s ``[project.scripts]``."""</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">argh</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cw</span>
 
-    <span class="n">parser</span> <span class="o">=</span> <span class="n">argh</span><span class="o">.</span><span class="n">ArghParser</span><span class="p">(</span><span class="n">prog</span><span class="o">=</span><span class="s2">"xa"</span><span class="p">)</span>
-    <span class="n">argh</span><span class="o">.</span><span class="n">add_commands</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">_top_funcs</span><span class="p">)</span>
-    <span class="n">argh</span><span class="o">.</span><span class="n">add_commands</span><span class="p">(</span>
-        <span class="n">parser</span><span class="p">,</span>
-        <span class="n">_archive_funcs</span><span class="p">,</span>
-        <span class="n">group_name</span><span class="o">=</span><span class="s2">"archive"</span><span class="p">,</span>
-        <span class="n">group_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"help"</span><span class="p">:</span> <span class="s2">"Postmortem archive (list, log, forensics)."</span><span class="p">},</span>
-    <span class="p">)</span>
-    <span class="n">argh</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="n">cw</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mk_parser</span><span class="p">()))</span></div>
 
 
 
