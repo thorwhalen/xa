@@ -27,7 +27,7 @@ Deliverables: `xa/claude_fs.py`, `xa/sessions.py` (thin), `tests/`.
 
 **Outcome:** `xa list` works on the command line and looks a bit like `cc-sessions --list`.
 
-- [x] `xa.cli` entry point (`argh` or similar).
+- [x] `xa.cli` entry point (`cw`).
 - [x] `xa list [--project X] [--limit N]` → rich table.
 - [x] `xa info <id>` → full forensics dump.
 - [x] `xa history [--search PHRASE]` → grep over `~/.claude/history.jsonl`.
