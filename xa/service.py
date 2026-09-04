@@ -561,7 +561,7 @@ def build_api(
         refusals that make typing into a live session safe apply here too:
         a session held on another device is never taken back, an open
         dialog is never answered with a slash command, and a pane with an
-        unsent prompt in it is left alone. Before 0.1.9 this route had its
+        unsent prompt in it is left alone. Before 0.1.10 this route had its
         own send-and-poll loop with none of those gates.
 
         When it can't succeed the response says why and how to fix it by
