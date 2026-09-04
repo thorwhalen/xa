@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.claude_cli &mdash; xa 0.1.8 documentation</title>
+  <title>xa.claude_cli &mdash; xa 0.1.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=22607128"></script>
+      <script src="../../_static/documentation_options.js?v=8618f531"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -138,8 +138,9 @@
     <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">url_source</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UrlSource</span><span class="p">]</span>
     <span class="n">warning</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="c1"># Adverse TUI state detected during the handshake (see</span>
-    <span class="c1"># ``classify_pane_attention``); ``None`` when nothing was wrong.</span>
+    <span class="c1"># When no URL turned up: the :mod:`xa.revive` verdict explaining why</span>
+    <span class="c1"># (``needs_login``, ``needs_trust``, ...). ``None`` when a URL came</span>
+    <span class="c1"># back, since a bridged session's pane says nothing useful.</span>
     <span class="n">attention</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
@@ -226,79 +227,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">skipped</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"--remote-control"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">argv</span><span class="p">,</span> <span class="n">skipped</span>
-
-
-<span class="c1"># --------------------------------------------------------------------------- #</span>
-<span class="c1"># pane-state classification (attention states)</span>
-<span class="c1"># --------------------------------------------------------------------------- #</span>
-
-
-<span class="n">ATTENTION_LOGIN_REQUIRED</span> <span class="o">=</span> <span class="s2">"login_required"</span>
-<span class="n">ATTENTION_TRUST_PROMPT</span> <span class="o">=</span> <span class="s2">"trust_prompt"</span>
-
-<span class="c1"># Case-insensitive substrings. "unknown command: /remote-control" is what</span>
-<span class="c1"># the TUI answers when the command isn't registered — overwhelmingly an</span>
-<span class="c1"># expired login (the command only exists once authenticated); on very old</span>
-<span class="c1"># claude versions it can also mean remote control doesn't exist at all.</span>
-<span class="n">_LOGIN_PANE_MARKERS</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">"run /login"</span><span class="p">,</span>
-    <span class="s2">"please log in"</span><span class="p">,</span>
-    <span class="s2">"select login method"</span><span class="p">,</span>
-    <span class="s2">"oauth token has expired"</span><span class="p">,</span>
-    <span class="s2">"invalid api key"</span><span class="p">,</span>
-    <span class="s2">"unknown command: /remote-control"</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">_TRUST_PANE_MARKERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"trust this folder"</span><span class="p">,</span> <span class="s2">"do you trust the files"</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="classify_pane_attention">
-<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.classify_pane_attention">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">classify_pane_attention</span><span class="p">(</span><span class="n">pane_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Classify adverse TUI states from a pane capture.</span>
-
-<span class="sd">    Only meaningful for sessions with no established bridge URL — a</span>
-<span class="sd">    healthy remote-controlled session's pane renders *conversation* text,</span>
-<span class="sd">    which may legitimately mention ``/login``. Callers must gate on</span>
-<span class="sd">    "bridgeless" before trusting a verdict.</span>
-<span class="sd">    """</span>
-    <span class="n">low</span> <span class="o">=</span> <span class="n">pane_text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">m</span> <span class="ow">in</span> <span class="n">low</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">_LOGIN_PANE_MARKERS</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ATTENTION_LOGIN_REQUIRED</span>
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">m</span> <span class="ow">in</span> <span class="n">low</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">_TRUST_PANE_MARKERS</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ATTENTION_TRUST_PROMPT</span>
-    <span class="k">return</span> <span class="kc">None</span></div>
-
-
-
-<div class="viewcode-block" id="attention_hint">
-<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.attention_hint">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">attention_hint</span><span class="p">(</span>
-    <span class="n">attention</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">tmux_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Human fix-it hint for an attention state (SSOT for CLI + web UI)."""</span>
-    <span class="k">if</span> <span class="n">attention</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">attach</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">"tmux attach -t </span><span class="si">{</span><span class="n">tmux_name</span><span class="si">}</span><span class="s2">"</span>
-        <span class="k">if</span> <span class="n">tmux_name</span>
-        <span class="k">else</span> <span class="s2">"attach the terminal running claude"</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="n">attention</span> <span class="o">==</span> <span class="n">ATTENTION_LOGIN_REQUIRED</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Claude on this machine needs to log in again. Open its terminal "</span>
-            <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">attach</span><span class="si">}</span><span class="s2">), run /login and complete the flow, then /remote-control "</span>
-            <span class="sa">f</span><span class="s2">"if no URL appears. Login state is per-machine, so one login fixes "</span>
-            <span class="sa">f</span><span class="s2">"every session on this host. (If /remote-control reports 'Unknown "</span>
-            <span class="sa">f</span><span class="s2">"command' even after login, the installed claude is too old — "</span>
-            <span class="sa">f</span><span class="s2">"update it.)"</span>
-        <span class="p">)</span>
-    <span class="k">if</span> <span class="n">attention</span> <span class="o">==</span> <span class="n">ATTENTION_TRUST_PROMPT</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"Claude is waiting on its workspace-trust prompt. Open its "</span>
-            <span class="sa">f</span><span class="s2">"terminal (</span><span class="si">{</span><span class="n">attach</span><span class="si">}</span><span class="s2">) and answer it."</span>
-        <span class="p">)</span>
-    <span class="k">return</span> <span class="kc">None</span></div>
-
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
@@ -415,83 +343,65 @@
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_wait_for_url</span><span class="p">(</span>
+<div class="viewcode-block" id="wait_for_bridge_url">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.wait_for_bridge_url">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">wait_for_bridge_url</span><span class="p">(</span>
     <span class="n">session_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">deadline</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-    <span class="n">auto_remote_control</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">rc_via_flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UrlSource</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""Poll for the bridge URL, dismissing startup prompts along the way.</span>
+    <span class="n">poll_sec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UrlSource</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Poll the ephemeral session file until a bridge URL appears.</span>
 
-<span class="sd">    Handshake state (trust dismissed, ``/remote-control`` sent) lives here,</span>
-<span class="sd">    across poll iterations, so each prompt is answered **at most once** —</span>
-<span class="sd">    re-sending every cycle used to fill the pane with dozens of</span>
-<span class="sd">    ``Unknown command: /remote-control`` lines whenever the command didn't</span>
-<span class="sd">    take. ``rc_via_flag=True`` means the session was spawned with</span>
-<span class="sd">    ``--remote-control``, so the TUI send is skipped entirely.</span>
+<span class="sd">    Nothing is typed into the pane. Claude Code connects Remote Control by</span>
+<span class="sd">    itself — from the ``--remote-control`` flag :func:`_claude_argv` passes,</span>
+<span class="sd">    or from the host's ``remoteControlAtStartup`` setting — and records the</span>
+<span class="sd">    ``bridgeSessionId`` when it does. This function's whole job is to wait</span>
+<span class="sd">    for that write.</span>
 
-<span class="sd">    Returns ``(url, source, attention)``. Aborts early with</span>
-<span class="sd">    ``attention="login_required"`` — that state cannot resolve without a</span>
-<span class="sd">    human, so burning the rest of the timeout would only delay the answer.</span>
+<span class="sd">    Until 0.1.8 this drove the TUI instead: dismissing the workspace-trust</span>
+<span class="sd">    prompt with a blind Enter and sending ``/remote-control`` once a prompt</span>
+<span class="sd">    glyph appeared. That emulated, by scraping and typing, what the flag and</span>
+<span class="sd">    the setting do properly — and every upstream redraw was a chance for it</span>
+<span class="sd">    to type into the wrong thing. See :mod:`xa.revive` for the pane reading</span>
+<span class="sd">    that *is* still warranted: reconnecting a session whose Remote Control</span>
+<span class="sd">    dropped is a gap Claude Code genuinely leaves open.</span>
 <span class="sd">    """</span>
-    <span class="n">trust_dismissed</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">rc_sent</span> <span class="o">=</span> <span class="n">rc_via_flag</span>
-    <span class="n">attention</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">while</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">deadline</span><span class="p">:</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">url</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="n">resolve_bridge_url</span><span class="p">(</span>
             <span class="n">session_name</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">url</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="kc">None</span>
-        <span class="n">pane</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
-        <span class="n">attention</span> <span class="o">=</span> <span class="n">classify_pane_attention</span><span class="p">(</span><span class="n">pane</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">attention</span> <span class="o">==</span> <span class="n">ATTENTION_LOGIN_REQUIRED</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">attention</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">trust_dismissed</span> <span class="ow">and</span> <span class="n">attention</span> <span class="o">==</span> <span class="n">ATTENTION_TRUST_PROMPT</span><span class="p">:</span>
-            <span class="n">tm</span><span class="o">.</span><span class="n">send_keys</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="s2">"Enter"</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
-            <span class="n">trust_dismissed</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
-            <span class="k">continue</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">auto_remote_control</span>
-            <span class="ow">and</span> <span class="ow">not</span> <span class="n">rc_sent</span>
-            <span class="ow">and</span> <span class="s2">"remote control active"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pane</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="ow">and</span> <span class="s2">"❯"</span> <span class="ow">in</span> <span class="n">pane</span>
-        <span class="p">):</span>
-            <span class="n">tm</span><span class="o">.</span><span class="n">send_keys</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="s2">"/remote-control"</span><span class="p">,</span> <span class="s2">"Enter"</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
-            <span class="n">rc_sent</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.5</span><span class="p">)</span>
-            <span class="k">continue</span>
-        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">attention</span>
+            <span class="k">return</span> <span class="n">url</span><span class="p">,</span> <span class="n">src</span>
+        <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">deadline</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">poll_sec</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="request_remote_control">
-<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.request_remote_control">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">request_remote_control</span><span class="p">(</span>
+
+<div class="viewcode-block" id="diagnose_bridgeless">
+<a class="viewcode-back" href="../../module_docs/xa/claude_cli.html#xa.diagnose_bridgeless">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">diagnose_bridgeless</span><span class="p">(</span>
     <span class="n">session_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
-    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">,</span>
+    <span class="n">claude_pid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
-    <span class="n">timeout_sec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">15.0</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">UrlSource</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""Drive an existing tmux-hosted claude toward remote control.</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Why has this session no bridge URL? Returns ``(verdict, hint)``.</span>
 
-<span class="sd">    Sends ``/remote-control`` (once, prompts permitting) and waits briefly</span>
-<span class="sd">    for the bridge URL. Returns ``(url, source, attention)`` — callers</span>
-<span class="sd">    should check ``attention`` (e.g. ``login_required``) when no URL comes</span>
-<span class="sd">    back, and surface :func:`attention_hint` to the user.</span>
+<span class="sd">    One pane capture, classified by :func:`xa.revive.classify` — the single</span>
+<span class="sd">    rule engine for reading a claude pane. Only meaningful for a session</span>
+<span class="sd">    with no bridge id: a connected session's pane renders conversation text,</span>
+<span class="sd">    which may legitimately quote ``/login``.</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_wait_for_url</span><span class="p">(</span>
-        <span class="n">session_name</span><span class="p">,</span>
-        <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
-        <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">,</span>
-        <span class="n">deadline</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">timeout_sec</span><span class="p">,</span>
-        <span class="n">auto_remote_control</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">)</span></div>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">revive</span> <span class="k">as</span> <span class="n">rv</span>  <span class="c1"># local import: revive imports this module</span>
+
+    <span class="n">pane</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">capture_pane</span><span class="p">(</span><span class="n">session_name</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">binary</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">session_name</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="n">claude_pid</span><span class="p">)</span>
+    <span class="n">verdict</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">rv</span><span class="o">.</span><span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">pane</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">verdict</span><span class="p">,</span> <span class="n">rv</span><span class="o">.</span><span class="n">hint_for</span><span class="p">(</span><span class="n">verdict</span><span class="p">,</span> <span class="n">tmux_name</span><span class="o">=</span><span class="n">session_name</span><span class="p">)</span></div>
 
 
 
@@ -518,8 +428,6 @@
     <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span>
     <span class="n">tmux_bin</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">deadline</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">auto_remote_control</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">rc_via_flag</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">warning</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">archive_ctx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"_ArchiveCtx"</span><span class="p">]</span></div>
 
@@ -549,10 +457,14 @@
 
 <span class="sd">    Composes per-session claude flags (``--name`` / ``--model`` /</span>
 <span class="sd">    ``--effort`` / ``--remote-control``) when the installed binary</span>
-<span class="sd">    supports them; requested-but-unsupported ``--model`` / ``--effort``</span>
-<span class="sd">    are reported in ``PendingSpawn.warning`` rather than failing the</span>
-<span class="sd">    spawn. ``--remote-control`` silently falls back to the TUI handshake</span>
-<span class="sd">    in :func:`complete_spawn` on older binaries.</span>
+<span class="sd">    supports them; requested-but-unsupported flags are reported in</span>
+<span class="sd">    ``PendingSpawn.warning`` rather than failing the spawn.</span>
+
+<span class="sd">    ``auto_remote_control`` passes ``--remote-control``, which is how xa</span>
+<span class="sd">    asks for Remote Control now — a documented CLI flag, not a keystroke</span>
+<span class="sd">    sent at a TUI. On a claude too old to advertise it, the host's</span>
+<span class="sd">    ``remoteControlAtStartup`` setting is the remaining path, so the</span>
+<span class="sd">    warning says so rather than falling back to typing.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cwd does not exist: </span><span class="si">{</span><span class="n">cwd</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -566,7 +478,6 @@
         <span class="n">effort</span><span class="o">=</span><span class="n">effort</span><span class="p">,</span>
         <span class="n">remote_control</span><span class="o">=</span><span class="n">auto_remote_control</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">rc_via_flag</span> <span class="o">=</span> <span class="n">auto_remote_control</span> <span class="ow">and</span> <span class="s2">"--remote-control"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skipped</span>
     <span class="n">shell_cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"cd </span><span class="si">{</span><span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span><span class="si">}</span><span class="s2"> &amp;&amp; exec "</span> <span class="o">+</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="n">shlex</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">argv</span>
     <span class="p">)</span>
@@ -582,22 +493,37 @@
     <span class="k">if</span> <span class="n">ctx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">emit_created</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">pane_log</span><span class="o">=</span><span class="n">pane_log</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">)</span>
 
+    <span class="n">warnings</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">hard_skips</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">skipped</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"--model"</span><span class="p">,</span> <span class="s2">"--effort"</span><span class="p">)]</span>
-    <span class="n">warning</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">"Installed claude does not support "</span>
-        <span class="o">+</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">hard_skips</span><span class="p">)</span>
-        <span class="o">+</span> <span class="s2">" — spawned without."</span>
-        <span class="k">if</span> <span class="n">hard_skips</span>
-        <span class="k">else</span> <span class="kc">None</span>
-    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">hard_skips</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s2">"Installed claude does not support "</span>
+            <span class="o">+</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">hard_skips</span><span class="p">)</span>
+            <span class="o">+</span> <span class="s2">" — spawned without."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"--remote-control"</span> <span class="ow">in</span> <span class="n">skipped</span><span class="p">:</span>
+        <span class="c1"># The flag is xa's primary path. When the binary is too old for it,</span>
+        <span class="c1"># the host's own auto-connect setting is the only one left, so say</span>
+        <span class="c1"># which of the two fixes this host actually needs.</span>
+        <span class="k">if</span> <span class="n">cfs</span><span class="o">.</span><span class="n">remote_control_at_startup</span><span class="p">(</span><span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">"Installed claude does not support --remote-control; relying "</span>
+                <span class="s1">'on this host</span><span class="se">\'</span><span class="s1">s "remoteControlAtStartup" setting instead.'</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s2">"Installed claude does not support --remote-control, and this "</span>
+                <span class="s1">'host does not set "remoteControlAtStartup": true in '</span>
+                <span class="s2">"~/.claude/settings.json — the session will not be reachable "</span>
+                <span class="s2">"from claude.ai. Update claude, or turn that setting on."</span>
+            <span class="p">)</span>
+    <span class="n">warning</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">warnings</span><span class="p">)</span> <span class="k">if</span> <span class="n">warnings</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">return</span> <span class="n">PendingSpawn</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
         <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
         <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">,</span>
         <span class="n">deadline</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">url_timeout_sec</span><span class="p">,</span>
-        <span class="n">auto_remote_control</span><span class="o">=</span><span class="n">auto_remote_control</span><span class="p">,</span>
-        <span class="n">rc_via_flag</span><span class="o">=</span><span class="n">rc_via_flag</span><span class="p">,</span>
         <span class="n">warning</span><span class="o">=</span><span class="n">warning</span><span class="p">,</span>
         <span class="n">archive_ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span>
     <span class="p">)</span></div>
@@ -613,13 +539,11 @@
 <span class="sd">    ``~/.claude/sessions/``, the append-only events log) is shared</span>
 <span class="sd">    machine-wide, not per-process.</span>
 <span class="sd">    """</span>
-    <span class="n">url</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">attention</span> <span class="o">=</span> <span class="n">_wait_for_url</span><span class="p">(</span>
+    <span class="n">url</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="n">wait_for_bridge_url</span><span class="p">(</span>
         <span class="n">pending</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
         <span class="n">claude_home</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">claude_home</span><span class="p">,</span>
         <span class="n">tmux_bin</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">,</span>
         <span class="n">deadline</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">deadline</span><span class="p">,</span>
-        <span class="n">auto_remote_control</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">auto_remote_control</span><span class="p">,</span>
-        <span class="n">rc_via_flag</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">rc_via_flag</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">claude_pid</span> <span class="o">=</span> <span class="n">find_claude_pid</span><span class="p">(</span><span class="n">pending</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">tmux_bin</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
@@ -628,8 +552,12 @@
         <span class="k">else</span> <span class="kc">None</span>
     <span class="p">)</span>
     <span class="n">warnings</span> <span class="o">=</span> <span class="p">[</span><span class="n">pending</span><span class="o">.</span><span class="n">warning</span><span class="p">]</span> <span class="k">if</span> <span class="n">pending</span><span class="o">.</span><span class="n">warning</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">attention</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="p">:</span>
-        <span class="n">hint</span> <span class="o">=</span> <span class="n">attention_hint</span><span class="p">(</span><span class="n">attention</span><span class="p">,</span> <span class="n">tmux_name</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="c1"># One capture, once the wait is over — not a scrape every poll.</span>
+        <span class="n">attention</span><span class="p">,</span> <span class="n">hint</span> <span class="o">=</span> <span class="n">diagnose_bridgeless</span><span class="p">(</span>
+            <span class="n">pending</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="n">claude_pid</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">pending</span><span class="o">.</span><span class="n">tmux_bin</span>
+        <span class="p">)</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="n">hint</span>
             <span class="ow">or</span> <span class="s2">"Session created but no remote-control URL detected yet — try refreshing."</span>

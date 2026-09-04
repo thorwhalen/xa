@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.service &mdash; xa 0.1.8 documentation</title>
+  <title>xa.service &mdash; xa 0.1.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=22607128"></script>
+      <script src="../../_static/documentation_options.js?v=8618f531"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -66,6 +66,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#xa.service.Captcha.issue"><code class="docutils literal notranslate"><span class="pre">Captcha.issue()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#xa.service.RC_ENABLE_TIMEOUT_SEC"><code class="docutils literal notranslate"><span class="pre">RC_ENABLE_TIMEOUT_SEC</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.service.allow_all"><code class="docutils literal notranslate"><span class="pre">allow_all()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.service.build_api"><code class="docutils literal notranslate"><span class="pre">build_api()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#xa.service.make_basic_auth"><code class="docutils literal notranslate"><span class="pre">make_basic_auth()</span></code></a></li>
@@ -124,6 +125,14 @@ class to <a class="reference internal" href="#xa.service.build_api" title="xa.se
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">(token,</span> <span class="pre">challenge,</span> <span class="pre">ttl_sec)</span></code>.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.service.RC_ENABLE_TIMEOUT_SEC">
+<span class="sig-prename descclassname"><span class="pre">xa.service.</span></span><span class="sig-name descname"><span class="pre">RC_ENABLE_TIMEOUT_SEC</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">15.0</span></span><a class="headerlink" href="#xa.service.RC_ENABLE_TIMEOUT_SEC" title="Link to this definition"></a></dt>
+<dd><p>How long POST /sessions/{id}/remote-control waits for claude to write
+its bridge id after the command is sent. The TUI acks well before the
+session file is rewritten, so a bare read would always miss.</p>
 </dd></dl>
 
 <dl class="py function">

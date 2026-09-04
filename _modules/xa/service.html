@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.service &mdash; xa 0.1.8 documentation</title>
+  <title>xa.service &mdash; xa 0.1.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=22607128"></script>
+      <script src="../../_static/documentation_options.js?v=8618f531"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -120,6 +120,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">archive</span> <span class="k">as</span> <span class="n">arch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_cli</span> <span class="k">as</span> <span class="n">ccli</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_fs</span> <span class="k">as</span> <span class="n">cfs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">revive</span> <span class="k">as</span> <span class="n">rv</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">sessions</span> <span class="k">as</span> <span class="n">sess</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">store</span> <span class="k">as</span> <span class="n">st</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmux</span> <span class="k">as</span> <span class="n">tm</span>
@@ -263,6 +264,11 @@
 <span class="c1"># build_api</span>
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
+
+<span class="c1">#: How long POST /sessions/{id}/remote-control waits for claude to write</span>
+<span class="c1">#: its bridge id after the command is sent. The TUI acks well before the</span>
+<span class="c1">#: session file is rewritten, so a bare read would always miss.</span>
+<span class="n">RC_ENABLE_TIMEOUT_SEC</span> <span class="o">=</span> <span class="mf">15.0</span>
 
 <span class="n">_NAME_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[A-Za-z0-9_.-]{1,48}$"</span><span class="p">)</span>
 
@@ -656,10 +662,15 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">enable_remote_control</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">auth</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Make a live, bridgeless, tmux-hosted session remote-reachable.</span>
 
-<span class="sd">        Sends ``/remote-control`` into the pane (once, prompts permitting)</span>
-<span class="sd">        and waits briefly for the bridge URL. When it can't succeed —</span>
-<span class="sd">        logged-out claude, not tmux-hosted — the response says exactly why</span>
-<span class="sd">        and how to fix it by hand.</span>
+<span class="sd">        Runs the :mod:`xa.revive` engine scoped to this one pane, so the</span>
+<span class="sd">        refusals that make typing into a live session safe apply here too:</span>
+<span class="sd">        a session held on another device is never taken back, an open</span>
+<span class="sd">        dialog is never answered with a slash command, and a pane with an</span>
+<span class="sd">        unsent prompt in it is left alone. Before 0.1.9 this route had its</span>
+<span class="sd">        own send-and-poll loop with none of those gates.</span>
+
+<span class="sd">        When it can't succeed the response says why and how to fix it by</span>
+<span class="sd">        hand, rather than reporting a bare failure.</span>
 <span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">s</span> <span class="o">=</span> <span class="n">_resolve_session</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
@@ -677,22 +688,43 @@
                 <span class="s2">"hint"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="s2">"already_enabled"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
             <span class="p">}</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">):</span>
+        <span class="c1"># Target the exact claude pane when known: sending keystrokes at</span>
+        <span class="c1"># the bare session name would type into whatever pane is active.</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
                 <span class="mi">409</span><span class="p">,</span>
                 <span class="s2">"Session is not tmux-hosted — attach the terminal that "</span>
                 <span class="s2">"started it and run /remote-control there."</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="c1"># Target the exact claude pane when known: sending keystrokes at</span>
-        <span class="c1"># the bare session name would type into whatever pane is active.</span>
-        <span class="n">url</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">attention</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">request_remote_control</span><span class="p">(</span>
-            <span class="n">s</span><span class="o">.</span><span class="n">tmux_pane</span> <span class="ow">or</span> <span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">PaneRef</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+            <span class="n">claude_pid</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">live_pid</span><span class="p">,</span>
+            <span class="n">bridge_session_id</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">bridge_session_id</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">actions</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">revive</span><span class="p">(</span>
+            <span class="n">panes</span><span class="o">=</span><span class="n">rv</span><span class="o">.</span><span class="n">SessionPanes</span><span class="p">(</span><span class="n">panes</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="n">ref</span><span class="p">],</span> <span class="n">is_relevant</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="kc">True</span><span class="p">),</span>
+            <span class="n">apply</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">verdict</span> <span class="o">=</span> <span class="n">actions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">verdict</span> <span class="k">if</span> <span class="n">actions</span> <span class="k">else</span> <span class="n">rv</span><span class="o">.</span><span class="n">UNKNOWN</span>
+        <span class="n">sent</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">actions</span> <span class="ow">and</span> <span class="n">actions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sent</span><span class="p">)</span>
+        <span class="c1"># The command lands in the TUI before claude rewrites its session</span>
+        <span class="c1"># file, so a read here races the write — wait for it briefly.</span>
+        <span class="n">url</span><span class="p">,</span> <span class="n">src</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">ccli</span><span class="o">.</span><span class="n">wait_for_bridge_url</span><span class="p">(</span>
+                <span class="n">target</span><span class="p">,</span>
+                <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+                <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tm</span><span class="o">.</span><span class="n">DEFAULT_TMUX_BIN</span><span class="p">,</span>
+                <span class="n">deadline</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">+</span> <span class="n">RC_ENABLE_TIMEOUT_SEC</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">sent</span>
+            <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">"url"</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
             <span class="s2">"url_source"</span><span class="p">:</span> <span class="n">src</span><span class="p">,</span>
-            <span class="s2">"attention"</span><span class="p">:</span> <span class="n">attention</span><span class="p">,</span>
-            <span class="s2">"hint"</span><span class="p">:</span> <span class="n">ccli</span><span class="o">.</span><span class="n">attention_hint</span><span class="p">(</span><span class="n">attention</span><span class="p">,</span> <span class="n">tmux_name</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">),</span>
+            <span class="s2">"attention"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">url</span> <span class="k">else</span> <span class="n">verdict</span><span class="p">,</span>
+            <span class="s2">"hint"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">url</span> <span class="k">else</span> <span class="n">rv</span><span class="o">.</span><span class="n">hint_for</span><span class="p">(</span><span class="n">verdict</span><span class="p">,</span> <span class="n">tmux_name</span><span class="o">=</span><span class="n">s</span><span class="o">.</span><span class="n">tmux_name</span><span class="p">),</span>
             <span class="s2">"already_enabled"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
         <span class="p">}</span>
 

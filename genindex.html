@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; xa 0.1.8 documentation</title>
+  <title>Index &mdash; xa 0.1.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=22607128"></script>
+      <script src="_static/documentation_options.js?v=8618f531"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -151,18 +151,18 @@
         <li><a href="module_docs/xa/archive.html#xa.archive.ArchiveRecord">(class in xa.archive)</a>
 </li>
       </ul></li>
-      <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.attention_hint">attention_hint() (in module xa.claude_cli)</a>
-</li>
   </ul></td>
 </tr></table>
 
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="module_docs/xa/service.html#xa.service.build_api">build_api() (in module xa.service)</a>
+      <li><a href="module_docs/xa/revive.html#xa.revive.BLOCKED_ON_HUMAN">BLOCKED_ON_HUMAN (in module xa.revive)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/xa/service.html#xa.service.build_api">build_api() (in module xa.service)</a>
+</li>
       <li><a href="module_docs/xa/revive.html#xa.revive.SessionPanes.by_verdict">by_verdict() (xa.revive.SessionPanes method)</a>
 </li>
   </ul></td>
@@ -177,16 +177,14 @@
 </li>
       <li><a href="module_docs/xa/revive.html#xa.revive.classify">classify() (in module xa.revive)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/xa.html#xa.classify_death">classify_death() (in module xa)</a>
 
       <ul>
         <li><a href="module_docs/xa/archive.html#xa.archive.classify_death">(in module xa.archive)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.classify_pane_attention">classify_pane_attention() (in module xa.claude_cli)</a>
-</li>
       <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.complete_spawn">complete_spawn() (in module xa.claude_cli)</a>
 </li>
       <li><a href="module_docs/xa/revive.html#xa.revive.CONNECTED">CONNECTED (in module xa.revive)</a>
@@ -224,6 +222,8 @@
       <li><a href="module_docs/xa/tmux.html#xa.tmux.descendants">descendants() (in module xa.tmux)</a>
 </li>
       <li><a href="module_docs/xa/revive.html#xa.revive.DFLT_MIN_INTERVAL_SEC">DFLT_MIN_INTERVAL_SEC (in module xa.revive)</a>
+</li>
+      <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.diagnose_bridgeless">diagnose_bridgeless() (in module xa.claude_cli)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -287,6 +287,8 @@
 </li>
       <li><a href="module_docs/xa/revive.html#xa.revive.HELD_ELSEWHERE">HELD_ELSEWHERE (in module xa.revive)</a>
 </li>
+      <li><a href="module_docs/xa/revive.html#xa.revive.hint_for">hint_for() (in module xa.revive)</a>
+</li>
       <li><a href="module_docs/xa/cli.html#xa.cli.history_cmd">history_cmd() (in module xa.cli)</a>
 </li>
       <li><a href="module_docs/xa.html#xa.history_iter">history_iter() (in module xa)</a>
@@ -295,14 +297,14 @@
         <li><a href="module_docs/xa/claude_fs.html#xa.claude_fs.history_iter">(in module xa.claude_fs)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/xa.html#xa.HistoryEntry">HistoryEntry (class in xa)</a>
 
       <ul>
         <li><a href="module_docs/xa/claude_fs.html#xa.claude_fs.HistoryEntry">(class in xa.claude_fs)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/xa.html#xa.Host">Host (class in xa)</a>
 
       <ul>
@@ -488,10 +490,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/xa/revive.html#xa.revive.NEEDS_HUMAN">NEEDS_HUMAN (in module xa.revive)</a>
 </li>
-      <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.new_archive_id">new_archive_id() (in module xa.claude_cli)</a>
+      <li><a href="module_docs/xa/revive.html#xa.revive.NEEDS_LOGIN">NEEDS_LOGIN (in module xa.revive)</a>
+</li>
+      <li><a href="module_docs/xa/revive.html#xa.revive.NEEDS_TRUST">NEEDS_TRUST (in module xa.revive)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.new_archive_id">new_archive_id() (in module xa.claude_cli)</a>
+</li>
       <li><a href="module_docs/xa/tmux.html#xa.tmux.new_session">new_session() (in module xa.tmux)</a>
 </li>
       <li><a href="module_docs/xa/revive.html#xa.revive.NO_CLAUDE">NO_CLAUDE (in module xa.revive)</a>
@@ -570,6 +576,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/xa/revive.html#xa.revive.RateGuard">RateGuard (class in xa.revive)</a>
 </li>
+      <li><a href="module_docs/xa/service.html#xa.service.RC_ENABLE_TIMEOUT_SEC">RC_ENABLE_TIMEOUT_SEC (in module xa.service)</a>
+</li>
       <li><a href="module_docs/xa/revive.html#xa.revive.RC_PILL">RC_PILL (in module xa.revive)</a>
 </li>
       <li><a href="module_docs/xa.html#xa.read_ephemeral_session">read_ephemeral_session() (in module xa)</a>
@@ -602,11 +610,11 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/xa/claude_fs.html#xa.claude_fs.remote_control_at_startup">remote_control_at_startup() (in module xa.claude_fs)</a>
+</li>
       <li><a href="module_docs/xa/tmux.html#xa.tmux.rename_session">rename_session() (in module xa.tmux)</a>
 </li>
       <li><a href="module_docs/xa/revive.html#xa.revive.REPORT_ORDER">REPORT_ORDER (in module xa.revive)</a>
-</li>
-      <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.request_remote_control">request_remote_control() (in module xa.claude_cli)</a>
 </li>
       <li><a href="module_docs/xa.html#xa.resolve_bridge_url">resolve_bridge_url() (in module xa)</a>
 
@@ -794,10 +802,12 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="module_docs/xa/revive.html#xa.revive.RateGuard.wait_remaining">wait_remaining() (xa.revive.RateGuard method)</a>
+      <li><a href="module_docs/xa/claude_cli.html#xa.claude_cli.wait_for_bridge_url">wait_for_bridge_url() (in module xa.claude_cli)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/xa/revive.html#xa.revive.RateGuard.wait_remaining">wait_remaining() (xa.revive.RateGuard method)</a>
+</li>
       <li><a href="module_docs/xa/revive.html#xa.revive.ReviveAction.would_send">would_send (xa.revive.ReviveAction property)</a>
 </li>
   </ul></td>

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.revive &mdash; xa 0.1.8 documentation</title>
+  <title>xa.revive &mdash; xa 0.1.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=22607128"></script>
+      <script src="../../_static/documentation_options.js?v=8618f531"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -180,8 +180,15 @@
 <span class="n">CONNECTED</span> <span class="o">=</span> <span class="s2">"connected"</span>
 <span class="c1">#: Remote Control is retrying right now. Leave it alone; it may well succeed.</span>
 <span class="n">RECONNECTING</span> <span class="o">=</span> <span class="s2">"reconnecting"</span>
-<span class="c1">#: Blocked on a human — login, workspace trust, or an open permission dialog.</span>
+<span class="c1">#: Blocked on a human — an open permission dialog, or anything else that is</span>
+<span class="c1">#: eating keystrokes. See :data:`NEEDS_LOGIN` / :data:`NEEDS_TRUST` for the</span>
+<span class="c1">#: two causes specific enough to tell the user how to fix.</span>
 <span class="n">NEEDS_HUMAN</span> <span class="o">=</span> <span class="s2">"needs_human"</span>
+<span class="c1">#: Blocked on a human, specifically: claude on this host is logged out.</span>
+<span class="c1">#: Login state is per-machine, so one ``/login`` fixes every session on it.</span>
+<span class="n">NEEDS_LOGIN</span> <span class="o">=</span> <span class="s2">"needs_login"</span>
+<span class="c1">#: Blocked on a human, specifically: the workspace-trust prompt is open.</span>
+<span class="n">NEEDS_TRUST</span> <span class="o">=</span> <span class="s2">"needs_trust"</span>
 <span class="c1">#: The API call is wedged. Reported, never acted on (the fix is a new prompt).</span>
 <span class="n">API_STALLED</span> <span class="o">=</span> <span class="s2">"api_stalled"</span>
 <span class="c1">#: A ``claude remote-control`` *server* died. See :func:`restart_server_mode`.</span>
@@ -199,12 +206,19 @@
         <span class="n">CONNECTED</span><span class="p">,</span>
         <span class="n">RECONNECTING</span><span class="p">,</span>
         <span class="n">NEEDS_HUMAN</span><span class="p">,</span>
+        <span class="n">NEEDS_LOGIN</span><span class="p">,</span>
+        <span class="n">NEEDS_TRUST</span><span class="p">,</span>
         <span class="n">API_STALLED</span><span class="p">,</span>
         <span class="n">SERVER_MODE</span><span class="p">,</span>
         <span class="n">RECONNECTABLE</span><span class="p">,</span>
         <span class="n">UNKNOWN</span><span class="p">,</span>
     <span class="p">}</span>
 <span class="p">)</span>
+
+<span class="c1">#: Verdicts that mean "a human must act on the host". All are blocked on a</span>
+<span class="c1">#: person, none are actionable by :func:`revive`, and each has a fix-it line</span>
+<span class="c1">#: in :func:`hint_for`.</span>
+<span class="n">BLOCKED_ON_HUMAN</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="n">NEEDS_HUMAN</span><span class="p">,</span> <span class="n">NEEDS_LOGIN</span><span class="p">,</span> <span class="n">NEEDS_TRUST</span><span class="p">})</span>
 
 <span class="c1">#: Verdicts :func:`revive` will send ``/remote-control`` to. ``HELD_ELSEWHERE``</span>
 <span class="c1">#: is deliberately absent — it is reachable only via ``include_held_elsewhere``.</span>
@@ -288,14 +302,22 @@
     <span class="c1"># The pill itself is matched by RC_PILL; this is the prose form.</span>
     <span class="n">CONNECTED</span><span class="p">:</span> <span class="p">(</span><span class="s2">"remote control active"</span><span class="p">,),</span>
     <span class="n">RECONNECTING</span><span class="p">:</span> <span class="p">(</span><span class="s2">"/rc reconnecting"</span><span class="p">,),</span>
-    <span class="c1"># Reuses claude_cli's login/trust vocabulary, plus the dialog chrome that</span>
-    <span class="c1"># proves a prompt is open and eating keystrokes.</span>
-    <span class="n">NEEDS_HUMAN</span><span class="p">:</span> <span class="n">ccli</span><span class="o">.</span><span class="n">_LOGIN_PANE_MARKERS</span>
-    <span class="o">+</span> <span class="n">ccli</span><span class="o">.</span><span class="n">_TRUST_PANE_MARKERS</span>
-    <span class="o">+</span> <span class="p">(</span>
-        <span class="s2">"do you want to proceed?"</span><span class="p">,</span>
-        <span class="s2">"esc to cancel"</span><span class="p">,</span>
+    <span class="c1"># Logged out. "unknown command: /remote-control" is what the TUI answers</span>
+    <span class="c1"># when the command isn't registered — overwhelmingly an expired login (it</span>
+    <span class="c1"># only exists once authenticated); on a very old claude it can instead</span>
+    <span class="c1"># mean Remote Control doesn't exist at all.</span>
+    <span class="n">NEEDS_LOGIN</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"run /login"</span><span class="p">,</span>
+        <span class="s2">"please log in"</span><span class="p">,</span>
+        <span class="s2">"select login method"</span><span class="p">,</span>
+        <span class="s2">"oauth token has expired"</span><span class="p">,</span>
+        <span class="s2">"invalid api key"</span><span class="p">,</span>
+        <span class="s2">"unknown command: /remote-control"</span><span class="p">,</span>
     <span class="p">),</span>
+    <span class="n">NEEDS_TRUST</span><span class="p">:</span> <span class="p">(</span><span class="s2">"trust this folder"</span><span class="p">,</span> <span class="s2">"do you trust the files"</span><span class="p">),</span>
+    <span class="c1"># Dialog chrome that proves *some* prompt is open and eating keystrokes,</span>
+    <span class="c1"># without saying which.</span>
+    <span class="n">NEEDS_HUMAN</span><span class="p">:</span> <span class="p">(</span><span class="s2">"do you want to proceed?"</span><span class="p">,</span> <span class="s2">"esc to cancel"</span><span class="p">),</span>
     <span class="n">API_STALLED</span><span class="p">:</span> <span class="p">(</span><span class="s2">"api error"</span><span class="p">,</span> <span class="s2">"retrying in "</span><span class="p">,</span> <span class="s2">"overloaded"</span><span class="p">),</span>
     <span class="c1"># Server mode prints its own retry advice; the REPL prints a slash command.</span>
     <span class="n">SERVER_MODE</span><span class="p">:</span> <span class="p">(</span><span class="s2">"re-run `claude remote-control` to try again"</span><span class="p">,),</span>
@@ -400,6 +422,10 @@
     <span class="p">(</span><span class="n">RECONNECTING</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">RECONNECTING</span><span class="p">])),</span>
     <span class="p">(</span><span class="n">CONNECTED</span><span class="p">,</span> <span class="n">_pill_present</span><span class="p">),</span>
     <span class="p">(</span><span class="n">CONNECTED</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">CONNECTED</span><span class="p">])),</span>
+    <span class="c1"># The two specific causes precede the generic one, so a pane that names</span>
+    <span class="c1"># its blocker gets the verdict that can tell the user how to clear it.</span>
+    <span class="p">(</span><span class="n">NEEDS_LOGIN</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">NEEDS_LOGIN</span><span class="p">])),</span>
+    <span class="p">(</span><span class="n">NEEDS_TRUST</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">NEEDS_TRUST</span><span class="p">])),</span>
     <span class="p">(</span><span class="n">NEEDS_HUMAN</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">NEEDS_HUMAN</span><span class="p">])),</span>
     <span class="p">(</span><span class="n">API_STALLED</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">API_STALLED</span><span class="p">])),</span>
     <span class="p">(</span><span class="n">SERVER_MODE</span><span class="p">,</span> <span class="n">_any_of</span><span class="p">(</span><span class="o">*</span><span class="n">MARKERS</span><span class="p">[</span><span class="n">SERVER_MODE</span><span class="p">])),</span>
@@ -448,6 +474,62 @@
         <span class="k">if</span> <span class="n">predicate</span><span class="p">(</span><span class="n">probe</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">verdict</span>
     <span class="k">return</span> <span class="n">UNKNOWN</span></div>
+
+
+
+<div class="viewcode-block" id="hint_for">
+<a class="viewcode-back" href="../../module_docs/xa/revive.html#xa.revive.hint_for">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">hint_for</span><span class="p">(</span><span class="n">verdict</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tmux_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Human fix-it line for a verdict, or ``None`` when there is nothing to say.</span>
+
+<span class="sd">    SSOT for the wording shown by the CLI, the web UI and the HTTP API, so</span>
+<span class="sd">    the three can't drift. Only the verdicts a person can actually clear get</span>
+<span class="sd">    a line; ``connected``/``unknown``/``reconnectable`` return ``None``</span>
+<span class="sd">    (nothing to do, nothing known, or xa's own job respectively).</span>
+
+<span class="sd">    &gt;&gt;&gt; hint_for(CONNECTED) is None</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; hint_for(NEEDS_TRUST, tmux_name='sess').startswith('Claude is waiting')</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="n">attach</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"tmux attach -t </span><span class="si">{</span><span class="n">tmux_name</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">tmux_name</span>
+        <span class="k">else</span> <span class="s2">"attach the terminal running claude"</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="n">NEEDS_LOGIN</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Claude on this machine needs to log in again. Open its terminal "</span>
+            <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="n">attach</span><span class="si">}</span><span class="s2">) and run /login. Login state is per-machine, so one "</span>
+            <span class="sa">f</span><span class="s2">"login fixes every session on this host. (If /remote-control "</span>
+            <span class="sa">f</span><span class="s2">"still reports 'Unknown command' afterwards, the installed "</span>
+            <span class="sa">f</span><span class="s2">"claude is too old — update it.)"</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="n">NEEDS_TRUST</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Claude is waiting on its workspace-trust prompt. Open its "</span>
+            <span class="sa">f</span><span class="s2">"terminal (</span><span class="si">{</span><span class="n">attach</span><span class="si">}</span><span class="s2">) and answer it."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="n">NEEDS_HUMAN</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Claude is sitting on a dialog that is eating keystrokes. Open "</span>
+            <span class="sa">f</span><span class="s2">"its terminal (</span><span class="si">{</span><span class="n">attach</span><span class="si">}</span><span class="s2">) and answer it."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="n">HELD_ELSEWHERE</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">"This session was picked up on another device. Reconnecting here "</span>
+            <span class="s2">"would take it away from there, so xa leaves it alone."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="n">SERVER_MODE</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">"A `claude remote-control` server died here. Restart it in its "</span>
+            <span class="s2">"own directory — see `xa revive --restart-servers`."</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="n">API_STALLED</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"The API call is wedged. Send the session a new prompt."</span>
+    <span class="k">if</span> <span class="n">verdict</span> <span class="o">==</span> <span class="n">NO_CLAUDE</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"No claude process behind this pane — it exited."</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
 
 
 
