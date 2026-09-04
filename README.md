@@ -11,6 +11,32 @@ endpoint.
 Works great on a headless server (tmux-hosted `claude`, phone URL via
 `claude.ai/code/…` remote control). Works fine on a laptop too.
 
+### What xa is for, now that Remote Control exists
+
+Claude Code's own [Remote Control](https://code.claude.com/docs/en/remote-control)
+does the "start a session and pick it up on my phone" job natively — server
+mode serves up to 32 sessions from one process, the claude.ai session list
+shows them across machines, and mobile push tells you when one needs you.
+**Use it.** Set `"remoteControlAtStartup": true` and xa gets out of the way.
+
+`xa` is for the four things it doesn't do:
+
+1. **Launch in an arbitrary directory, from your phone.** A `claude
+   remote-control` server is rooted at *one* directory (`--spawn worktree`
+   means worktrees of that same repo). `xa spawn <any-cwd>` — and the web UI's
+   folder picker — is how you start a session in any one of a few hundred
+   projects without being at the machine.
+2. **See sessions that were never remote-controlled.** claude.ai lists only
+   live Remote Control sessions. `xa list` reads the whole transcript tree,
+   and `xa history --search` greps every prompt you have ever typed, across
+   projects and machines.
+3. **Find out what happened to a session that died.** `xa archive forensics`
+   gives a death reason and the last tool call. Nothing upstream keeps one.
+4. **Reconnect a session whose Remote Control dropped.** After a network
+   change Claude Code retries, gives up, and leaves the session running but
+   unreachable. `xa revive` finds those and reconnects them — carefully; see
+   `xa revive --help`.
+
 ---
 
 ## Easiest path — let Claude Code set it up

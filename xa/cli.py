@@ -297,7 +297,7 @@ def spawn_cmd(
     :param cwd: Working directory to start claude in.
     :param name: Session name — tmux session and claude display name (auto if omitted).
     :param timeout: Seconds to wait for the bridge URL.
-    :param no_remote_control: Skip enabling remote control.
+    :param no_remote_control: Spawn without passing ``--remote-control``.
     :param model: Per-session ``claude --model`` (omitted → claude's default).
     :param effort: Per-session ``claude --effort`` (omitted → claude's default).
     """

@@ -301,3 +301,39 @@ def test_alive_comm_gate_without_procstart() -> None:
     # comm == "claude". This test process is python — must be rejected
     # even though the pid is alive.
     assert cfs.ephemeral_session_alive({"pid": os.getpid()}) is False
+
+
+# --------------------------------------------------------------------------- #
+# remoteControlAtStartup
+# --------------------------------------------------------------------------- #
+
+
+def test_remote_control_at_startup_reads_the_setting(tmp_path) -> None:
+    home = tmp_path / ".claude"
+    home.mkdir()
+    (home / "settings.json").write_text(json.dumps({"remoteControlAtStartup": True}))
+    assert cfs.remote_control_at_startup(claude_home=home) is True
+    (home / "settings.json").write_text(json.dumps({"remoteControlAtStartup": False}))
+    assert cfs.remote_control_at_startup(claude_home=home) is False
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        None,                                    # no file at all
+        "{ not json",                            # unreadable
+        "{}",                                    # key absent
+        '{"remoteControlAtStartup": "yes"}',     # present but not a bool
+    ],
+)
+def test_remote_control_at_startup_is_none_when_unknowable(tmp_path, content) -> None:
+    """Every "can't tell" case must be None, never a guessed False.
+
+    A False would read as "this host is configured off" and send the user
+    to change a setting that may already be right.
+    """
+    home = tmp_path / ".claude"
+    home.mkdir()
+    if content is not None:
+        (home / "settings.json").write_text(content)
+    assert cfs.remote_control_at_startup(claude_home=home) is None

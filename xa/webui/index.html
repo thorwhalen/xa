@@ -418,7 +418,15 @@ function displayName(s) {
   return s.label || s.name || s.tmux_name || (s.id ? s.id.slice(0, 12) : "unnamed");
 }
 
-// Badge for an adverse live-session state (login_required, trust_prompt…).
+// Verdicts (from xa.revive) where "Enable remote" would be refused server
+// side: a person must act on the host first, or the session is held on
+// another device and taking it back is not ours to do. Kept as a set rather
+// than a single != test so a new refusal verdict is one entry, not a bug.
+const RC_REFUSED = new Set([
+  "needs_login", "needs_trust", "needs_human", "held_elsewhere", "no_claude",
+]);
+
+// Badge for an adverse live-session state (needs_login, needs_trust…).
 // The server ships the matching human hint in `attention_hint`.
 function attentionBadge(s) {
   if (!s.attention) return "";
@@ -487,7 +495,7 @@ function localCard(s) {
     </div>
     <div class="meta" style="font-size:12px; color:var(--muted); margin-top:6px">${hint}</div>
     <div class="actions">
-      ${inTmux && s.attention !== "login_required"
+      ${inTmux && !RC_REFUSED.has(s.attention)
         ? `<button class="small primary" data-enablerc="${escapeHtml(s.id)}">Enable remote</button>` : ""}
       <button class="small" data-rename="${escapeHtml(s.id)}">Rename</button>
       <button class="small" data-info="${escapeHtml(s.id)}">Info</button>

@@ -29,6 +29,7 @@ from typing import Any, Callable, Optional
 from xa import archive as arch
 from xa import claude_cli as ccli
 from xa import claude_fs as cfs
+from xa import revive as rv
 from xa import sessions as sess
 from xa import store as st
 from xa import tmux as tm
@@ -160,6 +161,11 @@ class Captcha:
 # build_api
 # --------------------------------------------------------------------------- #
 
+
+#: How long POST /sessions/{id}/remote-control waits for claude to write
+#: its bridge id after the command is sent. The TUI acks well before the
+#: session file is rewritten, so a bare read would always miss.
+RC_ENABLE_TIMEOUT_SEC = 15.0
 
 _NAME_RE = re.compile(r"^[A-Za-z0-9_.-]{1,48}$")
 
@@ -551,10 +557,15 @@ def build_api(
     def enable_remote_control(id: str, _: str = Depends(auth)) -> dict:
         """Make a live, bridgeless, tmux-hosted session remote-reachable.
 
-        Sends ``/remote-control`` into the pane (once, prompts permitting)
-        and waits briefly for the bridge URL. When it can't succeed —
-        logged-out claude, not tmux-hosted — the response says exactly why
-        and how to fix it by hand.
+        Runs the :mod:`xa.revive` engine scoped to this one pane, so the
+        refusals that make typing into a live session safe apply here too:
+        a session held on another device is never taken back, an open
+        dialog is never answered with a slash command, and a pane with an
+        unsent prompt in it is left alone. Before 0.1.9 this route had its
+        own send-and-poll loop with none of those gates.
+
+        When it can't succeed the response says why and how to fix it by
+        hand, rather than reporting a bare failure.
         """
         try:
             s = _resolve_session(id)
@@ -572,22 +583,43 @@ def build_api(
                 "hint": None,
                 "already_enabled": True,
             }
-        if not (s.tmux_pane or s.tmux_name):
+        # Target the exact claude pane when known: sending keystrokes at
+        # the bare session name would type into whatever pane is active.
+        target = s.tmux_pane or s.tmux_name
+        if not target:
             raise HTTPException(
                 409,
                 "Session is not tmux-hosted — attach the terminal that "
                 "started it and run /remote-control there.",
             )
-        # Target the exact claude pane when known: sending keystrokes at
-        # the bare session name would type into whatever pane is active.
-        url, src, attention = ccli.request_remote_control(
-            s.tmux_pane or s.tmux_name, claude_home=claude_home
+        ref = rv.PaneRef(
+            target=target,
+            claude_pid=s.live_pid,
+            bridge_session_id=s.bridge_session_id,
+        )
+        actions = rv.revive(
+            panes=rv.SessionPanes(panes=lambda: [ref], is_relevant=lambda r: True),
+            apply=True,
+        )
+        verdict = actions[0].verdict if actions else rv.UNKNOWN
+        sent = bool(actions and actions[0].sent)
+        # The command lands in the TUI before claude rewrites its session
+        # file, so a read here races the write — wait for it briefly.
+        url, src = (
+            ccli.wait_for_bridge_url(
+                target,
+                claude_home=claude_home,
+                tmux_bin=tm.DEFAULT_TMUX_BIN,
+                deadline=time.time() + RC_ENABLE_TIMEOUT_SEC,
+            )
+            if sent
+            else (None, None)
         )
         return {
             "url": url,
             "url_source": src,
-            "attention": attention,
-            "hint": ccli.attention_hint(attention, tmux_name=s.tmux_name),
+            "attention": None if url else verdict,
+            "hint": None if url else rv.hint_for(verdict, tmux_name=s.tmux_name),
             "already_enabled": False,
         }
 
