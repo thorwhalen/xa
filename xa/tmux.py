@@ -78,9 +78,25 @@ def pane_target(ref: str) -> str:
 
 
 def _run(args: list[str], *, timeout: float = 10.0) -> subprocess.CompletedProcess:
-    return subprocess.run(
-        args, capture_output=True, text=True, timeout=timeout, check=False
-    )
+    """Run one tmux command, absorbing "no such binary" and timeouts.
+
+    Returns a non-zero :class:`~subprocess.CompletedProcess` rather than
+    raising, so the read-only wrappers below degrade to their documented
+    empty result on a host with no tmux installed, and the wrappers that
+    do raise name the tmux operation that failed instead of surfacing a
+    bare ``FileNotFoundError`` from deep inside ``subprocess``. Exit codes
+    follow the shell convention: 127 not-found, 124 timed-out.
+    """
+    try:
+        return subprocess.run(
+            args, capture_output=True, text=True, timeout=timeout, check=False
+        )
+    except FileNotFoundError:
+        return subprocess.CompletedProcess(args, 127, "", f"{args[0]}: not found")
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(
+            args, 124, "", f"{args[0]}: timed out after {timeout}s"
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -91,10 +107,7 @@ def _run(args: list[str], *, timeout: float = 10.0) -> subprocess.CompletedProce
 def list_sessions(*, binary: str = DEFAULT_TMUX_BIN) -> list[TmuxSession]:
     """Return all live tmux sessions; empty list if server isn't running."""
     fmt = "#{session_name}|#{session_created}|#{session_activity}|#{session_attached}"
-    try:
-        out = _run([binary, "list-sessions", "-F", fmt])
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return []
+    out = _run([binary, "list-sessions", "-F", fmt])
     if out.returncode != 0:
         return []
     rows: list[TmuxSession] = []
@@ -212,10 +225,7 @@ def list_panes(*, binary: str = DEFAULT_TMUX_BIN) -> list[TmuxPane]:
         "#{session_name}:#{window_id}.#{pane_id}|#{pane_pid}"
         "|#{pane_current_command}|#{pane_current_path}"
     )
-    try:
-        out = _run([binary, "list-panes", "-a", "-F", fmt])
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return []
+    out = _run([binary, "list-panes", "-a", "-F", fmt])
     if out.returncode != 0:
         return []
     panes: list[TmuxPane] = []
@@ -272,21 +282,12 @@ def pane_pid(name: str, *, binary: str = DEFAULT_TMUX_BIN) -> Optional[int]:
 
 
 # --------------------------------------------------------------------------- #
-# /proc-based process tree walk (no pstree dependency)
+# process tree walk — /proc on Linux, ps elsewhere (no pstree dependency)
 # --------------------------------------------------------------------------- #
 
 
-def descendants(pid: int) -> list[int]:
-    """All transitive descendant PIDs of ``pid``.
-
-    Scans ``/proc/*/status``; silently tolerates races (processes dying
-    mid-scan). Not available on non-Linux platforms — returns ``[]`` if
-    ``/proc`` is absent.
-    """
-    proc_root = Path("/proc")
-    if not proc_root.is_dir():
-        return []
-
+def _children_map_proc(proc_root: Path) -> dict[int, list[int]]:
+    """``{ppid: [child pid, ...]}`` from ``/proc/*/status`` (Linux)."""
     children_of: dict[int, list[int]] = {}
     for entry in proc_root.iterdir():
         if not entry.name.isdigit():
@@ -307,6 +308,47 @@ def descendants(pid: int) -> list[int]:
             # Races: process dies between iterdir and read. Also tolerate
             # OSError, which covers Linux's ESRCH surfaced as OSError.
             continue
+    return children_of
+
+
+def _children_map_ps() -> dict[int, list[int]]:
+    """``{ppid: [child pid, ...]}`` from ``ps`` (macOS/BSD, no ``/proc``)."""
+    try:
+        out = subprocess.run(
+            ["ps", "-Ao", "pid=,ppid="],
+            capture_output=True,
+            text=True,
+            timeout=10.0,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return {}
+
+    children_of: dict[int, list[int]] = {}
+    for line in out.stdout.splitlines():
+        fields = line.split()
+        if len(fields) < 2:
+            continue
+        try:
+            child, parent = int(fields[0]), int(fields[1])
+        except ValueError:
+            continue
+        children_of.setdefault(parent, []).append(child)
+    return children_of
+
+
+def descendants(pid: int) -> list[int]:
+    """All transitive descendant PIDs of ``pid``.
+
+    Uses ``/proc/*/status`` where available and ``ps`` elsewhere (macOS),
+    so the process-tree walk behaves the same on every platform xa runs
+    on. Silently tolerates races (processes dying mid-scan) and returns
+    ``[]`` when neither source can be read.
+    """
+    proc_root = Path("/proc")
+    children_of = (
+        _children_map_proc(proc_root) if proc_root.is_dir() else _children_map_ps()
+    )
 
     seen: list[int] = []
     stack = [pid]
@@ -320,8 +362,28 @@ def descendants(pid: int) -> list[int]:
 
 
 def proc_comm(pid: int) -> str:
-    """Return the ``comm`` name of a pid (kernel-level process name), '' if unreadable."""
+    """Return the ``comm`` name of a pid (kernel-level process name), '' if unreadable.
+
+    Linux reads ``/proc/<pid>/comm``, which is a bare name (``claude``).
+    ``ps -o comm=`` on macOS reports a *path* (``/usr/local/bin/claude``),
+    so the fallback takes the basename — callers compare against bare
+    names (see :func:`xa.claude_fs._looks_like_claude`) and must not have
+    to care which platform answered.
+    """
+    proc_root = Path("/proc")
+    if proc_root.is_dir():
+        try:
+            return (proc_root / str(pid) / "comm").read_text().strip()
+        except (FileNotFoundError, PermissionError, ProcessLookupError, OSError):
+            return ""
     try:
-        return (Path("/proc") / str(pid) / "comm").read_text().strip()
-    except (FileNotFoundError, PermissionError, ProcessLookupError, OSError):
+        out = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "comm="],
+            capture_output=True,
+            text=True,
+            timeout=5.0,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired, ValueError):
         return ""
+    return out.stdout.strip().rsplit("/", 1)[-1]
