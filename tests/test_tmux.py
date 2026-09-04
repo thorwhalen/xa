@@ -54,14 +54,21 @@ def test_kill_session_raises_for_missing() -> None:
         tm.kill_session(_fresh_name())
 
 
-def test_descendants_and_proc_comm() -> None:
+def test_descendants_walks_a_forked_child() -> None:
+    """``descendants`` finds a genuinely forked grandchild of the pane.
+
+    ``sleep 30 & wait`` forces the shell to fork rather than exec, so the
+    pane's root really is ``sh`` and the sleep really is a descendant on
+    every platform. (Plain ``sh -c 'sleep 30'`` does not test this: the
+    shell exec's itself into ``sleep``, so the pane root *is* the sleep
+    and the correct answer is an empty descendant list.)
+    """
     name = _fresh_name()
-    tm.new_session(name, command="sh -c 'sleep 30'")
+    tm.new_session(name, command="sh -c 'sleep 30 & wait'")
     try:
-        time.sleep(0.2)
+        time.sleep(0.5)
         root = tm.pane_pid(name)
         assert root is not None
-        # The pane's direct/transitive descendants should include the sleep.
         kids = tm.descendants(root)
         comms = {tm.proc_comm(p) for p in kids}
         assert "sleep" in comms, f"expected 'sleep' in {comms}"
@@ -70,6 +77,47 @@ def test_descendants_and_proc_comm() -> None:
             tm.kill_session(name)
         except RuntimeError:
             pass
+
+
+def test_process_tree_contains_command_however_the_shell_runs_it() -> None:
+    """The contract callers actually rely on: ``(root, *descendants(root))``.
+
+    :func:`xa.claude_cli.find_claude_pid` searches the root *plus* its
+    descendants precisely because whether the shell exec's or forks is
+    not something xa gets to control — it differs by platform and by
+    shell. This asserts the union, which is invariant to that choice.
+    """
+    name = _fresh_name()
+    tm.new_session(name, command="sh -c 'sleep 30'")
+    try:
+        time.sleep(0.5)
+        root = tm.pane_pid(name)
+        assert root is not None
+        tree = (root, *tm.descendants(root))
+        comms = {tm.proc_comm(p) for p in tree}
+        assert "sleep" in comms, f"expected 'sleep' in {comms}"
+    finally:
+        try:
+            tm.kill_session(name)
+        except RuntimeError:
+            pass
+
+
+def test_missing_tmux_binary_degrades_instead_of_raising() -> None:
+    """A host with no tmux must yield empty reads, not a FileNotFoundError.
+
+    ``capture_pane`` documents "'' on failure" and the listings document
+    an empty list; before this was handled in ``_run`` those promises held
+    for a non-zero exit but not for an absent binary, so a misconfigured
+    ``tmux_bin`` crashed a whole listing.
+    """
+    missing = "/nonexistent/tmux"
+    assert tm.list_sessions(binary=missing) == []
+    assert tm.list_panes(binary=missing) == []
+    assert tm.capture_pane("whatever", binary=missing) == ""
+    # Callers that raise still do — but name the operation, not the plumbing.
+    with pytest.raises(RuntimeError, match="send-keys"):
+        tm.send_keys("whatever", "hi", "Enter", binary=missing)
 
 
 def test_pipe_pane_writes_file(tmp_path) -> None:

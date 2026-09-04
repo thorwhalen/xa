@@ -12,6 +12,13 @@ from xa.hosts import LocalHost
 
 SID_A = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
 
+#: A ``tmux_bin`` that cannot run, standing for "this host has no usable
+#: tmux" — the listing must still degrade cleanly to the ephemeral-file
+#: view. Deliberately a path that exists nowhere rather than ``false``:
+#: that lives at ``/bin/false`` on Linux and ``/usr/bin/false`` on macOS,
+#: so hardcoding either made the suite red on the other platform.
+NO_TMUX = "/nonexistent/tmux"
+
 
 @pytest.fixture()
 def fake_home(tmp_path: Path) -> Path:
@@ -130,7 +137,7 @@ def test_stale_ephemeral_file_not_listed_live(fake_home: Path) -> None:
         fake_home, 4194303, SID_A, bridgeSessionId="session_ghost"
     )
     rows = list(
-        LocalHost(claude_home=fake_home, tmux_bin="/bin/false").iter_sessions()
+        LocalHost(claude_home=fake_home, tmux_bin=NO_TMUX).iter_sessions()
     )
     assert [r.state for r in rows] == ["transcript_only"]
     assert all(r.url is None for r in rows)
@@ -144,7 +151,7 @@ def test_alive_predicate_is_injectable(fake_home: Path) -> None:
     rows = list(
         LocalHost(
             claude_home=fake_home,
-            tmux_bin="/bin/false",
+            tmux_bin=NO_TMUX,
             alive_predicate=lambda eph: True,
         ).iter_sessions()
     )
@@ -159,7 +166,7 @@ def test_tmux_name_read_from_ephemeral_pane_ref(fake_home: Path) -> None:
     rows = list(
         LocalHost(
             claude_home=fake_home,
-            tmux_bin="/bin/false",
+            tmux_bin=NO_TMUX,
             alive_predicate=lambda eph: True,
         ).iter_sessions()
     )
