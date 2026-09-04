@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.tmux &mdash; xa 0.1.7 documentation</title>
+  <title>xa.tmux &mdash; xa 0.1.8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
+      <script src="../../_static/documentation_options.js?v=22607128"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -147,9 +147,10 @@ pane ref (<code class="docutils literal notranslate"><span class="pre">session:&
 <dt class="sig sig-object py" id="xa.tmux.descendants">
 <span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">descendants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#descendants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.descendants" title="Link to this definition"></a></dt>
 <dd><p>All transitive descendant PIDs of <code class="docutils literal notranslate"><span class="pre">pid</span></code>.</p>
-<p>Scans <code class="docutils literal notranslate"><span class="pre">/proc/*/status</span></code>; silently tolerates races (processes dying
-mid-scan). Not available on non-Linux platforms — returns <code class="docutils literal notranslate"><span class="pre">[]</span></code> if
-<code class="docutils literal notranslate"><span class="pre">/proc</span></code> is absent.</p>
+<p>Uses <code class="docutils literal notranslate"><span class="pre">/proc/*/status</span></code> where available and <code class="docutils literal notranslate"><span class="pre">ps</span></code> elsewhere (macOS),
+so the process-tree walk behaves the same on every platform xa runs
+on. Silently tolerates races (processes dying mid-scan) and returns
+<code class="docutils literal notranslate"><span class="pre">[]</span></code> when neither source can be read.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -232,6 +233,11 @@ behavior. tmux stops piping automatically when the pane dies.</p>
 <dt class="sig sig-object py" id="xa.tmux.proc_comm">
 <span class="sig-prename descclassname"><span class="pre">xa.tmux.</span></span><span class="sig-name descname"><span class="pre">proc_comm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/xa/tmux.html#proc_comm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.tmux.proc_comm" title="Link to this definition"></a></dt>
 <dd><p>Return the <code class="docutils literal notranslate"><span class="pre">comm</span></code> name of a pid (kernel-level process name), ‘’ if unreadable.</p>
+<p>Linux reads <code class="docutils literal notranslate"><span class="pre">/proc/&lt;pid&gt;/comm</span></code>, which is a bare name (<code class="docutils literal notranslate"><span class="pre">claude</span></code>).
+<code class="docutils literal notranslate"><span class="pre">ps</span> <span class="pre">-o</span> <span class="pre">comm=</span></code> on macOS reports a <em>path</em> (<code class="docutils literal notranslate"><span class="pre">/usr/local/bin/claude</span></code>),
+so the fallback takes the basename — callers compare against bare
+names (see <code class="xref py py-func docutils literal notranslate"><span class="pre">xa.claude_fs._looks_like_claude()</span></code>) and must not have
+to care which platform answered.</p>
 </dd></dl>
 
 <dl class="py function">

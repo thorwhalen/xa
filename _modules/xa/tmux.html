@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xa.tmux &mdash; xa 0.1.7 documentation</title>
+  <title>xa.tmux &mdash; xa 0.1.8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
+      <script src="../../_static/documentation_options.js?v=22607128"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -181,9 +181,25 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-        <span class="n">args</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span>
-    <span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Run one tmux command, absorbing "no such binary" and timeouts.</span>
+
+<span class="sd">    Returns a non-zero :class:`~subprocess.CompletedProcess` rather than</span>
+<span class="sd">    raising, so the read-only wrappers below degrade to their documented</span>
+<span class="sd">    empty result on a host with no tmux installed, and the wrappers that</span>
+<span class="sd">    do raise name the tmux operation that failed instead of surfacing a</span>
+<span class="sd">    bare ``FileNotFoundError`` from deep inside ``subprocess``. Exit codes</span>
+<span class="sd">    follow the shell convention: 127 not-found, 124 timed-out.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="n">args</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="mi">127</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">: not found"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CompletedProcess</span><span class="p">(</span>
+            <span class="n">args</span><span class="p">,</span> <span class="mi">124</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">: timed out after </span><span class="si">{</span><span class="n">timeout</span><span class="si">}</span><span class="s2">s"</span>
+        <span class="p">)</span>
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
@@ -196,10 +212,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">list_sessions</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">binary</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DEFAULT_TMUX_BIN</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">TmuxSession</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Return all live tmux sessions; empty list if server isn't running."""</span>
     <span class="n">fmt</span> <span class="o">=</span> <span class="s2">"#</span><span class="si">{session_name}</span><span class="s2">|#</span><span class="si">{session_created}</span><span class="s2">|#</span><span class="si">{session_activity}</span><span class="s2">|#</span><span class="si">{session_attached}</span><span class="s2">"</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">"list-sessions"</span><span class="p">,</span> <span class="s2">"-F"</span><span class="p">,</span> <span class="n">fmt</span><span class="p">])</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">"list-sessions"</span><span class="p">,</span> <span class="s2">"-F"</span><span class="p">,</span> <span class="n">fmt</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
     <span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TmuxSession</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -338,10 +351,7 @@
         <span class="s2">"#</span><span class="si">{session_name}</span><span class="s2">:#</span><span class="si">{window_id}</span><span class="s2">.#</span><span class="si">{pane_id}</span><span class="s2">|#</span><span class="si">{pane_pid}</span><span class="s2">"</span>
         <span class="s2">"|#</span><span class="si">{pane_current_command}</span><span class="s2">|#</span><span class="si">{pane_current_path}</span><span class="s2">"</span>
     <span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">"list-panes"</span><span class="p">,</span> <span class="s2">"-a"</span><span class="p">,</span> <span class="s2">"-F"</span><span class="p">,</span> <span class="n">fmt</span><span class="p">])</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">_run</span><span class="p">([</span><span class="n">binary</span><span class="p">,</span> <span class="s2">"list-panes"</span><span class="p">,</span> <span class="s2">"-a"</span><span class="p">,</span> <span class="s2">"-F"</span><span class="p">,</span> <span class="n">fmt</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">out</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
     <span class="n">panes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TmuxPane</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -408,23 +418,12 @@
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
-<span class="c1"># /proc-based process tree walk (no pstree dependency)</span>
+<span class="c1"># process tree walk — /proc on Linux, ps elsewhere (no pstree dependency)</span>
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
 
-<div class="viewcode-block" id="descendants">
-<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.descendants">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">descendants</span><span class="p">(</span><span class="n">pid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""All transitive descendant PIDs of ``pid``.</span>
-
-<span class="sd">    Scans ``/proc/*/status``; silently tolerates races (processes dying</span>
-<span class="sd">    mid-scan). Not available on non-Linux platforms — returns ``[]`` if</span>
-<span class="sd">    ``/proc`` is absent.</span>
-<span class="sd">    """</span>
-    <span class="n">proc_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/proc"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">proc_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
-        <span class="k">return</span> <span class="p">[]</span>
-
+<span class="k">def</span><span class="w"> </span><span class="nf">_children_map_proc</span><span class="p">(</span><span class="n">proc_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""``{ppid: [child pid, ...]}`` from ``/proc/*/status`` (Linux)."""</span>
     <span class="n">children_of</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">proc_root</span><span class="o">.</span><span class="n">iterdir</span><span class="p">():</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
@@ -445,6 +444,49 @@
             <span class="c1"># Races: process dies between iterdir and read. Also tolerate</span>
             <span class="c1"># OSError, which covers Linux's ESRCH surfaced as OSError.</span>
             <span class="k">continue</span>
+    <span class="k">return</span> <span class="n">children_of</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_children_map_ps</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""``{ppid: [child pid, ...]}`` from ``ps`` (macOS/BSD, no ``/proc``)."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">"ps"</span><span class="p">,</span> <span class="s2">"-Ao"</span><span class="p">,</span> <span class="s2">"pid=,ppid="</span><span class="p">],</span>
+            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+            <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="n">children_of</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">child</span><span class="p">,</span> <span class="n">parent</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">fields</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">children_of</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">children_of</span>
+
+
+<div class="viewcode-block" id="descendants">
+<a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.descendants">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">descendants</span><span class="p">(</span><span class="n">pid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""All transitive descendant PIDs of ``pid``.</span>
+
+<span class="sd">    Uses ``/proc/*/status`` where available and ``ps`` elsewhere (macOS),</span>
+<span class="sd">    so the process-tree walk behaves the same on every platform xa runs</span>
+<span class="sd">    on. Silently tolerates races (processes dying mid-scan) and returns</span>
+<span class="sd">    ``[]`` when neither source can be read.</span>
+<span class="sd">    """</span>
+    <span class="n">proc_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/proc"</span><span class="p">)</span>
+    <span class="n">children_of</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_children_map_proc</span><span class="p">(</span><span class="n">proc_root</span><span class="p">)</span> <span class="k">if</span> <span class="n">proc_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="k">else</span> <span class="n">_children_map_ps</span><span class="p">()</span>
+    <span class="p">)</span>
 
     <span class="n">seen</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="p">[</span><span class="n">pid</span><span class="p">]</span>
@@ -461,11 +503,31 @@
 <div class="viewcode-block" id="proc_comm">
 <a class="viewcode-back" href="../../module_docs/xa/tmux.html#xa.tmux.proc_comm">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">proc_comm</span><span class="p">(</span><span class="n">pid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return the ``comm`` name of a pid (kernel-level process name), '' if unreadable."""</span>
+<span class="w">    </span><span class="sd">"""Return the ``comm`` name of a pid (kernel-level process name), '' if unreadable.</span>
+
+<span class="sd">    Linux reads ``/proc/&lt;pid&gt;/comm``, which is a bare name (``claude``).</span>
+<span class="sd">    ``ps -o comm=`` on macOS reports a *path* (``/usr/local/bin/claude``),</span>
+<span class="sd">    so the fallback takes the basename — callers compare against bare</span>
+<span class="sd">    names (see :func:`xa.claude_fs._looks_like_claude`) and must not have</span>
+<span class="sd">    to care which platform answered.</span>
+<span class="sd">    """</span>
+    <span class="n">proc_root</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"/proc"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">proc_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">proc_root</span> <span class="o">/</span> <span class="nb">str</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"comm"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">,</span> <span class="ne">ProcessLookupError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">""</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"/proc"</span><span class="p">)</span> <span class="o">/</span> <span class="nb">str</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"comm"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">,</span> <span class="ne">ProcessLookupError</span><span class="p">,</span> <span class="ne">OSError</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">""</span></div>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">"ps"</span><span class="p">,</span> <span class="s2">"-p"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="s2">"-o"</span><span class="p">,</span> <span class="s2">"comm="</span><span class="p">],</span>
+            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
+            <span class="n">check</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">TimeoutExpired</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="k">return</span> <span class="n">out</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
 </pre></div>
 
