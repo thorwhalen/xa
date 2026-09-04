@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import subprocess
 import time
 import uuid
 from pathlib import Path
@@ -163,18 +164,43 @@ def test_claude_argv_resume_always_included() -> None:
     assert argv == ["claude", "--resume", "abc-123"]
 
 
-def test_supported_cli_flags_scrapes_help(tmp_path: Path) -> None:
-    fake = tmp_path / "fake-claude"
-    fake.write_text(
-        "#!/bin/sh\n"
-        "echo '  -n, --name <name>   Set a display name'\n"
-        "echo '  --model <model>     Model for the session'\n"
-        "echo '  --remote-control [name]  Enable RC'\n"
+_FAKE_HELP = (
+    "  -n, --name <name>   Set a display name\n"
+    "  --model <model>     Model for the session\n"
+    "  --remote-control [name]  Enable RC\n"
+)
+
+
+def test_supported_cli_flags_scrapes_help(monkeypatch) -> None:
+    """The scrape itself — runs everywhere, since it fakes the process.
+
+    Previously this shelled out to a ``#!/bin/sh`` fixture, which Windows
+    cannot execute: the probe returned an empty set and the suite was red
+    on Windows for a reason that had nothing to do with the parsing.
+    """
+    monkeypatch.setattr(
+        ccli, "_flags_cache", {}
+    )  # the real cache is process-global
+    monkeypatch.setattr(
+        ccli.subprocess,
+        "run",
+        lambda *a, **k: subprocess.CompletedProcess(a[0], 0, _FAKE_HELP, ""),
     )
+    flags = ccli.supported_cli_flags("whatever-claude")
+    assert {"--name", "--model", "--remote-control"} <= flags
+    assert "--effort" not in flags
+
+
+@pytest.mark.skipif(
+    os.name != "posix", reason="fixture is a #!/bin/sh script; Windows can't exec it"
+)
+def test_supported_cli_flags_runs_a_real_binary(tmp_path: Path) -> None:
+    """End-to-end: really execute something and scrape its output."""
+    fake = tmp_path / "fake-claude"
+    fake.write_text("#!/bin/sh\n" + "".join(f"echo '{l}'\n" for l in _FAKE_HELP.splitlines()))
     fake.chmod(0o755)
     flags = ccli.supported_cli_flags(str(fake))
     assert {"--name", "--model", "--remote-control"} <= flags
-    assert "--effort" not in flags
 
 
 def test_supported_cli_flags_missing_binary_is_empty() -> None:
@@ -186,36 +212,47 @@ def test_supported_cli_flags_missing_binary_is_empty() -> None:
 # --------------------------------------------------------------------------- #
 
 
-def test_classify_pane_attention_login_markers() -> None:
-    assert (
-        ccli.classify_pane_attention("● Unknown command: /remote-control")
-        == ccli.ATTENTION_LOGIN_REQUIRED
+def test_diagnose_bridgeless_delegates_to_revive(monkeypatch) -> None:
+    """The spawn-timeout explanation comes from revive's rule engine.
+
+    Pane classification lives in one place now; claude_cli only supplies
+    the capture and passes the verdict through with its hint.
+    """
+    from xa import revive as rv
+
+    monkeypatch.setattr(
+        ccli.tm, "capture_pane", lambda *a, **k: "Please run /login to continue"
     )
-    assert (
-        ccli.classify_pane_attention("Please run /login to continue")
-        == ccli.ATTENTION_LOGIN_REQUIRED
-    )
-    assert (
-        ccli.classify_pane_attention("OAuth token has expired.")
-        == ccli.ATTENTION_LOGIN_REQUIRED
-    )
-
-
-def test_classify_pane_attention_trust_prompt() -> None:
-    assert (
-        ccli.classify_pane_attention("Do you trust the files in this folder?")
-        == ccli.ATTENTION_TRUST_PROMPT
-    )
-
-
-def test_classify_pane_attention_healthy_is_none() -> None:
-    assert ccli.classify_pane_attention("❯ waiting for input…") is None
-    assert ccli.classify_pane_attention("") is None
-
-
-def test_attention_hint_carries_fix_commands() -> None:
-    hint = ccli.attention_hint(ccli.ATTENTION_LOGIN_REQUIRED, tmux_name="s1")
+    verdict, hint = ccli.diagnose_bridgeless("s1", claude_pid=42)
+    assert verdict == rv.NEEDS_LOGIN
     assert "/login" in hint and "tmux attach -t s1" in hint
-    trust = ccli.attention_hint(ccli.ATTENTION_TRUST_PROMPT, tmux_name="s1")
-    assert "trust" in trust.lower()
-    assert ccli.attention_hint(None) is None
+
+
+def test_diagnose_bridgeless_reports_trust_prompt(monkeypatch) -> None:
+    from xa import revive as rv
+
+    monkeypatch.setattr(
+        ccli.tm, "capture_pane", lambda *a, **k: "Do you trust the files in this folder?"
+    )
+    verdict, hint = ccli.diagnose_bridgeless("s1", claude_pid=42)
+    assert verdict == rv.NEEDS_TRUST
+    assert "trust" in hint.lower()
+
+
+def test_spawn_no_longer_types_into_the_pane(monkeypatch) -> None:
+    """The handshake is gone: waiting for the URL sends no keystrokes.
+
+    Regression guard for the whole point of retiring it — a poll that
+    silently regrew a send_keys call would be invisible otherwise.
+    """
+    monkeypatch.setattr(
+        ccli.tm,
+        "send_keys",
+        lambda *a, **k: pytest.fail("wait_for_bridge_url must not type into the pane"),
+    )
+    monkeypatch.setattr(ccli, "resolve_bridge_url", lambda *a, **k: (None, None))
+    url, src = ccli.wait_for_bridge_url(
+        "s1", claude_home=Path("/nonexistent"), tmux_bin="/nonexistent/tmux",
+        deadline=time.time() + 0.05, poll_sec=0.01,
+    )
+    assert (url, src) == (None, None)

@@ -177,6 +177,30 @@ def iter_transcript_files(
 # --------------------------------------------------------------------------- #
 
 
+def remote_control_at_startup(
+    *, claude_home: Path = DEFAULT_CLAUDE_HOME
+) -> Optional[bool]:
+    """Is this host set to auto-connect Remote Control for every session?
+
+    Reads ``remoteControlAtStartup`` from the user ``settings.json``.
+    ``None`` means "can't tell" — no file, unreadable, or the key absent
+    (in which case Claude Code follows its own default, which xa does not
+    get to observe).
+
+    Deliberately only the *user* settings file. Claude Code also honors
+    the key in project, local and managed settings, and a project-level
+    ``false`` outranks a user-level ``true`` — so a ``True`` here is
+    "configured on for this user", not a guarantee about a given session.
+    xa uses it to explain a missing URL, never to decide behavior.
+    """
+    path = Path(claude_home) / "settings.json"
+    try:
+        value = json.loads(path.read_text()).get("remoteControlAtStartup")
+    except (OSError, ValueError):
+        return None
+    return value if isinstance(value, bool) else None
+
+
 def _sessions_dir(claude_home: Path) -> Path:
     return claude_home / "sessions"
 

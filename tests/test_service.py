@@ -572,13 +572,20 @@ def test_delete_dead_session_explains_itself(app_and_stores, monkeypatch) -> Non
 
 
 def test_enable_remote_control_returns_url(app_and_stores, monkeypatch) -> None:
+    """A reconnectable pane gets /remote-control sent, then the URL polled."""
     client, *_ = app_and_stores
     s = _fake_session()
     monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
     monkeypatch.setattr(
-        svc.ccli,
-        "request_remote_control",
-        lambda name, **kw: ("https://claude.ai/code/session_y", "session_file", None),
+        svc.rv, "revive",
+        lambda **kw: [svc.rv.ReviveAction(
+            target="s1", verdict=svc.rv.RECONNECTABLE,
+            keys=svc.rv.RECONNECT_KEYS, sent=True,
+        )],
+    )
+    monkeypatch.setattr(
+        svc.ccli, "wait_for_bridge_url",
+        lambda *a, **kw: ("https://claude.ai/code/session_y", "session_file"),
     )
     r = client.post(f"/sessions/{s.id}/remote-control")
     assert r.status_code == 200
@@ -590,19 +597,48 @@ def test_enable_remote_control_returns_url(app_and_stores, monkeypatch) -> None:
 def test_enable_remote_control_surfaces_login_required(
     app_and_stores, monkeypatch
 ) -> None:
+    """A logged-out host is reported, not typed at."""
     client, *_ = app_and_stores
     s = _fake_session()
     monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
     monkeypatch.setattr(
-        svc.ccli,
-        "request_remote_control",
-        lambda name, **kw: (None, None, "login_required"),
+        svc.rv, "revive",
+        lambda **kw: [svc.rv.ReviveAction(
+            target="s1", verdict=svc.rv.NEEDS_LOGIN, skipped="not-actionable",
+        )],
     )
     r = client.post(f"/sessions/{s.id}/remote-control")
     assert r.status_code == 200
     body = r.json()
-    assert body["attention"] == "login_required"
+    assert body["attention"] == svc.rv.NEEDS_LOGIN
     assert "/login" in body["hint"]
+
+
+def test_enable_remote_control_refuses_a_session_held_elsewhere(
+    app_and_stores, monkeypatch
+) -> None:
+    """The route inherits revive's refusals — it no longer has its own loop.
+
+    Before 0.1.9 this endpoint sent /remote-control unconditionally, which
+    would steal a session back from the phone that had picked it up.
+    """
+    client, *_ = app_and_stores
+    s = _fake_session()
+    monkeypatch.setattr(svc.sess, "get_session", lambda i, **kw: s)
+    sent: list = []
+    monkeypatch.setattr(svc.tm, "send_keys", lambda *a, **k: sent.append(a))
+    monkeypatch.setattr(
+        svc.rv, "SessionPanes",
+        lambda **kw: {"s1": svc.rv.PaneState(
+            ref=svc.rv.PaneRef(target="s1", claude_pid=42),
+            tail="ended or archived from another device",
+            verdict=svc.rv.HELD_ELSEWHERE,
+        )},
+    )
+    r = client.post(f"/sessions/{s.id}/remote-control")
+    assert r.status_code == 200
+    assert r.json()["attention"] == svc.rv.HELD_ELSEWHERE
+    assert sent == [], "must not type into a session held on another device"
 
 
 def test_enable_remote_control_needs_tmux(app_and_stores, monkeypatch) -> None:

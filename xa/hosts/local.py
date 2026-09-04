@@ -13,6 +13,7 @@ from typing import Callable, Iterator, Optional
 
 from xa import claude_cli as ccli
 from xa import claude_fs as cfs
+from xa import revive as rv
 from xa import tmux as tm
 
 
@@ -106,13 +107,21 @@ class LocalHost:
             false alarms. Captures the exact claude pane when known — a
             bare session name resolves to the *active* pane, which could
             be an unrelated window of a shared workspace.
+
+            Delegates to :mod:`xa.revive`, the one rule engine that reads
+            a claude pane, so a listing and ``xa revive`` can never
+            disagree about what a pane says.
             """
             target = tmux_pane or tmux_name
             if eph.get("bridgeSessionId") or not target:
                 return None, None
             pane = tm.capture_pane(target, lines=60, binary=self.tmux_bin)
-            attention = ccli.classify_pane_attention(pane)
-            return attention, ccli.attention_hint(attention, tmux_name=tmux_name)
+            pid = eph.get("pid")
+            ref = rv.PaneRef(
+                target=target, claude_pid=pid if isinstance(pid, int) else None
+            )
+            verdict = rv.classify(rv.Probe(text=pane.lower(), ref=ref))
+            return verdict, rv.hint_for(verdict, tmux_name=tmux_name)
 
         emitted: set[str] = set()
         for path in cfs.iter_transcript_files(

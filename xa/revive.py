@@ -89,8 +89,15 @@ HELD_ELSEWHERE = "held_elsewhere"
 CONNECTED = "connected"
 #: Remote Control is retrying right now. Leave it alone; it may well succeed.
 RECONNECTING = "reconnecting"
-#: Blocked on a human — login, workspace trust, or an open permission dialog.
+#: Blocked on a human — an open permission dialog, or anything else that is
+#: eating keystrokes. See :data:`NEEDS_LOGIN` / :data:`NEEDS_TRUST` for the
+#: two causes specific enough to tell the user how to fix.
 NEEDS_HUMAN = "needs_human"
+#: Blocked on a human, specifically: claude on this host is logged out.
+#: Login state is per-machine, so one ``/login`` fixes every session on it.
+NEEDS_LOGIN = "needs_login"
+#: Blocked on a human, specifically: the workspace-trust prompt is open.
+NEEDS_TRUST = "needs_trust"
 #: The API call is wedged. Reported, never acted on (the fix is a new prompt).
 API_STALLED = "api_stalled"
 #: A ``claude remote-control`` *server* died. See :func:`restart_server_mode`.
@@ -108,12 +115,19 @@ VERDICTS = frozenset(
         CONNECTED,
         RECONNECTING,
         NEEDS_HUMAN,
+        NEEDS_LOGIN,
+        NEEDS_TRUST,
         API_STALLED,
         SERVER_MODE,
         RECONNECTABLE,
         UNKNOWN,
     }
 )
+
+#: Verdicts that mean "a human must act on the host". All are blocked on a
+#: person, none are actionable by :func:`revive`, and each has a fix-it line
+#: in :func:`hint_for`.
+BLOCKED_ON_HUMAN = frozenset({NEEDS_HUMAN, NEEDS_LOGIN, NEEDS_TRUST})
 
 #: Verdicts :func:`revive` will send ``/remote-control`` to. ``HELD_ELSEWHERE``
 #: is deliberately absent — it is reachable only via ``include_held_elsewhere``.
@@ -188,14 +202,22 @@ MARKERS: dict[str, tuple[str, ...]] = {
     # The pill itself is matched by RC_PILL; this is the prose form.
     CONNECTED: ("remote control active",),
     RECONNECTING: ("/rc reconnecting",),
-    # Reuses claude_cli's login/trust vocabulary, plus the dialog chrome that
-    # proves a prompt is open and eating keystrokes.
-    NEEDS_HUMAN: ccli._LOGIN_PANE_MARKERS
-    + ccli._TRUST_PANE_MARKERS
-    + (
-        "do you want to proceed?",
-        "esc to cancel",
+    # Logged out. "unknown command: /remote-control" is what the TUI answers
+    # when the command isn't registered — overwhelmingly an expired login (it
+    # only exists once authenticated); on a very old claude it can instead
+    # mean Remote Control doesn't exist at all.
+    NEEDS_LOGIN: (
+        "run /login",
+        "please log in",
+        "select login method",
+        "oauth token has expired",
+        "invalid api key",
+        "unknown command: /remote-control",
     ),
+    NEEDS_TRUST: ("trust this folder", "do you trust the files"),
+    # Dialog chrome that proves *some* prompt is open and eating keystrokes,
+    # without saying which.
+    NEEDS_HUMAN: ("do you want to proceed?", "esc to cancel"),
     API_STALLED: ("api error", "retrying in ", "overloaded"),
     # Server mode prints its own retry advice; the REPL prints a slash command.
     SERVER_MODE: ("re-run `claude remote-control` to try again",),
@@ -300,6 +322,10 @@ DEFAULT_RULES: tuple[Rule, ...] = (
     (RECONNECTING, _any_of(*MARKERS[RECONNECTING])),
     (CONNECTED, _pill_present),
     (CONNECTED, _any_of(*MARKERS[CONNECTED])),
+    # The two specific causes precede the generic one, so a pane that names
+    # its blocker gets the verdict that can tell the user how to clear it.
+    (NEEDS_LOGIN, _any_of(*MARKERS[NEEDS_LOGIN])),
+    (NEEDS_TRUST, _any_of(*MARKERS[NEEDS_TRUST])),
     (NEEDS_HUMAN, _any_of(*MARKERS[NEEDS_HUMAN])),
     (API_STALLED, _any_of(*MARKERS[API_STALLED])),
     (SERVER_MODE, _any_of(*MARKERS[SERVER_MODE])),
@@ -346,6 +372,59 @@ def classify(probe: Probe, *, rules: Sequence[Rule] = DEFAULT_RULES) -> str:
         if predicate(probe):
             return verdict
     return UNKNOWN
+
+
+def hint_for(verdict: str, *, tmux_name: Optional[str] = None) -> Optional[str]:
+    """Human fix-it line for a verdict, or ``None`` when there is nothing to say.
+
+    SSOT for the wording shown by the CLI, the web UI and the HTTP API, so
+    the three can't drift. Only the verdicts a person can actually clear get
+    a line; ``connected``/``unknown``/``reconnectable`` return ``None``
+    (nothing to do, nothing known, or xa's own job respectively).
+
+    >>> hint_for(CONNECTED) is None
+    True
+    >>> hint_for(NEEDS_TRUST, tmux_name='sess').startswith('Claude is waiting')
+    True
+    """
+    attach = (
+        f"tmux attach -t {tmux_name}"
+        if tmux_name
+        else "attach the terminal running claude"
+    )
+    if verdict == NEEDS_LOGIN:
+        return (
+            f"Claude on this machine needs to log in again. Open its terminal "
+            f"({attach}) and run /login. Login state is per-machine, so one "
+            f"login fixes every session on this host. (If /remote-control "
+            f"still reports 'Unknown command' afterwards, the installed "
+            f"claude is too old — update it.)"
+        )
+    if verdict == NEEDS_TRUST:
+        return (
+            f"Claude is waiting on its workspace-trust prompt. Open its "
+            f"terminal ({attach}) and answer it."
+        )
+    if verdict == NEEDS_HUMAN:
+        return (
+            f"Claude is sitting on a dialog that is eating keystrokes. Open "
+            f"its terminal ({attach}) and answer it."
+        )
+    if verdict == HELD_ELSEWHERE:
+        return (
+            "This session was picked up on another device. Reconnecting here "
+            "would take it away from there, so xa leaves it alone."
+        )
+    if verdict == SERVER_MODE:
+        return (
+            "A `claude remote-control` server died here. Restart it in its "
+            "own directory — see `xa revive --restart-servers`."
+        )
+    if verdict == API_STALLED:
+        return "The API call is wedged. Send the session a new prompt."
+    if verdict == NO_CLAUDE:
+        return "No claude process behind this pane — it exited."
+    return None
 
 
 def evidence_for(

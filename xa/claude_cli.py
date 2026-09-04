@@ -45,8 +45,9 @@ class SpawnResult:
     url: Optional[str]
     url_source: Optional[UrlSource]
     warning: Optional[str]
-    # Adverse TUI state detected during the handshake (see
-    # ``classify_pane_attention``); ``None`` when nothing was wrong.
+    # When no URL turned up: the :mod:`xa.revive` verdict explaining why
+    # (``needs_login``, ``needs_trust``, ...). ``None`` when a URL came
+    # back, since a bridged session's pane says nothing useful.
     attention: Optional[str] = None
 
 
@@ -129,73 +130,6 @@ def _claude_argv(
         else:
             skipped.append("--remote-control")
     return argv, skipped
-
-
-# --------------------------------------------------------------------------- #
-# pane-state classification (attention states)
-# --------------------------------------------------------------------------- #
-
-
-ATTENTION_LOGIN_REQUIRED = "login_required"
-ATTENTION_TRUST_PROMPT = "trust_prompt"
-
-# Case-insensitive substrings. "unknown command: /remote-control" is what
-# the TUI answers when the command isn't registered — overwhelmingly an
-# expired login (the command only exists once authenticated); on very old
-# claude versions it can also mean remote control doesn't exist at all.
-_LOGIN_PANE_MARKERS = (
-    "run /login",
-    "please log in",
-    "select login method",
-    "oauth token has expired",
-    "invalid api key",
-    "unknown command: /remote-control",
-)
-_TRUST_PANE_MARKERS = ("trust this folder", "do you trust the files")
-
-
-def classify_pane_attention(pane_text: str) -> Optional[str]:
-    """Classify adverse TUI states from a pane capture.
-
-    Only meaningful for sessions with no established bridge URL — a
-    healthy remote-controlled session's pane renders *conversation* text,
-    which may legitimately mention ``/login``. Callers must gate on
-    "bridgeless" before trusting a verdict.
-    """
-    low = pane_text.lower()
-    if any(m in low for m in _LOGIN_PANE_MARKERS):
-        return ATTENTION_LOGIN_REQUIRED
-    if any(m in low for m in _TRUST_PANE_MARKERS):
-        return ATTENTION_TRUST_PROMPT
-    return None
-
-
-def attention_hint(
-    attention: Optional[str], *, tmux_name: Optional[str] = None
-) -> Optional[str]:
-    """Human fix-it hint for an attention state (SSOT for CLI + web UI)."""
-    if attention is None:
-        return None
-    attach = (
-        f"tmux attach -t {tmux_name}"
-        if tmux_name
-        else "attach the terminal running claude"
-    )
-    if attention == ATTENTION_LOGIN_REQUIRED:
-        return (
-            f"Claude on this machine needs to log in again. Open its terminal "
-            f"({attach}), run /login and complete the flow, then /remote-control "
-            f"if no URL appears. Login state is per-machine, so one login fixes "
-            f"every session on this host. (If /remote-control reports 'Unknown "
-            f"command' even after login, the installed claude is too old — "
-            f"update it.)"
-        )
-    if attention == ATTENTION_TRUST_PROMPT:
-        return (
-            f"Claude is waiting on its workspace-trust prompt. Open its "
-            f"terminal ({attach}) and answer it."
-        )
-    return None
 
 
 # --------------------------------------------------------------------------- #
@@ -300,81 +234,60 @@ def resolve_bridge_url(
 # --------------------------------------------------------------------------- #
 
 
-def _wait_for_url(
+def wait_for_bridge_url(
     session_name: str,
     *,
     claude_home: Path,
     tmux_bin: str,
     deadline: float,
-    auto_remote_control: bool,
-    rc_via_flag: bool = False,
-) -> tuple[Optional[str], Optional[UrlSource], Optional[str]]:
-    """Poll for the bridge URL, dismissing startup prompts along the way.
+    poll_sec: float = 0.5,
+) -> tuple[Optional[str], Optional[UrlSource]]:
+    """Poll the ephemeral session file until a bridge URL appears.
 
-    Handshake state (trust dismissed, ``/remote-control`` sent) lives here,
-    across poll iterations, so each prompt is answered **at most once** —
-    re-sending every cycle used to fill the pane with dozens of
-    ``Unknown command: /remote-control`` lines whenever the command didn't
-    take. ``rc_via_flag=True`` means the session was spawned with
-    ``--remote-control``, so the TUI send is skipped entirely.
+    Nothing is typed into the pane. Claude Code connects Remote Control by
+    itself — from the ``--remote-control`` flag :func:`_claude_argv` passes,
+    or from the host's ``remoteControlAtStartup`` setting — and records the
+    ``bridgeSessionId`` when it does. This function's whole job is to wait
+    for that write.
 
-    Returns ``(url, source, attention)``. Aborts early with
-    ``attention="login_required"`` — that state cannot resolve without a
-    human, so burning the rest of the timeout would only delay the answer.
+    Until 0.1.8 this drove the TUI instead: dismissing the workspace-trust
+    prompt with a blind Enter and sending ``/remote-control`` once a prompt
+    glyph appeared. That emulated, by scraping and typing, what the flag and
+    the setting do properly — and every upstream redraw was a chance for it
+    to type into the wrong thing. See :mod:`xa.revive` for the pane reading
+    that *is* still warranted: reconnecting a session whose Remote Control
+    dropped is a gap Claude Code genuinely leaves open.
     """
-    trust_dismissed = False
-    rc_sent = rc_via_flag
-    attention: Optional[str] = None
-    while time.time() < deadline:
+    while True:
         url, src = resolve_bridge_url(
             session_name, claude_home=claude_home, tmux_bin=tmux_bin
         )
         if url:
-            return url, src, None
-        pane = tm.capture_pane(session_name, lines=60, binary=tmux_bin)
-        attention = classify_pane_attention(pane)
-        if attention == ATTENTION_LOGIN_REQUIRED:
-            return None, None, attention
-        if not trust_dismissed and attention == ATTENTION_TRUST_PROMPT:
-            tm.send_keys(session_name, "Enter", binary=tmux_bin)
-            trust_dismissed = True
-            time.sleep(1.5)
-            continue
-        if (
-            auto_remote_control
-            and not rc_sent
-            and "remote control active" not in pane.lower()
-            and "❯" in pane
-        ):
-            tm.send_keys(session_name, "/remote-control", "Enter", binary=tmux_bin)
-            rc_sent = True
-            time.sleep(1.5)
-            continue
-        time.sleep(0.5)
-    return None, None, attention
+            return url, src
+        if time.time() >= deadline:
+            return None, None
+        time.sleep(poll_sec)
 
 
-def request_remote_control(
+def diagnose_bridgeless(
     session_name: str,
     *,
-    claude_home: Path = cfs.DEFAULT_CLAUDE_HOME,
+    claude_pid: Optional[int] = None,
     tmux_bin: str = tm.DEFAULT_TMUX_BIN,
-    timeout_sec: float = 15.0,
-) -> tuple[Optional[str], Optional[UrlSource], Optional[str]]:
-    """Drive an existing tmux-hosted claude toward remote control.
+) -> tuple[Optional[str], Optional[str]]:
+    """Why has this session no bridge URL? Returns ``(verdict, hint)``.
 
-    Sends ``/remote-control`` (once, prompts permitting) and waits briefly
-    for the bridge URL. Returns ``(url, source, attention)`` — callers
-    should check ``attention`` (e.g. ``login_required``) when no URL comes
-    back, and surface :func:`attention_hint` to the user.
+    One pane capture, classified by :func:`xa.revive.classify` — the single
+    rule engine for reading a claude pane. Only meaningful for a session
+    with no bridge id: a connected session's pane renders conversation text,
+    which may legitimately quote ``/login``.
     """
-    return _wait_for_url(
-        session_name,
-        claude_home=claude_home,
-        tmux_bin=tmux_bin,
-        deadline=time.time() + timeout_sec,
-        auto_remote_control=True,
-    )
+    from xa import revive as rv  # local import: revive imports this module
+
+    pane = tm.capture_pane(session_name, lines=60, binary=tmux_bin)
+    ref = rv.PaneRef(target=session_name, claude_pid=claude_pid)
+    verdict = rv.classify(rv.Probe(text=pane.lower(), ref=ref))
+    return verdict, rv.hint_for(verdict, tmux_name=session_name)
 
 
 # --------------------------------------------------------------------------- #
@@ -398,8 +311,6 @@ class PendingSpawn:
     claude_home: Path
     tmux_bin: str
     deadline: float
-    auto_remote_control: bool
-    rc_via_flag: bool
     warning: Optional[str]
     archive_ctx: Optional["_ArchiveCtx"]
 
@@ -426,10 +337,14 @@ def prepare_spawn(
 
     Composes per-session claude flags (``--name`` / ``--model`` /
     ``--effort`` / ``--remote-control``) when the installed binary
-    supports them; requested-but-unsupported ``--model`` / ``--effort``
-    are reported in ``PendingSpawn.warning`` rather than failing the
-    spawn. ``--remote-control`` silently falls back to the TUI handshake
-    in :func:`complete_spawn` on older binaries.
+    supports them; requested-but-unsupported flags are reported in
+    ``PendingSpawn.warning`` rather than failing the spawn.
+
+    ``auto_remote_control`` passes ``--remote-control``, which is how xa
+    asks for Remote Control now — a documented CLI flag, not a keystroke
+    sent at a TUI. On a claude too old to advertise it, the host's
+    ``remoteControlAtStartup`` setting is the remaining path, so the
+    warning says so rather than falling back to typing.
     """
     if not Path(cwd).is_dir():
         raise FileNotFoundError(f"cwd does not exist: {cwd}")
@@ -443,7 +358,6 @@ def prepare_spawn(
         effort=effort,
         remote_control=auto_remote_control,
     )
-    rc_via_flag = auto_remote_control and "--remote-control" not in skipped
     shell_cmd = f"cd {shlex.quote(cwd)} && exec " + " ".join(
         shlex.quote(a) for a in argv
     )
@@ -459,22 +373,37 @@ def prepare_spawn(
     if ctx is not None:
         ctx.emit_created(name=name, cwd=cwd, pane_log=pane_log, tmux_bin=tmux_bin)
 
+    warnings = []
     hard_skips = [f for f in skipped if f in ("--model", "--effort")]
-    warning = (
-        "Installed claude does not support "
-        + ", ".join(hard_skips)
-        + " — spawned without."
-        if hard_skips
-        else None
-    )
+    if hard_skips:
+        warnings.append(
+            "Installed claude does not support "
+            + ", ".join(hard_skips)
+            + " — spawned without."
+        )
+    if "--remote-control" in skipped:
+        # The flag is xa's primary path. When the binary is too old for it,
+        # the host's own auto-connect setting is the only one left, so say
+        # which of the two fixes this host actually needs.
+        if cfs.remote_control_at_startup(claude_home=claude_home):
+            warnings.append(
+                "Installed claude does not support --remote-control; relying "
+                'on this host\'s "remoteControlAtStartup" setting instead.'
+            )
+        else:
+            warnings.append(
+                "Installed claude does not support --remote-control, and this "
+                'host does not set "remoteControlAtStartup": true in '
+                "~/.claude/settings.json — the session will not be reachable "
+                "from claude.ai. Update claude, or turn that setting on."
+            )
+    warning = " ".join(warnings) if warnings else None
     return PendingSpawn(
         name=name,
         cwd=cwd,
         claude_home=claude_home,
         tmux_bin=tmux_bin,
         deadline=time.time() + url_timeout_sec,
-        auto_remote_control=auto_remote_control,
-        rc_via_flag=rc_via_flag,
         warning=warning,
         archive_ctx=ctx,
     )
@@ -487,13 +416,11 @@ def complete_spawn(pending: PendingSpawn) -> SpawnResult:
     ``~/.claude/sessions/``, the append-only events log) is shared
     machine-wide, not per-process.
     """
-    url, src, attention = _wait_for_url(
+    url, src = wait_for_bridge_url(
         pending.name,
         claude_home=pending.claude_home,
         tmux_bin=pending.tmux_bin,
         deadline=pending.deadline,
-        auto_remote_control=pending.auto_remote_control,
-        rc_via_flag=pending.rc_via_flag,
     )
     claude_pid = find_claude_pid(pending.name, tmux_bin=pending.tmux_bin)
     data = (
@@ -502,8 +429,12 @@ def complete_spawn(pending: PendingSpawn) -> SpawnResult:
         else None
     )
     warnings = [pending.warning] if pending.warning else []
+    attention: Optional[str] = None
     if not url:
-        hint = attention_hint(attention, tmux_name=pending.name)
+        # One capture, once the wait is over — not a scrape every poll.
+        attention, hint = diagnose_bridgeless(
+            pending.name, claude_pid=claude_pid, tmux_bin=pending.tmux_bin
+        )
         warnings.append(
             hint
             or "Session created but no remote-control URL detected yet — try refreshing."

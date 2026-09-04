@@ -18,8 +18,8 @@ Six layers, bottom up. Each only imports from layers below (with one documented 
 | 5  | `xa.sessions` | `Session` dataclass + `list_sessions(hosts=…)` + `get_session` / `kill_session` / `resume` |
 | 4  | `xa.hosts.*` | `Host` Protocol + `LocalHost` / `SSHHost` / `HTTPHost` |
 | 4  | `xa.archive` | event log + `reconcile` + `classify_death` + `records` |
-| 3b | `xa.claude_cli` | `spawn_session` / `resume_session` / `resolve_bridge_url` / readiness handshake |
-| 3b | `xa.revive` | dropped-Remote-Control detection + reconnection: `SessionPanes`, `classify`, `DEFAULT_RULES`, `RateGuard`, `revive`, `restart_server_mode` |
+| 3b | `xa.claude_cli` | `spawn_session` / `resume_session` / `resolve_bridge_url` / `wait_for_bridge_url` / `diagnose_bridgeless` |
+| 3b | `xa.revive` | **the** pane-reading rule engine — dropped-RC detection + reconnection + every adverse-state verdict: `SessionPanes`, `classify`, `hint_for`, `DEFAULT_RULES`, `RateGuard`, `revive`, `restart_server_mode` |
 | 3a | `xa.tmux` | pure tmux wrappers (nothing Claude-specific) |
 | 2  | `xa.claude_fs` | read-only view of `~/.claude/` — transcripts, ephemeral files, history |
 | 1  | `xa.store`, `xa.config` | JsonLinesStore, FileStore, TOML loader |
@@ -55,7 +55,7 @@ Don't leave side effects in `~/.claude/` or `~/.xa/`. Use `tmp_path` fixtures an
 3. **`/proc` walks race.** `tmux.descendants` / `tmux.proc_comm` catch `ProcessLookupError` and generic `OSError` — add these to any new `/proc` reader.
 4. **`tmux` needs the trailing colon.** Always target as `f"{name}:"` via `tmux.session_target(name)`; bare names resolve to windows/panes.
 5. **Bridge URL format.** `https://claude.ai/code/{bridgeSessionId}` — the `bridgeSessionId` already starts with `session_`. Don't prepend.
-6. **"Request interrupted by user" is ambiguous.** Also fires on phone-standby bridge resets. Don't infer user intent from the marker alone.
+6. **One pane reader, and it lives in `xa.revive`.** Spawn does not type into panes: Claude Code connects Remote Control from the `--remote-control` flag or the host's `remoteControlAtStartup` setting, and `wait_for_bridge_url` only waits for the session file. Anything that needs to *read* a pane — a listing's adverse-state badge, a spawn timeout's explanation, `xa revive` — goes through `revive.classify` + `revive.hint_for`. Don't grow a second classifier; that's what was removed in 0.1.9. (The pre-0.1.9 handshake also made "Request interrupted by user" ambiguous, since it fires on phone-standby bridge resets too; nothing infers user intent from a pane marker any more.)
 7. **Slug encoding is lossy.** `/` ↔ `-` with leading `-` kept. A cwd containing literal `-` round-trips to the wrong slug — Claude Code itself has this bug, we inherit it.
 8. **`sessions ↔ hosts` import cycle.** `LocalHost.iter_sessions` needs `Session` from `xa.sessions`. Resolved with a function-level import. Don't try to move the dataclass around to "fix" it; keep the deferred import.
 

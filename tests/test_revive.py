@@ -74,8 +74,11 @@ def panes_from(tails, refs=None, **kw):
         ("this session was ended or archived from another device", rv.HELD_ELSEWHERE),
         ("this connection is no longer the active worker for the session", rv.HELD_ELSEWHERE),
         ("another Claude Code already has Remote Control for this conversation", rv.HELD_ELSEWHERE),
-        ("Please log in", rv.NEEDS_HUMAN),
-        ("Do you trust the files in this folder?", rv.NEEDS_HUMAN),
+        ("Please log in", rv.NEEDS_LOGIN),
+        ("Unknown command: /remote-control", rv.NEEDS_LOGIN),
+        ("OAuth token has expired.", rv.NEEDS_LOGIN),
+        ("Select login method", rv.NEEDS_LOGIN),
+        ("Do you trust the files in this folder?", rv.NEEDS_TRUST),
         ("Do you want to proceed?", rv.NEEDS_HUMAN),
         ("API Error: Request was aborted.", rv.API_STALLED),
         ("Re-run `claude remote-control` to try again", rv.SERVER_MODE),
@@ -109,6 +112,50 @@ def test_needs_human_beats_reconnectable():
     """Keystrokes sent at an open dialog are answers, not commands."""
     text = "/rc failed\n Do you want to proceed?\n 1. Yes\n Esc to cancel"
     assert rv.classify(probe(text)) == rv.NEEDS_HUMAN
+
+
+@pytest.mark.parametrize(
+    "verdict", [rv.NEEDS_HUMAN, rv.NEEDS_LOGIN, rv.NEEDS_TRUST]
+)
+def test_blocked_on_human_verdicts_are_never_actionable(verdict):
+    """Splitting NEEDS_HUMAN must not make any half revivable.
+
+    All three mean a person has to act on the host; sending
+    /remote-control at any of them types into whatever is on screen.
+    """
+    assert verdict in rv.BLOCKED_ON_HUMAN
+    assert verdict not in rv.ACTIONABLE
+    assert verdict in rv.VERDICTS
+
+
+def test_specific_blocker_beats_generic_dialog_chrome():
+    """A pane naming its blocker gets the verdict that can explain the fix.
+
+    Real login and trust prompts carry the generic dialog chrome too, so
+    ordering — not marker exclusivity — is what keeps them distinct.
+    """
+    login = "Select login method\n 1. Claude account\n Esc to cancel"
+    assert rv.classify(probe(login)) == rv.NEEDS_LOGIN
+    trust = "Do you trust the files in this folder?\n Do you want to proceed?"
+    assert rv.classify(probe(trust)) == rv.NEEDS_TRUST
+
+
+@pytest.mark.parametrize(
+    "verdict", sorted(rv.VERDICTS - {rv.CONNECTED, rv.UNKNOWN, rv.RECONNECTABLE, rv.RECONNECTING})
+)
+def test_every_actionless_verdict_tells_the_user_something(verdict):
+    """If xa won't fix it, it must at least say what would."""
+    assert rv.hint_for(verdict)
+
+
+@pytest.mark.parametrize("verdict", [rv.CONNECTED, rv.UNKNOWN, rv.RECONNECTABLE])
+def test_no_hint_when_there_is_nothing_to_say(verdict):
+    assert rv.hint_for(verdict) is None
+
+
+def test_hint_names_the_tmux_session_when_known():
+    assert "tmux attach -t mysess" in rv.hint_for(rv.NEEDS_LOGIN, tmux_name="mysess")
+    assert "attach the terminal" in rv.hint_for(rv.NEEDS_LOGIN)
 
 
 def test_api_stalled_beats_reconnectable():
