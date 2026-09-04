@@ -250,7 +250,7 @@ def wait_for_bridge_url(
     ``bridgeSessionId`` when it does. This function's whole job is to wait
     for that write.
 
-    Until 0.1.8 this drove the TUI instead: dismissing the workspace-trust
+    Until 0.1.10 this drove the TUI instead: dismissing the workspace-trust
     prompt with a blind Enter and sending ``/remote-control`` once a prompt
     glyph appeared. That emulated, by scraping and typing, what the flag and
     the setting do properly — and every upstream redraw was a chance for it
