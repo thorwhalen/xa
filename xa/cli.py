@@ -873,12 +873,11 @@ ARCHIVE_COMMANDS = {
     "forensics": archive_forensics_cmd,
 }
 
-# NOTE: inert, and preserved as-is. The row a group gets in the *parent's*
-# --help comes from ``add_parser(help=...)``, which is fed by ``title``, not
-# ``help``; ``help`` only reaches ``add_subparsers()``, where it renders nowhere
-# a user looks. So `archive` has always been listed bare. True under argh too,
-# which is why the cw migration was byte-identical. See issue #13.
-ARCHIVE_GROUP_KWARGS = {"help": "Postmortem archive (list, log, forensics)."}
+# ``title``, not ``help``: the row a group gets in the *parent's* --help comes
+# from ``add_parser(help=...)``, which cw feeds from ``title``. The same string
+# also reaches ``add_subparsers()``, where it retitles the section heading inside
+# ``xa archive --help``. See issue #13.
+ARCHIVE_GROUP_KWARGS = {"title": "Postmortem archive (list, log, forensics)."}
 
 
 def mk_parser() -> argparse.ArgumentParser:
