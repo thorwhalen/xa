@@ -1,4 +1,0 @@
-xa.hosts.local
-==============
-.. automodule:: xa.hosts.local
-   :members:

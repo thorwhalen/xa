@@ -1,0 +1,1186 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="xa.revive.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown">
+<link rel="alternate" type="text/markdown" href="xa.revive.html.md">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.service" href="xa.service.html"><link rel="prev" title="xa.hosts.ssh" href="xa.hosts.ssh.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>xa.revive - xa</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #93342a;
+  --color-brand-content: #93342a;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">xa</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">xa</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="xa.html">xa</a><input aria-label="Toggle navigation of xa" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="xa.archive.html">xa.archive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.cli.html">xa.cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.config.html">xa.config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="xa.hosts.html">xa.hosts</a><input aria-label="Toggle navigation of xa.hosts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.http.html">xa.hosts.http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.local.html">xa.hosts.local</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">xa.revive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.sessions.html">xa.sessions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.store.html">xa.store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.tmux.html">xa.tmux</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/_autosummary/xa.revive.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-xa.revive">
+<span id="xa-revive"></span><h1>xa.revive<a class="headerlink" href="#module-xa.revive" title="Link to this heading">¶</a></h1>
+<p>Detect — and reconnect — Claude Code panes whose Remote Control dropped.</p>
+<p>Remote Control gives up on its own: after a few minutes of failed reconnects,
+or roughly thirty minutes of failed presence heartbeats, it stops trying and
+leaves the local session running but unreachable from claude.ai. The usual
+cause is a network change (moving between networks, toggling a VPN) that
+produces a transient HTTP 403 — the same change that clears it, usually
+within a minute or two.</p>
+<p>Two facts shape everything below, and both were verified rather than assumed:</p>
+<ul class="simple">
+<li><p>**Two observables, and both were checked against a live session rather
+than assumed.** The footer carries a <code class="docutils literal notranslate"><span class="pre">/rc</span></code> <em>pill</em> that is present while
+Remote Control is connected (<code class="docutils literal notranslate"><span class="pre">/rc</span></code>, or <code class="docutils literal notranslate"><span class="pre">/rc</span> <span class="pre">active</span></code> when verbose) and
+<strong>disappears</strong> when it is not — so the pill’s absence, not its presence,
+is what marks a dropped session. The ephemeral session file
+(<code class="docutils literal notranslate"><span class="pre">~/.claude/sessions/&lt;pid&gt;.json</span></code>) agrees from the other side: its
+<code class="docutils literal notranslate"><span class="pre">bridgeSessionId</span></code> is a real id while connected and <code class="docutils literal notranslate"><span class="pre">null</span></code> once it is
+not. The transcript JSONL never mentions Remote Control at all, so there
+is no third source.</p></li>
+<li><p><strong>``tmux send-keys`` is the only way to act.</strong> <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> is a
+built-in slash command; the CLI exposes no subcommand and no control
+request that reconnects a <em>running</em> session (checked against
+<code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--help</span></code> and <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span> <span class="pre">--help</span></code>, 2.1.251 — the only
+session-shaped verbs there are <code class="docutils literal notranslate"><span class="pre">agents</span></code>/<code class="docutils literal notranslate"><span class="pre">attach</span></code>/<code class="docutils literal notranslate"><span class="pre">logs</span></code>/<code class="docutils literal notranslate"><span class="pre">stop</span></code>/
+<code class="docutils literal notranslate"><span class="pre">rm</span></code>/<code class="docutils literal notranslate"><span class="pre">respawn</span></code>, all of which are about background agents).</p></li>
+</ul>
+<p>The detection phrases in <a class="reference internal" href="#xa.revive.MARKERS" title="xa.revive.MARKERS"><code class="xref py py-data docutils literal notranslate"><span class="pre">MARKERS</span></code></a> are transcribed from the strings
+embedded in the <code class="docutils literal notranslate"><span class="pre">claude</span></code> 2.1.251 binary, not guessed from screenshots.
+They are data, and <a class="reference internal" href="#xa.revive.DEFAULT_RULES" title="xa.revive.DEFAULT_RULES"><code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_RULES</span></code></a> is injectable, so a wording change
+upstream is a one-line edit rather than a rewrite.</p>
+<p>Four things this module refuses to do, each deliberate:</p>
+<ul>
+<li><p><strong>It never revives a session held elsewhere.</strong> When a session was taken
+over or ended from another device, the TUI says so (WebSocket close code
+4090) and <em>omits</em> its “run /remote-control” advice. Sending the command</p>
+<blockquote>
+<div><p>anyway would steal the session back from the user’s phone mid-sentence.</p>
+</div></blockquote>
+<dl class="simple">
+<dt><a class="reference internal" href="#xa.revive.HELD_ELSEWHERE" title="xa.revive.HELD_ELSEWHERE"><code class="xref py py-data docutils literal notranslate"><span class="pre">HELD_ELSEWHERE</span></code></a> is therefore tested before <a class="reference internal" href="#xa.revive.RECONNECTABLE" title="xa.revive.RECONNECTABLE"><code class="xref py py-data docutils literal notranslate"><span class="pre">RECONNECTABLE</span></code></a></dt><dd><p>and acting on it stays opt-in.</p>
+</dd>
+</dl>
+</li>
+<li><p><strong>It never resends a prompt.</strong> An API-stalled pane is reported and left
+alone: the fix there is a real model call that can duplicate work.</p></li>
+<li><p><strong>It never types into a pane waiting on a human.</strong> A permission dialog or
+a <code class="docutils literal notranslate"><span class="pre">/login</span></code> prompt consumes keystrokes as <em>answers</em> — sending
+<code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> into an open “Do you want to proceed?” selector would
+answer it. Those panes classify as <a class="reference internal" href="#xa.revive.NEEDS_HUMAN" title="xa.revive.NEEDS_HUMAN"><code class="xref py py-data docutils literal notranslate"><span class="pre">NEEDS_HUMAN</span></code></a> and are skipped.</p></li>
+<li><p><strong>It does nothing at all unless asked.</strong> <code class="docutils literal notranslate"><span class="pre">apply=True</span></code> is explicit;
+every entry point is a dry run by default.</p></li>
+</ul>
+<p>Typical use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">xa.revive</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionPanes</span><span class="p">,</span> <span class="n">revive</span>
+
+<span class="k">for</span> <span class="n">action</span> <span class="ow">in</span> <span class="n">revive</span><span class="p">(</span><span class="n">panes</span><span class="o">=</span><span class="n">SessionPanes</span><span class="p">()):</span>      <span class="c1"># dry run</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">action</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">action</span><span class="o">.</span><span class="n">verdict</span><span class="p">,</span> <span class="n">action</span><span class="o">.</span><span class="n">skipped</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Discovery does <strong>not</strong> enumerate tmux and guess which pane holds a claude.
+It reads the live ephemeral session files, each of which records its own
+pane as <code class="docutils literal notranslate"><span class="pre">&quot;tmux&quot;:</span> <span class="pre">&quot;session:&#64;window.%pane&quot;</span></code>, so the pane refs are exact and
+<code class="docutils literal notranslate"><span class="pre">pane_current_command</span></code> never enters the decision. See <a class="reference internal" href="#xa.revive.local_panes" title="xa.revive.local_panes"><code class="xref py py-func docutils literal notranslate"><span class="pre">local_panes()</span></code></a>.</p>
+<p class="rubric">Module Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.NO_CLAUDE" title="xa.revive.NO_CLAUDE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NO_CLAUDE</span></code></a></p></td>
+<td><p>No claude process behind the pane — a shell prompt, or a session that died.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.HELD_ELSEWHERE" title="xa.revive.HELD_ELSEWHERE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HELD_ELSEWHERE</span></code></a></p></td>
+<td><p>Taken over or ended from another device.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.CONNECTED" title="xa.revive.CONNECTED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CONNECTED</span></code></a></p></td>
+<td><p>Remote Control is up.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.RECONNECTING" title="xa.revive.RECONNECTING"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RECONNECTING</span></code></a></p></td>
+<td><p>Remote Control is retrying right now.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.NEEDS_HUMAN" title="xa.revive.NEEDS_HUMAN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NEEDS_HUMAN</span></code></a></p></td>
+<td><p>Blocked on a human — an open permission dialog, or anything else that is eating keystrokes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.NEEDS_LOGIN" title="xa.revive.NEEDS_LOGIN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NEEDS_LOGIN</span></code></a></p></td>
+<td><p>claude on this host is logged out.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.NEEDS_TRUST" title="xa.revive.NEEDS_TRUST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NEEDS_TRUST</span></code></a></p></td>
+<td><p>the workspace-trust prompt is open.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.API_STALLED" title="xa.revive.API_STALLED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">API_STALLED</span></code></a></p></td>
+<td><p>The API call is wedged.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.SERVER_MODE" title="xa.revive.SERVER_MODE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SERVER_MODE</span></code></a></p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span></code> <em>server</em> died.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.RECONNECTABLE" title="xa.revive.RECONNECTABLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RECONNECTABLE</span></code></a></p></td>
+<td><p>Dropped and recoverable — the one verdict <a class="reference internal" href="#xa.revive.revive" title="xa.revive.revive"><code class="xref py py-func docutils literal notranslate"><span class="pre">revive()</span></code></a> acts on.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.UNKNOWN" title="xa.revive.UNKNOWN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UNKNOWN</span></code></a></p></td>
+<td><p>The pane says nothing either way.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.VERDICTS" title="xa.revive.VERDICTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">VERDICTS</span></code></a></p></td>
+<td><p>Every verdict <a class="reference internal" href="#xa.revive.DEFAULT_RULES" title="xa.revive.DEFAULT_RULES"><code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_RULES</span></code></a> can produce.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.BLOCKED_ON_HUMAN" title="xa.revive.BLOCKED_ON_HUMAN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BLOCKED_ON_HUMAN</span></code></a></p></td>
+<td><p>Verdicts that mean &quot;a human must act on the host&quot;.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.ACTIONABLE" title="xa.revive.ACTIONABLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ACTIONABLE</span></code></a></p></td>
+<td><p>Verdicts <a class="reference internal" href="#xa.revive.revive" title="xa.revive.revive"><code class="xref py py-func docutils literal notranslate"><span class="pre">revive()</span></code></a> will send <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> to.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.MARKERS" title="xa.revive.MARKERS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MARKERS</span></code></a></p></td>
+<td><p>Substring markers per verdict.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.RC_PILL" title="xa.revive.RC_PILL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RC_PILL</span></code></a></p></td>
+<td><p>The footer <em>pill</em>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.DEFAULT_RULES" title="xa.revive.DEFAULT_RULES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEFAULT_RULES</span></code></a></p></td>
+<td><p>Ordered <code class="docutils literal notranslate"><span class="pre">(verdict,</span> <span class="pre">predicate)</span></code> pairs; <strong>first match wins</strong>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.PROMPT_LINE" title="xa.revive.PROMPT_LINE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PROMPT_LINE</span></code></a></p></td>
+<td><p>the prompt glyph, then U+00A0, then whatever the user has typed. <a href="#id1"><span class="problematic" id="id2">``</span></a>&gt; `` is the plain-ASCII rendering some terminals get.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.TYPEABLE_STATUS" title="xa.revive.TYPEABLE_STATUS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TYPEABLE_STATUS</span></code></a></p></td>
+<td><p>Statuses in which a keystroke is a <em>command</em>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.DFLT_MIN_INTERVAL_SEC" title="xa.revive.DFLT_MIN_INTERVAL_SEC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_MIN_INTERVAL_SEC</span></code></a></p></td>
+<td><p>Long enough that a cron tick can never turn into a keystroke storm, short enough that a real network change is followed within one settling period.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.RECONNECT_KEYS" title="xa.revive.RECONNECT_KEYS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RECONNECT_KEYS</span></code></a></p></td>
+<td><p>The keystrokes that reconnect a REPL session.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.REPORT_ORDER" title="xa.revive.REPORT_ORDER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REPORT_ORDER</span></code></a></p></td>
+<td><p>Verdicts worth a human's eye, in the order a report should present them.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.classify" title="xa.revive.classify"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classify</span></code></a>(probe, *[, rules])</p></td>
+<td><p>Return the verdict for <code class="docutils literal notranslate"><span class="pre">probe</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.evidence_for" title="xa.revive.evidence_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evidence_for</span></code></a>(probe, verdict, *[, rules])</p></td>
+<td><p>The marker that earned <code class="docutils literal notranslate"><span class="pre">verdict</span></code>, for a report a human has to trust.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.format_actions" title="xa.revive.format_actions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">format_actions</span></code></a>(actions)</p></td>
+<td><p>One line per pane, most actionable first.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.has_live_claude" title="xa.revive.has_live_claude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_live_claude</span></code></a>(ref)</p></td>
+<td><p>Default relevance test: the recorded pid is a <em>claude</em> that still exists.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.hint_for" title="xa.revive.hint_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hint_for</span></code></a>(verdict, *[, tmux_name])</p></td>
+<td><p>Human fix-it line for a verdict, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when there is nothing to say.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.local_panes" title="xa.revive.local_panes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local_panes</span></code></a>(*[, claude_home])</p></td>
+<td><p>Yield one <a class="reference internal" href="#xa.revive.PaneRef" title="xa.revive.PaneRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">PaneRef</span></code></a> per live claude that records a tmux pane.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.prompt_is_clear" title="xa.revive.prompt_is_clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prompt_is_clear</span></code></a>(tail)</p></td>
+<td><p>True when the pane's input line is empty and safe to type into.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.refusal_to_type" title="xa.revive.refusal_to_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refusal_to_type</span></code></a>(state)</p></td>
+<td><p>Why typing into <code class="docutils literal notranslate"><span class="pre">state</span></code> would be unsafe, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if it is fine.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.restart_server_mode" title="xa.revive.restart_server_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">restart_server_mode</span></code></a>(state, *[, cwd, apply, ...])</p></td>
+<td><p>Restart a died <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span></code> server in its own directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.revive" title="xa.revive.revive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive</span></code></a>(*[, panes, apply, ...])</p></td>
+<td><p>Reconnect every dropped pane.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.server_mode_command" title="xa.revive.server_mode_command"><code class="xref py py-obj docutils literal notranslate"><span class="pre">server_mode_command</span></code></a>(cwd)</p></td>
+<td><p>Keystrokes that restart a Remote Control <em>server</em> in <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.PaneRef" title="xa.revive.PaneRef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PaneRef</span></code></a>(target[, host, claude_pid, cwd, ...])</p></td>
+<td><p>Identity of one candidate pane — everything known <em>without</em> reading it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.PaneState" title="xa.revive.PaneState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PaneState</span></code></a>(ref, tail, verdict[, evidence])</p></td>
+<td><p>A pane, as read and judged.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.Probe" title="xa.revive.Probe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Probe</span></code></a>(text[, ref])</p></td>
+<td><p>The complete, pure input to a classification rule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.RateGuard" title="xa.revive.RateGuard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RateGuard</span></code></a>(*[, store, min_interval_sec, clock])</p></td>
+<td><p>Refuses to touch the same pane twice inside <code class="docutils literal notranslate"><span class="pre">min_interval_sec</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.revive.ReviveAction" title="xa.revive.ReviveAction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReviveAction</span></code></a>(target, verdict[, keys, sent, ...])</p></td>
+<td><p>What was (or would be) done to one pane, and why.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.revive.SessionPanes" title="xa.revive.SessionPanes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionPanes</span></code></a>(*[, panes, is_relevant, tail, ...])</p></td>
+<td><p>Live view of the panes worth judging: <code class="docutils literal notranslate"><span class="pre">{tmux</span> <span class="pre">target:</span> <span class="pre">PaneState}</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.ACTIONABLE">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">ACTIONABLE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({'reconnectable'})</span></span><a class="headerlink" href="#xa.revive.ACTIONABLE" title="Link to this definition">¶</a></dt>
+<dd><p>Verdicts <a class="reference internal" href="#xa.revive.revive" title="xa.revive.revive"><code class="xref py py-func docutils literal notranslate"><span class="pre">revive()</span></code></a> will send <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> to. <code class="docutils literal notranslate"><span class="pre">HELD_ELSEWHERE</span></code>
+is deliberately absent — it is reachable only via <code class="docutils literal notranslate"><span class="pre">include_held_elsewhere</span></code>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.API_STALLED">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">API_STALLED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'api_stalled'</span></span><a class="headerlink" href="#xa.revive.API_STALLED" title="Link to this definition">¶</a></dt>
+<dd><p>The API call is wedged. Reported, never acted on (the fix is a new prompt).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.BLOCKED_ON_HUMAN">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">BLOCKED_ON_HUMAN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({'needs_human',</span> <span class="pre">'needs_login',</span> <span class="pre">'needs_trust'})</span></span><a class="headerlink" href="#xa.revive.BLOCKED_ON_HUMAN" title="Link to this definition">¶</a></dt>
+<dd><p>Verdicts that mean “a human must act on the host”. All are blocked on a
+person, none are actionable by <a class="reference internal" href="#xa.revive.revive" title="xa.revive.revive"><code class="xref py py-func docutils literal notranslate"><span class="pre">revive()</span></code></a>, and each has a fix-it line
+in <a class="reference internal" href="#xa.revive.hint_for" title="xa.revive.hint_for"><code class="xref py py-func docutils literal notranslate"><span class="pre">hint_for()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.CONNECTED">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">CONNECTED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'connected'</span></span><a class="headerlink" href="#xa.revive.CONNECTED" title="Link to this definition">¶</a></dt>
+<dd><p>Remote Control is up. Nothing to do.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.DEFAULT_RULES">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">DEFAULT_RULES</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#xa.revive.Probe" title="xa.revive.Probe"><span class="pre">Probe</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(('no_claude',</span> <span class="pre">&lt;function</span> <span class="pre">_no_claude&gt;),</span> <span class="pre">('held_elsewhere',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('reconnecting',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('connected',</span> <span class="pre">&lt;function</span> <span class="pre">_pill_present&gt;),</span> <span class="pre">('connected',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('needs_login',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('needs_trust',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('needs_human',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('api_stalled',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('server_mode',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('reconnectable',</span> <span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;),</span> <span class="pre">('reconnectable',</span> <span class="pre">&lt;function</span> <span class="pre">_bridge_down&gt;),</span> <span class="pre">('unknown',</span> <span class="pre">&lt;function</span> <span class="pre">_always&gt;))</span></span><a class="headerlink" href="#xa.revive.DEFAULT_RULES" title="Link to this definition">¶</a></dt>
+<dd><p>Ordered <code class="docutils literal notranslate"><span class="pre">(verdict,</span> <span class="pre">predicate)</span></code> pairs; <strong>first match wins</strong>.</p>
+<p>The order is the policy, not a style choice, and two things decide it.</p>
+<p><em>Safety</em>: <code class="docutils literal notranslate"><span class="pre">NO_CLAUDE</span></code> leads, so a dead session’s scrollback can never be
+read as live state — the pane this was written against still showed a
+permission dialog and a disconnect notice above a shell prompt, all true
+once and none true now. <code class="docutils literal notranslate"><span class="pre">HELD_ELSEWHERE</span></code> precedes every reconnect
+verdict, per the rule that a session picked up on another device is never
+taken back without asking.</p>
+<p><em>Freshness</em>: the pill rules are <strong>live</strong> state and the phrase rules are
+<strong>history</strong>. A session that dropped and recovered still carries
+“Remote Control disconnected” in its scrollback for as long as it stays on
+screen, so a text rule placed above the pill would report a healthy
+session as broken until the line scrolled away.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.DFLT_MIN_INTERVAL_SEC">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">DFLT_MIN_INTERVAL_SEC</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">600.0</span></span><a class="headerlink" href="#xa.revive.DFLT_MIN_INTERVAL_SEC" title="Link to this definition">¶</a></dt>
+<dd><p>Long enough that a cron tick can never turn into a keystroke storm, short
+enough that a real network change is followed within one settling period.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.HELD_ELSEWHERE">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">HELD_ELSEWHERE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'held_elsewhere'</span></span><a class="headerlink" href="#xa.revive.HELD_ELSEWHERE" title="Link to this definition">¶</a></dt>
+<dd><p>Taken over or ended from another device. Never reconnect without opt-in.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.MARKERS">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">MARKERS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'api_stalled':</span> <span class="pre">('api</span> <span class="pre">error',</span> <span class="pre">'retrying</span> <span class="pre">in</span> <span class="pre">',</span> <span class="pre">'overloaded'),</span> <span class="pre">'connected':</span> <span class="pre">('remote</span> <span class="pre">control</span> <span class="pre">active',),</span> <span class="pre">'held_elsewhere':</span> <span class="pre">('ended</span> <span class="pre">or</span> <span class="pre">archived</span> <span class="pre">from</span> <span class="pre">another</span> <span class="pre">device',</span> <span class="pre">'no</span> <span class="pre">longer</span> <span class="pre">the</span> <span class="pre">active</span> <span class="pre">worker</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">session',</span> <span class="pre">'already</span> <span class="pre">has</span> <span class="pre">remote</span> <span class="pre">control</span> <span class="pre">for</span> <span class="pre">this</span> <span class="pre">conversation',</span> <span class="pre">'run</span> <span class="pre">/remote-control</span> <span class="pre">to</span> <span class="pre">move</span> <span class="pre">it</span> <span class="pre">to</span> <span class="pre">this</span> <span class="pre">terminal'),</span> <span class="pre">'needs_human':</span> <span class="pre">('do</span> <span class="pre">you</span> <span class="pre">want</span> <span class="pre">to</span> <span class="pre">proceed?',</span> <span class="pre">'esc</span> <span class="pre">to</span> <span class="pre">cancel'),</span> <span class="pre">'needs_login':</span> <span class="pre">('run</span> <span class="pre">/login',</span> <span class="pre">'please</span> <span class="pre">log</span> <span class="pre">in',</span> <span class="pre">'select</span> <span class="pre">login</span> <span class="pre">method',</span> <span class="pre">'oauth</span> <span class="pre">token</span> <span class="pre">has</span> <span class="pre">expired',</span> <span class="pre">'invalid</span> <span class="pre">api</span> <span class="pre">key',</span> <span class="pre">'unknown</span> <span class="pre">command:</span> <span class="pre">/remote-control'),</span> <span class="pre">'needs_trust':</span> <span class="pre">('trust</span> <span class="pre">this</span> <span class="pre">folder',</span> <span class="pre">'do</span> <span class="pre">you</span> <span class="pre">trust</span> <span class="pre">the</span> <span class="pre">files'),</span> <span class="pre">'reconnectable':</span> <span class="pre">('remote</span> <span class="pre">control</span> <span class="pre">disconnected',</span> <span class="pre">'remote</span> <span class="pre">control</span> <span class="pre">not</span> <span class="pre">started</span> <span class="pre">here',</span> <span class="pre">'run</span> <span class="pre">/remote-control</span> <span class="pre">to</span> <span class="pre">retry',</span> <span class="pre">'/remote-control</span> <span class="pre">is</span> <span class="pre">no</span> <span class="pre">longer</span> <span class="pre">active',</span> <span class="pre">'/rc</span> <span class="pre">failed'),</span> <span class="pre">'reconnecting':</span> <span class="pre">('/rc</span> <span class="pre">reconnecting',),</span> <span class="pre">'server_mode':</span> <span class="pre">('re-run</span> <span class="pre">`claude</span> <span class="pre">remote-control`</span> <span class="pre">to</span> <span class="pre">try</span> <span class="pre">again',)}</span></span><a class="headerlink" href="#xa.revive.MARKERS" title="Link to this definition">¶</a></dt>
+<dd><p>Substring markers per verdict. Lowercase; matched against a lowered tail.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.NEEDS_HUMAN">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">NEEDS_HUMAN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'needs_human'</span></span><a class="headerlink" href="#xa.revive.NEEDS_HUMAN" title="Link to this definition">¶</a></dt>
+<dd><p>Blocked on a human — an open permission dialog, or anything else that is
+eating keystrokes. See <a class="reference internal" href="#xa.revive.NEEDS_LOGIN" title="xa.revive.NEEDS_LOGIN"><code class="xref py py-data docutils literal notranslate"><span class="pre">NEEDS_LOGIN</span></code></a> / <a class="reference internal" href="#xa.revive.NEEDS_TRUST" title="xa.revive.NEEDS_TRUST"><code class="xref py py-data docutils literal notranslate"><span class="pre">NEEDS_TRUST</span></code></a> for the
+two causes specific enough to tell the user how to fix.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.NEEDS_LOGIN">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">NEEDS_LOGIN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'needs_login'</span></span><a class="headerlink" href="#xa.revive.NEEDS_LOGIN" title="Link to this definition">¶</a></dt>
+<dd><p>claude on this host is logged out.
+Login state is per-machine, so one <code class="docutils literal notranslate"><span class="pre">/login</span></code> fixes every session on it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Blocked on a human, specifically</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.NEEDS_TRUST">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">NEEDS_TRUST</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'needs_trust'</span></span><a class="headerlink" href="#xa.revive.NEEDS_TRUST" title="Link to this definition">¶</a></dt>
+<dd><p>the workspace-trust prompt is open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Blocked on a human, specifically</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.NO_CLAUDE">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">NO_CLAUDE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'no_claude'</span></span><a class="headerlink" href="#xa.revive.NO_CLAUDE" title="Link to this definition">¶</a></dt>
+<dd><p>No claude process behind the pane — a shell prompt, or a session that died.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.PROMPT_LINE">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">PROMPT_LINE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('(?m)^(?:❯|&gt;)[\xa0</span> <span class="pre">](.*)$',</span> <span class="pre">re.MULTILINE)</span></span><a class="headerlink" href="#xa.revive.PROMPT_LINE" title="Link to this definition">¶</a></dt>
+<dd><p>the prompt glyph, then U+00A0, then whatever the user
+has typed. <a href="#id3"><span class="problematic" id="id4">``</span></a>&gt; `` is the plain-ASCII rendering some terminals get.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The TUI’s input line</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.revive.PaneRef">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">PaneRef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_pid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bridge_session_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#PaneRef"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.PaneRef" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Identity of one candidate pane — everything known <em>without</em> reading it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">target</span></code> is a tmux target: a full pane ref (<code class="docutils literal notranslate"><span class="pre">session:&#64;window.%pane</span></code>,
+which is what the ephemeral session file records) or a bare session name.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xa.revive.PaneRef.status">
+<span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#xa.revive.PaneRef.status" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">idle</span></code> / <code class="docutils literal notranslate"><span class="pre">busy</span></code> / <code class="docutils literal notranslate"><span class="pre">waiting</span></code> as the session last reported it.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> on a claude too old to record one.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.revive.PaneState">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">PaneState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verdict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evidence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#PaneState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.PaneState" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A pane, as read and judged. The value type of <a class="reference internal" href="#xa.revive.SessionPanes" title="xa.revive.SessionPanes"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPanes</span></code></a>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.revive.Probe">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">Probe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#Probe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.Probe" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The complete, pure input to a classification rule.</p>
+<p><code class="docutils literal notranslate"><span class="pre">text</span></code> is the pane tail, lowercased once so every rule can use a plain
+substring test.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.RC_PILL">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">RC_PILL</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('(?m)^.*(?&lt;![\\w/])/rc(?:</span> <span class="pre">active)?\\s*$',</span> <span class="pre">re.MULTILINE)</span></span><a class="headerlink" href="#xa.revive.RC_PILL" title="Link to this definition">¶</a></dt>
+<dd><p>The footer <em>pill</em>. Present while Remote Control is connected — <code class="docutils literal notranslate"><span class="pre">/rc</span></code> on
+its own right-aligned line, or <code class="docutils literal notranslate"><span class="pre">/rc</span> <span class="pre">active</span></code> in verbose mode — and gone
+the moment it is not. Anchored to a line end because a bare <code class="docutils literal notranslate"><span class="pre">&quot;/rc&quot;</span> <span class="pre">in</span>
+<span class="pre">text</span></code> would also match a file path ending in <code class="docutils literal notranslate"><span class="pre">src/rc</span></code>.</p>
+<p>The direction matters and is easy to get backwards: the pill is evidence
+of <em>health</em>. Verified by disconnecting a live session and watching the
+line vanish (claude 2.1.251).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.RECONNECTABLE">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">RECONNECTABLE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'reconnectable'</span></span><a class="headerlink" href="#xa.revive.RECONNECTABLE" title="Link to this definition">¶</a></dt>
+<dd><p>Dropped and recoverable — the one verdict <a class="reference internal" href="#xa.revive.revive" title="xa.revive.revive"><code class="xref py py-func docutils literal notranslate"><span class="pre">revive()</span></code></a> acts on.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.RECONNECTING">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">RECONNECTING</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'reconnecting'</span></span><a class="headerlink" href="#xa.revive.RECONNECTING" title="Link to this definition">¶</a></dt>
+<dd><p>Remote Control is retrying right now. Leave it alone; it may well succeed.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.RECONNECT_KEYS">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">RECONNECT_KEYS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('/remote-control',</span> <span class="pre">'Enter')</span></span><a class="headerlink" href="#xa.revive.RECONNECT_KEYS" title="Link to this definition">¶</a></dt>
+<dd><p>The keystrokes that reconnect a REPL session. <code class="docutils literal notranslate"><span class="pre">Enter</span></code> submits.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.REPORT_ORDER">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">REPORT_ORDER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('reconnectable',</span> <span class="pre">'server_mode',</span> <span class="pre">'held_elsewhere',</span> <span class="pre">'needs_human',</span> <span class="pre">'api_stalled',</span> <span class="pre">'reconnecting',</span> <span class="pre">'no_claude',</span> <span class="pre">'unknown',</span> <span class="pre">'connected')</span></span><a class="headerlink" href="#xa.revive.REPORT_ORDER" title="Link to this definition">¶</a></dt>
+<dd><p>Verdicts worth a human’s eye, in the order a report should present them.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.revive.RateGuard">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">RateGuard</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_interval_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">600.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">time&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#RateGuard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.RateGuard" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Refuses to touch the same pane twice inside <code class="docutils literal notranslate"><span class="pre">min_interval_sec</span></code>.</p>
+<p>Without this a cron tick, a hook and an impatient human can each send
+<code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> into the same pane seconds apart. Backed by any
+<code class="docutils literal notranslate"><span class="pre">{key:</span> <span class="pre">bytes}</span></code> mapping — the default is xa’s on-disk
+<a class="reference internal" href="xa.store.html#xa.store.FileStore" title="xa.store.FileStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileStore</span></code></a>, so the interval survives process exit,
+which is the entire point.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">clock</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">([</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">,</span> <span class="mf">800.0</span><span class="p">])</span><span class="o">.</span><span class="fm">__next__</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guard</span> <span class="o">=</span> <span class="n">RateGuard</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="p">{},</span> <span class="n">min_interval_sec</span><span class="o">=</span><span class="mf">600.0</span><span class="p">,</span> <span class="n">clock</span><span class="o">=</span><span class="n">clock</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guard</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="s1">'work:@1.%1'</span><span class="p">)</span>     <span class="c1"># never attempted</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guard</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="s1">'work:@1.%1'</span><span class="p">)</span>    <span class="c1"># stamped at t=100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guard</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="s1">'work:@1.%1'</span><span class="p">)</span>     <span class="c1"># t=200 — 100s later, still held off</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">guard</span><span class="o">.</span><span class="n">allow</span><span class="p">(</span><span class="s1">'work:@1.%1'</span><span class="p">)</span>     <span class="c1"># t=800 — 700s later, released</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.revive.RateGuard.wait_remaining">
+<span class="sig-name descname"><span class="pre">wait_remaining</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#RateGuard.wait_remaining"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.RateGuard.wait_remaining" title="Link to this definition">¶</a></dt>
+<dd><p>Seconds left before <code class="docutils literal notranslate"><span class="pre">target</span></code> may be touched again (0.0 if now).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.revive.ReviveAction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">ReviveAction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verdict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipped</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evidence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#ReviveAction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.ReviveAction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>What was (or would be) done to one pane, and why.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="xa.revive.ReviveAction.would_send">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">would_send</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#xa.revive.ReviveAction.would_send" title="Link to this definition">¶</a></dt>
+<dd><p>True when only <code class="docutils literal notranslate"><span class="pre">apply=False</span></code> stood in the way.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.SERVER_MODE">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">SERVER_MODE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'server_mode'</span></span><a class="headerlink" href="#xa.revive.SERVER_MODE" title="Link to this definition">¶</a></dt>
+<dd><p>A <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span></code> <em>server</em> died. See <a class="reference internal" href="#xa.revive.restart_server_mode" title="xa.revive.restart_server_mode"><code class="xref py py-func docutils literal notranslate"><span class="pre">restart_server_mode()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.revive.SessionPanes">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">SessionPanes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">local_panes&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_relevant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">has_live_claude&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tail</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_capture&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(('no_claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_no_claude&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('held_elsewhere'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnecting'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('connected'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_pill_present&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('connected'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_login'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_trust'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_human'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('api_stalled'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('server_mode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnectable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnectable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_bridge_down&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_always&gt;))</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#SessionPanes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.SessionPanes" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a></p>
+<p>Live view of the panes worth judging: <code class="docutils literal notranslate"><span class="pre">{tmux</span> <span class="pre">target:</span> <span class="pre">PaneState}</span></code>.</p>
+<p>Every source of truth is injected, which is what lets the whole
+classification path be tested without a tmux server:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">panes</span></code> — callable returning <a class="reference internal" href="#xa.revive.PaneRef" title="xa.revive.PaneRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">PaneRef</span></code></a> objects (default:
+<a class="reference internal" href="#xa.revive.local_panes" title="xa.revive.local_panes"><code class="xref py py-func docutils literal notranslate"><span class="pre">local_panes()</span></code></a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_relevant</span></code> — per-ref filter (default: <a class="reference internal" href="#xa.revive.has_live_claude" title="xa.revive.has_live_claude"><code class="xref py py-func docutils literal notranslate"><span class="pre">has_live_claude()</span></code></a>);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tail</span></code> — callable reading a ref’s pane text (default: tmux capture);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rules</span></code> — the classification table (default: <a class="reference internal" href="#xa.revive.DEFAULT_RULES" title="xa.revive.DEFAULT_RULES"><code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_RULES</span></code></a>).</p></li>
+</ul>
+<p>Pane text is read lazily and cached, so building the mapping costs
+nothing and iterating it costs one capture per pane.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">refs</span> <span class="o">=</span> <span class="p">[</span><span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'w:@1.%1'</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">bridge_session_id</span><span class="o">=</span><span class="s1">'s_1'</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">panes</span> <span class="o">=</span> <span class="n">SessionPanes</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">panes</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">refs</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">is_relevant</span><span class="o">=</span><span class="k">lambda</span> <span class="n">ref</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tail</span><span class="o">=</span><span class="k">lambda</span> <span class="n">ref</span><span class="p">:</span> <span class="s1">'Remote Control disconnected'</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">panes</span><span class="p">)</span>
+<span class="go">['w:@1.%1']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">panes</span><span class="p">[</span><span class="s1">'w:@1.%1'</span><span class="p">]</span><span class="o">.</span><span class="n">verdict</span>
+<span class="go">'reconnectable'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">panes</span><span class="o">.</span><span class="n">by_verdict</span><span class="p">()[</span><span class="s1">'reconnectable'</span><span class="p">]</span>
+<span class="go">['w:@1.%1']</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.revive.SessionPanes.by_verdict">
+<span class="sig-name descname"><span class="pre">by_verdict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#SessionPanes.by_verdict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.SessionPanes.by_verdict" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">{verdict:</span> <span class="pre">[target,</span> <span class="pre">...]}</span></code> — reads every pane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.revive.SessionPanes.refresh">
+<span class="sig-name descname"><span class="pre">refresh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#SessionPanes.refresh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.SessionPanes.refresh" title="Link to this definition">¶</a></dt>
+<dd><p>Drop every cached ref and pane read. Returns self, for chaining.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.revive.SessionPanes" title="xa.revive.SessionPanes"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionPanes</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.TYPEABLE_STATUS">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">TYPEABLE_STATUS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({'idle',</span> <span class="pre">None})</span></span><a class="headerlink" href="#xa.revive.TYPEABLE_STATUS" title="Link to this definition">¶</a></dt>
+<dd><p>Statuses in which a keystroke is a <em>command</em>. Anything else — <code class="docutils literal notranslate"><span class="pre">busy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">waiting</span></code> — means the session is mid-turn or holding a dialog, and typed
+text would be queued into it. <code class="docutils literal notranslate"><span class="pre">None</span></code> is a claude too old to say.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.UNKNOWN">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">UNKNOWN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'unknown'</span></span><a class="headerlink" href="#xa.revive.UNKNOWN" title="Link to this definition">¶</a></dt>
+<dd><p>The pane says nothing either way. Never acted on.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.revive.VERDICTS">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">VERDICTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({'api_stalled',</span> <span class="pre">'connected',</span> <span class="pre">'held_elsewhere',</span> <span class="pre">'needs_human',</span> <span class="pre">'needs_login',</span> <span class="pre">'needs_trust',</span> <span class="pre">'no_claude',</span> <span class="pre">'reconnectable',</span> <span class="pre">'reconnecting',</span> <span class="pre">'server_mode',</span> <span class="pre">'unknown'})</span></span><a class="headerlink" href="#xa.revive.VERDICTS" title="Link to this definition">¶</a></dt>
+<dd><p>Every verdict <a class="reference internal" href="#xa.revive.DEFAULT_RULES" title="xa.revive.DEFAULT_RULES"><code class="xref py py-data docutils literal notranslate"><span class="pre">DEFAULT_RULES</span></code></a> can produce. Custom rules may add more.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.classify">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">classify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(('no_claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_no_claude&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('held_elsewhere'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnecting'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('connected'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_pill_present&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('connected'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_login'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_trust'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_human'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('api_stalled'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('server_mode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnectable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnectable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_bridge_down&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_always&gt;))</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#classify"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.classify" title="Link to this definition">¶</a></dt>
+<dd><p>Return the verdict for <code class="docutils literal notranslate"><span class="pre">probe</span></code>. Pure — no I/O, no tmux, no clock.</p>
+<p>A session whose footer pill is gone and whose session file records no
+bridge id has dropped:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dropped</span> <span class="o">=</span> <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'w:@1.%1'</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">classify</span><span class="p">(</span><span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">'conversation text</span><span class="se">\n</span><span class="s1">❯ '</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">dropped</span><span class="p">))</span>
+<span class="go">'reconnectable'</span>
+</pre></div>
+</div>
+<p>One still carrying the pill has not, whatever its scrollback remembers:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">live</span> <span class="o">=</span> <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'w:@1.%1'</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">bridge_session_id</span><span class="o">=</span><span class="s1">'s'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">classify</span><span class="p">(</span><span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">'remote control disconnected</span><span class="se">\n</span><span class="s1">     /rc'</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">live</span><span class="p">))</span>
+<span class="go">'connected'</span>
+</pre></div>
+</div>
+<p>A session someone picked up on their phone is never reconnectable, even
+though the pane also says it disconnected:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">taken</span> <span class="o">=</span> <span class="s1">'remote control disconnected</span><span class="se">\n</span><span class="s1">ended or archived from another device'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">classify</span><span class="p">(</span><span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">taken</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">dropped</span><span class="p">))</span>
+<span class="go">'held_elsewhere'</span>
+</pre></div>
+</div>
+<p>Neither is one sitting on a permission dialog:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">classify</span><span class="p">(</span><span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">'/rc failed</span><span class="se">\n</span><span class="s1">do you want to proceed?'</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">live</span><span class="p">))</span>
+<span class="go">'needs_human'</span>
+</pre></div>
+</div>
+<p>And a healthy, quiet, connected pane is simply left alone:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">classify</span><span class="p">(</span><span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">'just some conversation</span><span class="se">\n</span><span class="s1">  /rc'</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">live</span><span class="p">))</span>
+<span class="go">'connected'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.evidence_for">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">evidence_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verdict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rules</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(('no_claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_no_claude&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('held_elsewhere'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnecting'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('connected'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_pill_present&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('connected'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_login'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_trust'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('needs_human'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('api_stalled'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('server_mode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnectable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_any_of.&lt;locals&gt;._pred&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('reconnectable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_bridge_down&gt;)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">('unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">&lt;function</span> <span class="pre">_always&gt;))</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#evidence_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.evidence_for" title="Link to this definition">¶</a></dt>
+<dd><p>The marker that earned <code class="docutils literal notranslate"><span class="pre">verdict</span></code>, for a report a human has to trust.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'w:@1.%1'</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">evidence_for</span><span class="p">(</span><span class="n">Probe</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">'/rc failed'</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">),</span> <span class="s1">'reconnectable'</span><span class="p">)</span>
+<span class="go">'/rc failed'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.format_actions">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">format_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#format_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.format_actions" title="Link to this definition">¶</a></dt>
+<dd><p>One line per pane, most actionable first.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">format_actions</span><span class="p">([</span>
+<span class="gp">... </span>    <span class="n">ReviveAction</span><span class="p">(</span><span class="s1">'a:@1.%1'</span><span class="p">,</span> <span class="n">RECONNECTABLE</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="n">RECONNECT_KEYS</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="n">skipped</span><span class="o">=</span><span class="s1">'dry-run'</span><span class="p">,</span> <span class="n">evidence</span><span class="o">=</span><span class="s1">'/rc failed'</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">ReviveAction</span><span class="p">(</span><span class="s1">'b:@1.%1'</span><span class="p">,</span> <span class="n">CONNECTED</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">]))</span>
+<span class="go">reconnectable  a:@1.%1  would send /remote-control  [/rc failed]</span>
+<span class="go">connected      b:@1.%1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.has_live_claude">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">has_live_claude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#has_live_claude"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.has_live_claude" title="Link to this definition">¶</a></dt>
+<dd><p>Default relevance test: the recorded pid is a <em>claude</em> that still exists.</p>
+<p>Identity, not just liveness — a stale ephemeral file whose pid got
+recycled must never direct keystrokes at an unrelated process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.hint_for">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">hint_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verdict</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#hint_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.hint_for" title="Link to this definition">¶</a></dt>
+<dd><p>Human fix-it line for a verdict, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when there is nothing to say.</p>
+<p>SSOT for the wording shown by the CLI, the web UI and the HTTP API, so
+the three can’t drift. Only the verdicts a person can actually clear get
+a line; <code class="docutils literal notranslate"><span class="pre">connected</span></code>/<code class="docutils literal notranslate"><span class="pre">unknown</span></code>/<code class="docutils literal notranslate"><span class="pre">reconnectable</span></code> return <code class="docutils literal notranslate"><span class="pre">None</span></code>
+(nothing to do, nothing known, or xa’s own job respectively).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hint_for</span><span class="p">(</span><span class="n">CONNECTED</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">hint_for</span><span class="p">(</span><span class="n">NEEDS_TRUST</span><span class="p">,</span> <span class="n">tmux_name</span><span class="o">=</span><span class="s1">'sess'</span><span class="p">)</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'Claude is waiting'</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.local_panes">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">local_panes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#local_panes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.local_panes" title="Link to this definition">¶</a></dt>
+<dd><p>Yield one <a class="reference internal" href="#xa.revive.PaneRef" title="xa.revive.PaneRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">PaneRef</span></code></a> per live claude that records a tmux pane.</p>
+<p>Derived from the ephemeral session files rather than from
+<code class="docutils literal notranslate"><span class="pre">tmux</span> <span class="pre">list-panes</span></code>: each file names its own pane, so no heuristic has
+to decide whether a pane holds a claude. A session not under tmux (every
+session on a machine that runs claude in terminal tabs) simply has no
+<code class="docutils literal notranslate"><span class="pre">tmux</span></code> key and is skipped — there is no pane to send keys to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="#xa.revive.PaneRef" title="xa.revive.PaneRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">PaneRef</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.prompt_is_clear">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">prompt_is_clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tail</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#prompt_is_clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.prompt_is_clear" title="Link to this definition">¶</a></dt>
+<dd><p>True when the pane’s input line is empty and safe to type into.</p>
+<p>This is the difference between reconnecting a session and destroying the
+instruction its owner left half-typed: <code class="docutils literal notranslate"><span class="pre">send-keys</span></code> appends to whatever
+is already in the buffer, so <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> sent at a pane whose
+prompt reads <code class="docutils literal notranslate"><span class="pre">yes,</span> <span class="pre">port</span> <span class="pre">it</span> <span class="pre">into</span> <span class="pre">the</span> <span class="pre">repo</span></code> submits
+<code class="docutils literal notranslate"><span class="pre">yes,</span> <span class="pre">port</span> <span class="pre">it</span> <span class="pre">into</span> <span class="pre">the</span> <span class="pre">repo/remote-control</span></code>.</p>
+<p>Conservative by construction — a pane whose prompt line cannot be found
+is reported as not clear, because “I could not see the buffer” and “the
+buffer is empty” must never collapse into the same answer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">prompt_is_clear</span><span class="p">(</span><span class="s1">'---</span><span class="se">\n</span><span class="s1">❯ </span><span class="se">\n</span><span class="s1">---'</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prompt_is_clear</span><span class="p">(</span><span class="s1">'❯ yes, port it into the repo'</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">prompt_is_clear</span><span class="p">(</span><span class="s1">'no prompt line here at all'</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.refusal_to_type">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">refusal_to_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#refusal_to_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.refusal_to_type" title="Link to this definition">¶</a></dt>
+<dd><p>Why typing into <code class="docutils literal notranslate"><span class="pre">state</span></code> would be unsafe, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if it is fine.</p>
+<p>Two independent gates, because each catches what the other misses: the
+reported status catches a session mid-turn whose buffer happens to be
+empty, and the buffer check catches an idle session holding text the
+status knows nothing about.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'t'</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">'idle'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">refusal_to_type</span><span class="p">(</span><span class="n">PaneState</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="s1">'❯ '</span><span class="p">,</span> <span class="n">verdict</span><span class="o">=</span><span class="n">RECONNECTABLE</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">busy</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">'busy'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">refusal_to_type</span><span class="p">(</span><span class="n">PaneState</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="n">busy</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="s1">'❯ '</span><span class="p">,</span> <span class="n">verdict</span><span class="o">=</span><span class="n">RECONNECTABLE</span><span class="p">))</span>
+<span class="go">'session is busy'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.restart_server_mode">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">restart_server_mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate_guard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve_cwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#restart_server_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.restart_server_mode" title="Link to this definition">¶</a></dt>
+<dd><p>Restart a died <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span></code> server in its own directory.</p>
+<p>The directory is <strong>not</strong> recorded by this package. It is read back from
+what already knows it — the pane’s own working directory via tmux, or
+the ephemeral session file when a claude is still alive — and the
+session identity is left to <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span> <span class="pre">-c</span></code>, which keeps
+its own per-directory record. Adding a fourth place to write it down
+would only create something to drift.</p>
+<p>Refuses whenever a live claude still owns the pane: this sends a <em>shell</em>
+command, and a running TUI would take it as prompt text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.revive.ReviveAction" title="xa.revive.ReviveAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReviveAction</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'srv:@1.%1'</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="s1">'/srv/app'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">state</span> <span class="o">=</span> <span class="n">PaneState</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="n">ref</span><span class="p">,</span> <span class="n">tail</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">verdict</span><span class="o">=</span><span class="n">SERVER_MODE</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">keyed</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span> <span class="o">=</span> <span class="n">restart_server_mode</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">state</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">apply</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">rate_guard</span><span class="o">=</span><span class="n">RateGuard</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="p">{},</span> <span class="n">clock</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">send</span><span class="o">=</span><span class="k">lambda</span> <span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="n">keyed</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="p">,</span> <span class="n">keys</span><span class="p">)),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">action</span><span class="o">.</span><span class="n">sent</span><span class="p">,</span> <span class="n">keyed</span>
+<span class="go">(True, [('srv:@1.%1', ('cd /srv/app &amp;&amp; claude remote-control -c', 'Enter'))])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">live</span> <span class="o">=</span> <span class="n">PaneState</span><span class="p">(</span><span class="n">ref</span><span class="o">=</span><span class="n">replace</span><span class="p">(</span><span class="n">ref</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span> <span class="n">tail</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">verdict</span><span class="o">=</span><span class="n">SERVER_MODE</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">restart_server_mode</span><span class="p">(</span><span class="n">live</span><span class="p">,</span> <span class="n">apply</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">skipped</span>
+<span class="go">'a claude still owns this pane — keystrokes would land in its prompt'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.revive">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">revive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">panes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_held_elsewhere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate_guard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actionable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">frozenset({'reconnectable'})</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#revive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.revive" title="Link to this definition">¶</a></dt>
+<dd><p>Reconnect every dropped pane. **Dry run unless <code class="docutils literal notranslate"><span class="pre">apply=True</span></code>.**</p>
+<p>Returns one <a class="reference internal" href="#xa.revive.ReviveAction" title="xa.revive.ReviveAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReviveAction</span></code></a> per pane examined — including the ones
+left alone, each carrying the reason, because “nothing happened” is only
+useful next to what was looked at.</p>
+<p><code class="docutils literal notranslate"><span class="pre">include_held_elsewhere=True</span></code> opts into reconnecting sessions that were
+taken over from another device. That steals the session back from
+whatever device holds it; it is off by default and should stay a
+deliberate keystroke.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="#xa.revive.ReviveAction" title="xa.revive.ReviveAction"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReviveAction</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">refs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'a:@1.%1'</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">PaneRef</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">'b:@1.%1'</span><span class="p">,</span> <span class="n">claude_pid</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">bridge_session_id</span><span class="o">=</span><span class="s1">'s'</span><span class="p">),</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tails</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a:@1.%1'</span><span class="p">:</span> <span class="s1">'/rc failed</span><span class="se">\n</span><span class="s1">❯ '</span><span class="p">,</span> <span class="s1">'b:@1.%1'</span><span class="p">:</span> <span class="s1">'all quiet</span><span class="se">\n</span><span class="s1">❯ </span><span class="se">\n</span><span class="s1">   /rc'</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">panes</span> <span class="o">=</span> <span class="n">SessionPanes</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">panes</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">refs</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">is_relevant</span><span class="o">=</span><span class="k">lambda</span> <span class="n">ref</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tail</span><span class="o">=</span><span class="k">lambda</span> <span class="n">ref</span><span class="p">:</span> <span class="n">tails</span><span class="p">[</span><span class="n">ref</span><span class="o">.</span><span class="n">target</span><span class="p">],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sent</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">actions</span> <span class="o">=</span> <span class="n">revive</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">panes</span><span class="o">=</span><span class="n">panes</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">apply</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">rate_guard</span><span class="o">=</span><span class="n">RateGuard</span><span class="p">(</span><span class="n">store</span><span class="o">=</span><span class="p">{},</span> <span class="n">clock</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">send</span><span class="o">=</span><span class="k">lambda</span> <span class="n">target</span><span class="p">,</span> <span class="o">*</span><span class="n">keys</span><span class="p">:</span> <span class="n">sent</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="p">,</span> <span class="n">keys</span><span class="p">)),</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">a</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">verdict</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">sent</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">actions</span><span class="p">]</span>
+<span class="go">[('a:@1.%1', 'reconnectable', True), ('b:@1.%1', 'connected', False)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sent</span>
+<span class="go">[('a:@1.%1', ('/remote-control', 'Enter'))]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.revive.server_mode_command">
+<span class="sig-prename descclassname"><span class="pre">xa.revive.</span></span><span class="sig-name descname"><span class="pre">server_mode_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/revive.html#server_mode_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.revive.server_mode_command" title="Link to this definition">¶</a></dt>
+<dd><p>Keystrokes that restart a Remote Control <em>server</em> in <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">remote-control</span> <span class="pre">-c</span></code> reattaches the session the command last
+recorded <strong>for that directory</strong> (within ~4h), which is why the directory
+— and nothing else — is what a restart needs to know.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">server_mode_command</span><span class="p">(</span><span class="s1">'/root/py/proj'</span><span class="p">)</span>
+<span class="go">('cd /root/py/proj &amp;&amp; claude remote-control -c', 'Enter')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">server_mode_command</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">('claude remote-control -c', 'Enter')</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="xa.service.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">xa.service</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="xa.hosts.ssh.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">xa.hosts.ssh</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">xa.revive</a><ul>
+<li><a class="reference internal" href="#xa.revive.ACTIONABLE"><code class="docutils literal notranslate"><span class="pre">ACTIONABLE</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.API_STALLED"><code class="docutils literal notranslate"><span class="pre">API_STALLED</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.BLOCKED_ON_HUMAN"><code class="docutils literal notranslate"><span class="pre">BLOCKED_ON_HUMAN</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.CONNECTED"><code class="docutils literal notranslate"><span class="pre">CONNECTED</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.DEFAULT_RULES"><code class="docutils literal notranslate"><span class="pre">DEFAULT_RULES</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.DFLT_MIN_INTERVAL_SEC"><code class="docutils literal notranslate"><span class="pre">DFLT_MIN_INTERVAL_SEC</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.HELD_ELSEWHERE"><code class="docutils literal notranslate"><span class="pre">HELD_ELSEWHERE</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.MARKERS"><code class="docutils literal notranslate"><span class="pre">MARKERS</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.NEEDS_HUMAN"><code class="docutils literal notranslate"><span class="pre">NEEDS_HUMAN</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.NEEDS_LOGIN"><code class="docutils literal notranslate"><span class="pre">NEEDS_LOGIN</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.NEEDS_TRUST"><code class="docutils literal notranslate"><span class="pre">NEEDS_TRUST</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.NO_CLAUDE"><code class="docutils literal notranslate"><span class="pre">NO_CLAUDE</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.PROMPT_LINE"><code class="docutils literal notranslate"><span class="pre">PROMPT_LINE</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.PaneRef"><code class="docutils literal notranslate"><span class="pre">PaneRef</span></code></a><ul>
+<li><a class="reference internal" href="#xa.revive.PaneRef.status"><code class="docutils literal notranslate"><span class="pre">PaneRef.status</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.revive.PaneState"><code class="docutils literal notranslate"><span class="pre">PaneState</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.Probe"><code class="docutils literal notranslate"><span class="pre">Probe</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.RC_PILL"><code class="docutils literal notranslate"><span class="pre">RC_PILL</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.RECONNECTABLE"><code class="docutils literal notranslate"><span class="pre">RECONNECTABLE</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.RECONNECTING"><code class="docutils literal notranslate"><span class="pre">RECONNECTING</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.RECONNECT_KEYS"><code class="docutils literal notranslate"><span class="pre">RECONNECT_KEYS</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.REPORT_ORDER"><code class="docutils literal notranslate"><span class="pre">REPORT_ORDER</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.RateGuard"><code class="docutils literal notranslate"><span class="pre">RateGuard</span></code></a><ul>
+<li><a class="reference internal" href="#xa.revive.RateGuard.wait_remaining"><code class="docutils literal notranslate"><span class="pre">RateGuard.wait_remaining()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.revive.ReviveAction"><code class="docutils literal notranslate"><span class="pre">ReviveAction</span></code></a><ul>
+<li><a class="reference internal" href="#xa.revive.ReviveAction.would_send"><code class="docutils literal notranslate"><span class="pre">ReviveAction.would_send</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.revive.SERVER_MODE"><code class="docutils literal notranslate"><span class="pre">SERVER_MODE</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.SessionPanes"><code class="docutils literal notranslate"><span class="pre">SessionPanes</span></code></a><ul>
+<li><a class="reference internal" href="#xa.revive.SessionPanes.by_verdict"><code class="docutils literal notranslate"><span class="pre">SessionPanes.by_verdict()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.SessionPanes.refresh"><code class="docutils literal notranslate"><span class="pre">SessionPanes.refresh()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.revive.TYPEABLE_STATUS"><code class="docutils literal notranslate"><span class="pre">TYPEABLE_STATUS</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.UNKNOWN"><code class="docutils literal notranslate"><span class="pre">UNKNOWN</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.VERDICTS"><code class="docutils literal notranslate"><span class="pre">VERDICTS</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.classify"><code class="docutils literal notranslate"><span class="pre">classify()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.evidence_for"><code class="docutils literal notranslate"><span class="pre">evidence_for()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.format_actions"><code class="docutils literal notranslate"><span class="pre">format_actions()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.has_live_claude"><code class="docutils literal notranslate"><span class="pre">has_live_claude()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.hint_for"><code class="docutils literal notranslate"><span class="pre">hint_for()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.local_panes"><code class="docutils literal notranslate"><span class="pre">local_panes()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.prompt_is_clear"><code class="docutils literal notranslate"><span class="pre">prompt_is_clear()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.refusal_to_type"><code class="docutils literal notranslate"><span class="pre">refusal_to_type()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.restart_server_mode"><code class="docutils literal notranslate"><span class="pre">restart_server_mode()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.revive"><code class="docutils literal notranslate"><span class="pre">revive()</span></code></a></li>
+<li><a class="reference internal" href="#xa.revive.server_mode_command"><code class="docutils literal notranslate"><span class="pre">server_mode_command()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=b39c9740"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>

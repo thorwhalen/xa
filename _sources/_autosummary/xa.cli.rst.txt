@@ -1,0 +1,27 @@
+xa.cli
+======
+
+.. automodule:: xa.cli
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      archive_forensics_cmd
+      archive_list_cmd
+      archive_log_cmd
+      gen_secret_cmd
+      history_cmd
+      info_cmd
+      kill_cmd
+      list_cmd
+      main
+      mk_parser
+      pick_cmd
+      resume_cmd
+      revive_cmd
+      serve_cmd
+      spawn_cmd
+      sync_cmd
+   

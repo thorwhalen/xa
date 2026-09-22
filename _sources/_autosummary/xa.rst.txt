@@ -1,0 +1,80 @@
+﻿xa
+==
+
+.. automodule:: xa
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      encode_project_slug
+      history_iter
+      iter_ephemeral_sessions
+      iter_project_slugs
+      iter_transcript_events
+      iter_transcript_files
+      parse_project_slug
+      read_ephemeral_session
+      transcript_forensics
+      transcript_metadata
+      transcript_path
+      resolve_bridge_url
+      resume_session
+      spawn_session
+      get_session
+      iter_local_sessions
+      kill_session
+      list_sessions
+      resume
+      default_events_store
+      default_pane_store
+      append_created
+      append_gone
+      append_hidden
+      append_label
+      append_url_acquired
+      classify_death
+      overlays
+      reconcile
+      records
+      default_hosts
+      default_config_path
+      load
+      load_hosts
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HistoryEntry
+      TranscriptForensics
+      TranscriptMeta
+      SpawnResult
+      Session
+      FileStore
+      JsonLinesStore
+      ArchiveRecord
+      HTTPHost
+      Host
+      LocalHost
+      SSHHost
+      Settings
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   archive
+   claude_cli
+   claude_fs
+   cli
+   config
+   hosts
+   revive
+   service
+   sessions
+   store
+   tmux

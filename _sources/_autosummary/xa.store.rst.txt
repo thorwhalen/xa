@@ -1,0 +1,21 @@
+xa.store
+========
+
+.. automodule:: xa.store
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      default_events_store
+      default_pane_store
+      default_revive_store
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FileStore
+      JsonLinesStore
+   

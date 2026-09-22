@@ -1,0 +1,12 @@
+xa.hosts.local
+==============
+
+.. automodule:: xa.hosts.local
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LocalHost
+   

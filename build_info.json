@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-09-22T13:02:58Z",
+  "package": {
+    "name": "xa",
+    "version": "0.1.12",
+    "display_name": "xa",
+    "source": "pyproject.toml"
+  },
+  "git": {
+    "available": true,
+    "commit": "70fba9709483acd9c96fc1120f616657d9faba8a",
+    "short_commit": "70fba97",
+    "branch": "main",
+    "tags": [
+      "0.1.12"
+    ],
+    "dirty": false,
+    "remote_url": "https://github.com/thorwhalen/xa",
+    "commit_url": "https://github.com/thorwhalen/xa/commit/70fba9709483acd9c96fc1120f616657d9faba8a",
+    "error": null
+  },
+  "ci": {
+    "provider": "github",
+    "repository": "thorwhalen/xa",
+    "sha": "2e31bccddf652c5d9b23cc3f96be83ef5ba38f40",
+    "sha_in_history": true,
+    "ref": "refs/heads/main",
+    "ref_name": "main",
+    "run_id": "35730744333",
+    "run_url": "https://github.com/thorwhalen/xa/actions/runs/35730744333",
+    "server_url": "https://github.com"
+  },
+  "tools": {
+    "epythet": "0.2.12",
+    "sphinx": "9.1.0",
+    "docutils": "0.22.4",
+    "python": "3.12.14"
+  },
+  "config": {
+    "theme": "auto",
+    "html_theme": "furo",
+    "accent": "#93342a",
+    "mode": "auto",
+    "api_generator": "autosummary",
+    "ignore": [
+      "tests/",
+      "scrap/",
+      "examples/"
+    ],
+    "agent_outputs": true,
+    "aggregates": [
+      "md"
+    ],
+    "ai_artifacts": true,
+    "provenance": true,
+    "docs_dir": "docsrc"
+  },
+  "site": {
+    "modules_documented": 15,
+    "objects_documented": 201
+  },
+  "pypi": {
+    "checked": true,
+    "latest": "0.1.12",
+    "relation": "same",
+    "error": null
+  },
+  "reproduce": "git clone https://github.com/thorwhalen/xa && cd xa\ngit checkout 70fba9709483acd9c96fc1120f616657d9faba8a\npip install \"epythet==0.2.12\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "warnings": [],
+  "alignment": {
+    "aligned": true,
+    "notes": []
+  }
+}

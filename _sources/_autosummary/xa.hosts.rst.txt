@@ -1,0 +1,30 @@
+xa.hosts
+========
+
+.. automodule:: xa.hosts
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      default_hosts
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Host
+      LocalHost
+      SSHHost
+      HTTPHost
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   http
+   local
+   ssh

@@ -1,0 +1,30 @@
+xa.claude\_cli
+==============
+
+.. automodule:: xa.claude_cli
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      complete_spawn
+      diagnose_bridgeless
+      find_claude_pid
+      new_archive_id
+      pid_is_claude
+      prepare_spawn
+      resolve_bridge_url
+      resume_session
+      spawn_session
+      supported_cli_flags
+      tmux_session_dedicated_to
+      wait_for_bridge_url
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PendingSpawn
+      SpawnResult
+   

@@ -1,4 +1,0 @@
-xa.archive
-==========
-.. automodule:: xa.archive
-   :members:

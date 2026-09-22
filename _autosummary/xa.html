@@ -1,0 +1,1226 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="xa.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown">
+<link rel="alternate" type="text/markdown" href="xa.html.md">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.archive" href="xa.archive.html"><link rel="prev" title="API reference" href="../api.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>xa - xa</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #93342a;
+  --color-brand-content: #93342a;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">xa</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">xa</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">xa</a><input aria-label="Toggle navigation of xa" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="xa.archive.html">xa.archive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.cli.html">xa.cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.config.html">xa.config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="xa.hosts.html">xa.hosts</a><input aria-label="Toggle navigation of xa.hosts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.http.html">xa.hosts.http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.local.html">xa.hosts.local</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="xa.revive.html">xa.revive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.sessions.html">xa.sessions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.store.html">xa.store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.tmux.html">xa.tmux</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/_autosummary/xa.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-xa">
+<span id="xa"></span><h1>xa<a class="headerlink" href="#module-xa" title="Link to this heading">¶</a></h1>
+<p>xa — tools for managing remote Claude Code sessions.</p>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.encode_project_slug" title="xa.encode_project_slug"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encode_project_slug</span></code></a>(cwd)</p></td>
+<td><p>Encode a cwd into the <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug form.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.history_iter" title="xa.history_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">history_iter</span></code></a>(*[, claude_home])</p></td>
+<td><p>Yield entries from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code> in file order (oldest first).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.iter_ephemeral_sessions" title="xa.iter_ephemeral_sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_ephemeral_sessions</span></code></a>(*[, claude_home])</p></td>
+<td><p>Yield all live ephemeral session dicts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.iter_project_slugs" title="xa.iter_project_slugs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_project_slugs</span></code></a>(*[, claude_home])</p></td>
+<td><p>Yield slugs (directory names) under <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.iter_transcript_events" title="xa.iter_transcript_events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_transcript_events</span></code></a>(path)</p></td>
+<td><p>Yield every event from a transcript JSONL.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.iter_transcript_files" title="xa.iter_transcript_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_transcript_files</span></code></a>(*[, claude_home, ...])</p></td>
+<td><p>Yield transcript JSONL paths, optionally restricted to one project.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.parse_project_slug" title="xa.parse_project_slug"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_project_slug</span></code></a>(slug)</p></td>
+<td><p>Decode a <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug back to a cwd.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.read_ephemeral_session" title="xa.read_ephemeral_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_ephemeral_session</span></code></a>(pid, *[, claude_home])</p></td>
+<td><p>Read the per-process session file for <code class="docutils literal notranslate"><span class="pre">pid</span></code> if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.transcript_forensics" title="xa.transcript_forensics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transcript_forensics</span></code></a>(path)</p></td>
+<td><p>Extract postmortem-relevant facts from the tail of a transcript.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.transcript_metadata" title="xa.transcript_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transcript_metadata</span></code></a>(path)</p></td>
+<td><p>Summarise a transcript without holding it all in memory.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.transcript_path" title="xa.transcript_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transcript_path</span></code></a>(cwd, session_id, *[, ...])</p></td>
+<td><p>Return the transcript path for <code class="docutils literal notranslate"><span class="pre">(cwd,</span> <span class="pre">session_id)</span></code> if it exists.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.resolve_bridge_url" title="xa.resolve_bridge_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_bridge_url</span></code></a>(session_name, *[, ...])</p></td>
+<td><p>Return <code class="docutils literal notranslate"><span class="pre">(url,</span> <span class="pre">source)</span></code> for a live tmux-hosted claude session.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.resume_session" title="xa.resume_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume_session</span></code></a>(claude_session_id, *, cwd[, ...])</p></td>
+<td><p>Launch <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span> <span class="pre">&lt;id&gt;</span></code> in a new detached tmux session.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.spawn_session" title="xa.spawn_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spawn_session</span></code></a>(name, *, cwd[, claude_bin, ...])</p></td>
+<td><p>Create a detached tmux session running <code class="docutils literal notranslate"><span class="pre">claude</span></code> in <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.get_session" title="xa.get_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_session</span></code></a>(session_id, *[, hosts, claude_home])</p></td>
+<td><p>Find one session by full ID or unique prefix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.iter_local_sessions" title="xa.iter_local_sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_local_sessions</span></code></a>(*[, claude_home, ...])</p></td>
+<td><p>Legacy local-only iterator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.kill_session" title="xa.kill_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kill_session</span></code></a>(session, *[, hosts])</p></td>
+<td><p>Kill a live <code class="docutils literal notranslate"><span class="pre">Session</span></code>, scoped to what actually belongs to it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.list_sessions" title="xa.list_sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_sessions</span></code></a>(*[, hosts, project, ...])</p></td>
+<td><p>Return sessions sorted by recency (live first, then newest-modified).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.resume" title="xa.resume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume</span></code></a>(session, *[, cwd, name, hosts])</p></td>
+<td><p>Resume a transcript / archived session on its originating host.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.default_events_store" title="xa.default_events_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_events_store</span></code></a>([state_dir])</p></td>
+<td><p>The event log at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/events.jsonl</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.default_pane_store" title="xa.default_pane_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_pane_store</span></code></a>([state_dir])</p></td>
+<td><p>Per-session pane logs at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/panes/&lt;id&gt;.log</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_created</span></code>(events, *, id, name, cwd, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_gone</span></code>(events, *, id, name, reason[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.append_hidden" title="xa.append_hidden"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_hidden</span></code></a>(events, *, id, hidden)</p></td>
+<td><p>Mark an archived session as hidden (or un-hide it).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.append_label" title="xa.append_label"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_label</span></code></a>(events, *, id, label)</p></td>
+<td><p>Set or clear a user-supplied display label for a session.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">append_url_acquired</span></code>(events, *, id, name[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.classify_death" title="xa.classify_death"><code class="xref py py-obj docutils literal notranslate"><span class="pre">classify_death</span></code></a>(pane_kind, *[, replaced, ...])</p></td>
+<td><p>Pick the most specific death reason from available signals.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.overlays" title="xa.overlays"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overlays</span></code></a>(events)</p></td>
+<td><p>Fold <code class="docutils literal notranslate"><span class="pre">labeled</span></code> / <code class="docutils literal notranslate"><span class="pre">hidden</span></code> events into <code class="docutils literal notranslate"><span class="pre">{id:</span> <span class="pre">{label,</span> <span class="pre">hidden}}</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.reconcile" title="xa.reconcile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconcile</span></code></a>(events, panes, live_sessions, *[, ...])</p></td>
+<td><p>Emit <code class="docutils literal notranslate"><span class="pre">gone</span></code> events for archived sessions missing from <code class="docutils literal notranslate"><span class="pre">live_sessions</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.records" title="xa.records"><code class="xref py py-obj docutils literal notranslate"><span class="pre">records</span></code></a>(events, panes)</p></td>
+<td><p>Return per-session summaries, newest-first (by creation time).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.default_hosts" title="xa.default_hosts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_hosts</span></code></a>()</p></td>
+<td><p>The out-of-the-box registry: one local host, nothing else.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_config_path</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.load" title="xa.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>([path])</p></td>
+<td><p>Return <code class="docutils literal notranslate"><span class="pre">(settings,</span> <span class="pre">hosts_registry)</span></code> from a config file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.load_hosts" title="xa.load_hosts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_hosts</span></code></a>([path])</p></td>
+<td><p>Shortcut: just the host registry.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.HistoryEntry" title="xa.HistoryEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a>(cwd, project, display, ...)</p></td>
+<td><p>One line from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.TranscriptForensics" title="xa.TranscriptForensics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a>(transcript_path, ...)</p></td>
+<td><p>Postmortem facts extracted by walking a transcript from the end.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.TranscriptMeta" title="xa.TranscriptMeta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a>(path, session_id, cwd, ...)</p></td>
+<td><p>Summary of a transcript JSONL, cheap enough to compute for listings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.SpawnResult" title="xa.SpawnResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpawnResult</span></code></a>(name, cwd, claude_pid, ...[, ...])</p></td>
+<td><p>What <code class="docutils literal notranslate"><span class="pre">spawn_session</span></code> / <code class="docutils literal notranslate"><span class="pre">resume_session</span></code> return to the caller.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.Session" title="xa.Session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Session</span></code></a>(id, claude_session_id, ...[, ...])</p></td>
+<td><p>Canonical session record — valid across hosts and states.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.FileStore" title="xa.FileStore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileStore</span></code></a>(root, *[, suffix])</p></td>
+<td><p>Directory of files, accessed by key.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.JsonLinesStore" title="xa.JsonLinesStore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JsonLinesStore</span></code></a>(path)</p></td>
+<td><p>Append-only JSONL file with an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> reader.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.ArchiveRecord" title="xa.ArchiveRecord"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArchiveRecord</span></code></a>(id, name, cwd, created, url, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.HTTPHost" title="xa.HTTPHost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTTPHost</span></code></a>(name, *, base_url[, auth, ...])</p></td>
+<td><p>Client for a remote <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">serve</span></code> instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.Host" title="xa.Host"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Host</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Duck-typed interface every transport satisfies.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.LocalHost" title="xa.LocalHost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocalHost</span></code></a>([name, claude_home, claude_bin, ...])</p></td>
+<td><p>The machine <code class="docutils literal notranslate"><span class="pre">xa</span></code> is running on.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.SSHHost" title="xa.SSHHost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SSHHost</span></code></a>(name, *, host[, user, ...])</p></td>
+<td><p>Transcripts via rsync; actions via ssh exec.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.Settings" title="xa.Settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Settings</span></code></a>(cache_dir[, stale_threshold_sec, ...])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.ArchiveRecord">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">ArchiveRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gone_detected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gone_reason</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_log_bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forensics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#ArchiveRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.ArchiveRecord" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.FileStore">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">FileStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#FileStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.FileStore" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Directory of files, accessed by key.</p>
+<p>Values are <code class="docutils literal notranslate"><span class="pre">bytes</span></code>. Keys must match <code class="docutils literal notranslate"><span class="pre">[A-Za-z0-9_.-]+</span></code> — this
+rejects path traversal attempts like <code class="docutils literal notranslate"><span class="pre">../etc/passwd</span></code>.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.FileStore.path_for">
+<span class="sig-name descname"><span class="pre">path_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#FileStore.path_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.FileStore.path_for" title="Link to this definition">¶</a></dt>
+<dd><p>Public path accessor (for callers that need to hand the path to tmux).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.HTTPHost">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">HTTPHost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/http.html#HTTPHost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.HTTPHost" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Client for a remote <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">serve</span></code> instance.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.HTTPHost.sync">
+<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/http.html#HTTPHost.sync"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.HTTPHost.sync" title="Link to this definition">¶</a></dt>
+<dd><p>HTTP sessions are fetched fresh on each listing — no separate sync.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.HistoryEntry">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">HistoryEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pasted_contents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#HistoryEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.HistoryEntry" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>One line from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code>.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.Host">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">Host</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts.html#Host"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.Host" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<p>Duck-typed interface every transport satisfies.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.JsonLinesStore">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">JsonLinesStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#JsonLinesStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.JsonLinesStore" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Append-only JSONL file with an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> reader.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">s</span> <span class="o">=</span> <span class="n">JsonLinesStore</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">td</span><span class="p">)</span> <span class="o">/</span> <span class="s1">'log.jsonl'</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">... </span>    <span class="n">s</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="gp">... </span>    <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="p">[{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.LocalHost">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">LocalHost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alive_predicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/local.html#LocalHost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.LocalHost" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The machine <code class="docutils literal notranslate"><span class="pre">xa</span></code> is running on.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.LocalHost.sync">
+<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/local.html#LocalHost.sync"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.LocalHost.sync" title="Link to this definition">¶</a></dt>
+<dd><p>No-op — local has nothing to sync.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.SSHHost">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">SSHHost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'~/.claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.cache/xa/remotes')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stale_threshold_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssh_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ssh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rsync_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rsync'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/ssh.html#SSHHost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.SSHHost" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Transcripts via rsync; actions via ssh exec.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Logical name used in <code class="docutils literal notranslate"><span class="pre">Session.host</span></code> and elsewhere.</p></li>
+<li><p><strong>host</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – SSH hostname / alias. Matches cc-sessions: either an
+<code class="docutils literal notranslate"><span class="pre">~/.ssh/config</span></code> alias (<code class="docutils literal notranslate"><span class="pre">devbox</span></code>) or a raw host (<code class="docutils literal notranslate"><span class="pre">1.2.3.4</span></code>).</p></li>
+<li><p><strong>user</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Optional SSH user for raw hosts.</p></li>
+<li><p><strong>remote_claude_home</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Remote path to <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">~/.claude</span></code> which
+resolves relative to the SSH user’s home on the remote side.</p></li>
+<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span>) – Where to stage the rsync’d tree locally.</p></li>
+<li><p><strong>stale_threshold_sec</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Re-sync when the cached copy is older than this. <code class="docutils literal notranslate"><span class="pre">0</span></code> means
+always sync.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.SSHHost.spawn">
+<span class="sig-name descname"><span class="pre">spawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">opts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/ssh.html#SSHHost.spawn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.SSHHost.spawn" title="Link to this definition">¶</a></dt>
+<dd><p>Spawn <code class="docutils literal notranslate"><span class="pre">tmux</span> <span class="pre">new-session</span> <span class="pre">-d</span> <span class="pre">'s</span> <span class="pre">&lt;name&gt;'</span> <span class="pre">'cd</span> <span class="pre">&lt;cwd&gt;</span> <span class="pre">&amp;&amp;</span> <span class="pre">exec</span> <span class="pre">claude'</span></code> over SSH.</p>
+<p>URL detection is left to the caller’s next <a class="reference internal" href="#xa.SSHHost.sync" title="xa.SSHHost.sync"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sync()</span></code></a> + listing —
+we don’t round-trip waiting for the bridge URL here (that would
+hold an SSH connection open for up to 2 minutes).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.claude_cli.html#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xa.SSHHost.sync">
+<span class="sig-name descname"><span class="pre">sync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/ssh.html#SSHHost.sync"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.SSHHost.sync" title="Link to this definition">¶</a></dt>
+<dd><p>Pull <code class="docutils literal notranslate"><span class="pre">&lt;remote_claude_home&gt;/projects/</span></code> and <code class="docutils literal notranslate"><span class="pre">/sessions/</span></code> into the cache.</p>
+<p>Non-existent remote directories are tolerated (rsync returns 23).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.Session">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">Session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bridge_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_user_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forked_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modified</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcript_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_first_turn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_pane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#Session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.Session" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Canonical session record — valid across hosts and states.</p>
+<p>Fields that don’t apply to a given state are <code class="docutils literal notranslate"><span class="pre">None</span></code>. Discovery
+functions return fresh instances; callers should treat it as
+immutable.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.Settings">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">Settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stale_threshold_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/config.html#Settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.Settings" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.SpawnResult">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">SpawnResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bridge_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warning</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#SpawnResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.SpawnResult" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>What <code class="docutils literal notranslate"><span class="pre">spawn_session</span></code> / <code class="docutils literal notranslate"><span class="pre">resume_session</span></code> return to the caller.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.TranscriptForensics">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">TranscriptForensics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transcript_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_exit_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_result_tail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_assistant_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_interrupted</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#TranscriptForensics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.TranscriptForensics" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Postmortem facts extracted by walking a transcript from the end.</p>
+<p><code class="docutils literal notranslate"><span class="pre">user_interrupted</span></code> is the raw marker presence — it is <strong>ambiguous</strong>
+(also fires on phone-standby bridge drops), so do not derive user intent
+from it alone. Callers should corroborate against pane-log tails.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.TranscriptMeta">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">TranscriptMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_user_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forked_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modified</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#TranscriptMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.TranscriptMeta" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Summary of a transcript JSONL, cheap enough to compute for listings.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.append_hidden">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">append_hidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#append_hidden"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.append_hidden" title="Link to this definition">¶</a></dt>
+<dd><p>Mark an archived session as hidden (or un-hide it).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.append_label">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">append_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#append_label"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.append_label" title="Link to this definition">¶</a></dt>
+<dd><p>Set or clear a user-supplied display label for a session.</p>
+<p><code class="docutils literal notranslate"><span class="pre">id</span></code> can be an archive id, a tmux session name, or a
+<code class="docutils literal notranslate"><span class="pre">claude_session_id</span></code> — whatever key the caller will use to look it
+up later. Empty-string or <code class="docutils literal notranslate"><span class="pre">None</span></code> label clears any prior label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.classify_death">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">classify_death</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pane_kind</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">replaced</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forensics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oom_markers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#classify_death"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.classify_death" title="Link to this definition">¶</a></dt>
+<dd><p>Pick the most specific death reason from available signals.</p>
+<p><code class="docutils literal notranslate"><span class="pre">oom_markers</span></code> is the tuple of OOM-shaped strings observed in the
+pane tail (see <code class="docutils literal notranslate"><span class="pre">_OOM_PANE_MARKERS</span></code>). When the last tool exited
+with 137 and at least one marker is present, we promote the verdict
+to <code class="docutils literal notranslate"><span class="pre">oom_killed</span></code> — that pair is the strongest single signal we can
+get without reading kernel logs (which would need root and is not
+portable).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'clean_exit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'abrupt'</span></code>, <code class="docutils literal notranslate"><span class="pre">'interrupted'</span></code>, <code class="docutils literal notranslate"><span class="pre">'tool_crash'</span></code>, <code class="docutils literal notranslate"><span class="pre">'oom_killed'</span></code>, <code class="docutils literal notranslate"><span class="pre">'replaced'</span></code>, <code class="docutils literal notranslate"><span class="pre">'missing'</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.default_events_store">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">default_events_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#default_events_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.default_events_store" title="Link to this definition">¶</a></dt>
+<dd><p>The event log at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/events.jsonl</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.store.html#xa.store.JsonLinesStore" title="xa.store.JsonLinesStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">JsonLinesStore</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.default_hosts">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">default_hosts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts.html#default_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.default_hosts" title="Link to this definition">¶</a></dt>
+<dd><p>The out-of-the-box registry: one local host, nothing else.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="xa.hosts.html#xa.hosts.Host" title="xa.hosts.Host"><code class="xref py py-class docutils literal notranslate"><span class="pre">Host</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.default_pane_store">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">default_pane_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#default_pane_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.default_pane_store" title="Link to this definition">¶</a></dt>
+<dd><p>Per-session pane logs at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/panes/&lt;id&gt;.log</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.store.html#xa.store.FileStore" title="xa.store.FileStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileStore</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.encode_project_slug">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">encode_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#encode_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.encode_project_slug" title="Link to this definition">¶</a></dt>
+<dd><p>Encode a cwd into the <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug form.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/root/py/proj/tt/glossa'</span><span class="p">)</span>
+<span class="go">'-root-py-proj-tt-glossa'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
+<span class="go">'-'</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.get_session">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">get_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">hosts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#get_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.get_session" title="Link to this definition">¶</a></dt>
+<dd><p>Find one session by full ID or unique prefix.</p>
+<p>Raises <code class="docutils literal notranslate"><span class="pre">LookupError</span></code> if the prefix is ambiguous.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.history_iter">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">history_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#history_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.history_iter" title="Link to this definition">¶</a></dt>
+<dd><p>Yield entries from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code> in file order (oldest first).</p>
+<p>Useful for cross-project full-text prompt search without loading
+every transcript.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.HistoryEntry" title="xa.claude_fs.HistoryEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.iter_ephemeral_sessions">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">iter_ephemeral_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#iter_ephemeral_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.iter_ephemeral_sessions" title="Link to this definition">¶</a></dt>
+<dd><p>Yield all live ephemeral session dicts.</p>
+<p>A session file disappears when claude exits, so this reflects
+momentary state only. NB: claude deletes the file on <em>clean</em> exit
+only — a crash / SIGKILL / reboot leaves a stale file behind, so
+callers who care about actual liveness must validate each dict with
+<code class="xref py py-func docutils literal notranslate"><span class="pre">ephemeral_session_alive()</span></code> (or an equivalent predicate).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.iter_local_sessions">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">iter_local_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_live</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#iter_local_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.iter_local_sessions" title="Link to this definition">¶</a></dt>
+<dd><p>Legacy local-only iterator.</p>
+<p>Retained for backward compatibility and because some tests construct
+sessions directly from a fake <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code>. Wraps a fresh
+<a class="reference internal" href="#xa.LocalHost" title="xa.LocalHost"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalHost</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.iter_project_slugs">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">iter_project_slugs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#iter_project_slugs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.iter_project_slugs" title="Link to this definition">¶</a></dt>
+<dd><p>Yield slugs (directory names) under <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.iter_transcript_events">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">iter_transcript_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#iter_transcript_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.iter_transcript_events" title="Link to this definition">¶</a></dt>
+<dd><p>Yield every event from a transcript JSONL.</p>
+<p>Lines that fail to parse are silently skipped — transcripts are
+append-only on a live process, so the tail can be partial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.iter_transcript_files">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">iter_transcript_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#iter_transcript_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.iter_transcript_files" title="Link to this definition">¶</a></dt>
+<dd><p>Yield transcript JSONL paths, optionally restricted to one project.</p>
+<p>Only files whose stem is a valid UUID are yielded — this filters out
+the <code class="docutils literal notranslate"><span class="pre">memory/</span></code> subfolder and other non-session artefacts Claude Code
+stores alongside transcripts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.kill_session">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">kill_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">hosts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#kill_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.kill_session" title="Link to this definition">¶</a></dt>
+<dd><p>Kill a live <code class="docutils literal notranslate"><span class="pre">Session</span></code>, scoped to what actually belongs to it.</p>
+<p>Kills the backing tmux session only when it is <em>dedicated</em> to this
+claude (single pane, claude verified in it) — a claude living in one
+window of a shared multi-window workspace must not take the whole
+workspace down, so there we SIGTERM the identity-verified pid
+instead. Remote hosts keep the name-kill contract (their server
+applies its own scoping). Returns a short description of what was
+killed (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;tmux:mysess&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;pid:1234&quot;</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.list_sessions">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">list_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">hosts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_forks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_live</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#list_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.list_sessions" title="Link to this definition">¶</a></dt>
+<dd><p>Return sessions sorted by recency (live first, then newest-modified).</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">hosts</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code> we default to a single <a class="reference internal" href="#xa.LocalHost" title="xa.LocalHost"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalHost</span></code></a>.
+If <code class="docutils literal notranslate"><span class="pre">claude_home</span></code> or <code class="docutils literal notranslate"><span class="pre">tmux_bin</span></code> are given, they’re forwarded into
+that default <a class="reference internal" href="#xa.LocalHost" title="xa.LocalHost"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalHost</span></code></a> — handy for fixture-based tests.</p>
+<p>Filters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">project</span></code> — substring match against <code class="docutils literal notranslate"><span class="pre">cwd</span></code> (case-insensitive)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">include_forks=False</span></code> — drop sessions with a <code class="docutils literal notranslate"><span class="pre">forked_from</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">include_live=False</span></code> — skip live discovery (per host)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">state</span></code> — one of <code class="docutils literal notranslate"><span class="pre">&quot;live&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;archived&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;transcript_only&quot;</span></code></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.load">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/config.html#load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.load" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">(settings,</span> <span class="pre">hosts_registry)</span></code> from a config file.</p>
+<p>Missing file → <code class="docutils literal notranslate"><span class="pre">(defaults,</span> <span class="pre">{&quot;local&quot;:</span> <span class="pre">LocalHost()})</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference internal" href="xa.config.html#xa.config.Settings" title="xa.config.Settings"><code class="xref py py-class docutils literal notranslate"><span class="pre">Settings</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.load_hosts">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">load_hosts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/config.html#load_hosts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.load_hosts" title="Link to this definition">¶</a></dt>
+<dd><p>Shortcut: just the host registry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.overlays">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">overlays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#overlays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.overlays" title="Link to this definition">¶</a></dt>
+<dd><p>Fold <code class="docutils literal notranslate"><span class="pre">labeled</span></code> / <code class="docutils literal notranslate"><span class="pre">hidden</span></code> events into <code class="docutils literal notranslate"><span class="pre">{id:</span> <span class="pre">{label,</span> <span class="pre">hidden}}</span></code>.</p>
+<p>Later events win. Useful when rendering live sessions too — callers
+look up by whatever id they know (archive id, claude_session_id,
+tmux name) and apply the overlay if present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.parse_project_slug">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">parse_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#parse_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.parse_project_slug" title="Link to this definition">¶</a></dt>
+<dd><p>Decode a <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug back to a cwd.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">'-root-py-proj-tt-glossa'</span><span class="p">)</span>
+<span class="go">'/root/py/proj/tt/glossa'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">'-Users-thorwhalen-tw-server'</span><span class="p">)</span>
+<span class="go">'/Users/thorwhalen/tw/server'</span>
+</pre></div>
+</div>
+<p>NB: This transform is lossy — a cwd with literal <code class="docutils literal notranslate"><span class="pre">-</span></code> in segment names
+round-trips to a different slug. Claude Code itself has the same
+limitation, so we accept it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.read_ephemeral_session">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">read_ephemeral_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#read_ephemeral_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.read_ephemeral_session" title="Link to this definition">¶</a></dt>
+<dd><p>Read the per-process session file for <code class="docutils literal notranslate"><span class="pre">pid</span></code> if present.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.reconcile">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">reconcile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_sessions</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#reconcile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.reconcile" title="Link to this definition">¶</a></dt>
+<dd><p>Emit <code class="docutils literal notranslate"><span class="pre">gone</span></code> events for archived sessions missing from <code class="docutils literal notranslate"><span class="pre">live_sessions</span></code>.</p>
+<p>Returns the list of freshly-emitted events (handy for tests). Idempotent:
+calling twice with the same live list produces no new events the
+second time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.records">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.records" title="Link to this definition">¶</a></dt>
+<dd><p>Return per-session summaries, newest-first (by creation time).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="xa.archive.html#xa.archive.ArchiveRecord" title="xa.archive.ArchiveRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArchiveRecord</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.resolve_bridge_url">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">resolve_bridge_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scrape_lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#resolve_bridge_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.resolve_bridge_url" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">(url,</span> <span class="pre">source)</span></code> for a live tmux-hosted claude session.</p>
+<p>Primary path: find the claude descendant pid → read
+<code class="docutils literal notranslate"><span class="pre">~/.claude/sessions/&lt;pid&gt;.json</span></code> → take <code class="docutils literal notranslate"><span class="pre">bridgeSessionId</span></code>.
+Fallback: regex-scrape <code class="docutils literal notranslate"><span class="pre">capture-pane</span></code> output for the full URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'session_file'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pane_capture'</span></code>]]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.resume">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">resume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hosts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">opts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.resume" title="Link to this definition">¶</a></dt>
+<dd><p>Resume a transcript / archived session on its originating host.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.claude_cli.html#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.resume_session">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">resume_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_timeout_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_remote_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_log_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#resume_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.resume_session" title="Link to this definition">¶</a></dt>
+<dd><p>Launch <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span> <span class="pre">&lt;id&gt;</span></code> in a new detached tmux session.</p>
+<p>A user-supplied <code class="docutils literal notranslate"><span class="pre">name</span></code> is also passed to <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--name</span></code> (renaming
+the resumed session’s display name); the auto-generated fallback name
+is tmux-only so a resume never clobbers the session’s existing name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.claude_cli.html#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.spawn_session">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">spawn_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_timeout_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_remote_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_log_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#spawn_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.spawn_session" title="Link to this definition">¶</a></dt>
+<dd><p>Create a detached tmux session running <code class="docutils literal notranslate"><span class="pre">claude</span></code> in <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p>
+<p>Waits up to <code class="docutils literal notranslate"><span class="pre">url_timeout_sec</span></code> for the bridge URL to appear, dismissing
+the “trust this folder” prompt and enabling remote control (via the
+<code class="docutils literal notranslate"><span class="pre">--remote-control</span></code> flag on modern claude binaries, or the TUI
+handshake on older ones). The session name is also passed to
+<code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--name</span></code> so the Claude-side display name matches; <code class="docutils literal notranslate"><span class="pre">model</span></code>
+and <code class="docutils literal notranslate"><span class="pre">effort</span></code> become per-session <code class="docutils literal notranslate"><span class="pre">--model</span></code> / <code class="docutils literal notranslate"><span class="pre">--effort</span></code> flags.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">archive_store</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">pane_store</span></code>) are given, emits
+<code class="docutils literal notranslate"><span class="pre">created</span></code> + <code class="docutils literal notranslate"><span class="pre">url_acquired</span></code> events to the archive and pipes the pane
+output to a file under <code class="docutils literal notranslate"><span class="pre">pane_store</span></code>.</p>
+<p>Services that want an immediate return should call
+<code class="xref py py-func docutils literal notranslate"><span class="pre">prepare_spawn()</span></code> and run <code class="xref py py-func docutils literal notranslate"><span class="pre">complete_spawn()</span></code> in the background
+instead — this function is simply the composition of the two.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.claude_cli.html#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.transcript_forensics">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">transcript_forensics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#transcript_forensics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.transcript_forensics" title="Link to this definition">¶</a></dt>
+<dd><p>Extract postmortem-relevant facts from the tail of a transcript.</p>
+<p>Walks from the <em>end</em> of the file so we find the most recent
+<code class="docutils literal notranslate"><span class="pre">tool_use</span></code> / <code class="docutils literal notranslate"><span class="pre">tool_result</span></code> / assistant <code class="docutils literal notranslate"><span class="pre">text</span></code> without reparsing
+the whole transcript.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.TranscriptForensics" title="xa.claude_fs.TranscriptForensics"><code class="xref py py-class docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.transcript_metadata">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">transcript_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#transcript_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.transcript_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Summarise a transcript without holding it all in memory.</p>
+<p>Walks forward, counting turns and capturing the first user message /
+summary / custom title / fork pointer / cwd / sessionId. Stops reading
+content fields once it has what it needs, but still counts turns to
+the end. For very large transcripts, callers who only need counts
+should use <code class="docutils literal notranslate"><span class="pre">iter_transcript_events</span></code> directly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.TranscriptMeta" title="xa.claude_fs.TranscriptMeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.transcript_path">
+<span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">transcript_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#transcript_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.transcript_path" title="Link to this definition">¶</a></dt>
+<dd><p>Return the transcript path for <code class="docutils literal notranslate"><span class="pre">(cwd,</span> <span class="pre">session_id)</span></code> if it exists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">home</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">td</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="p">(</span><span class="n">home</span> <span class="o">/</span> <span class="s1">'projects'</span> <span class="o">/</span> <span class="s1">'-foo-bar'</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">f</span> <span class="o">=</span> <span class="n">home</span> <span class="o">/</span> <span class="s1">'projects'</span> <span class="o">/</span> <span class="s1">'-foo-bar'</span> <span class="o">/</span> <span class="s1">'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.jsonl'</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">p</span> <span class="o">=</span> <span class="n">transcript_path</span><span class="p">(</span><span class="s1">'/foo/bar'</span><span class="p">,</span> <span class="s1">'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">home</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">p</span> <span class="o">==</span> <span class="n">f</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<p class="rubric">Modules</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.archive.html#module-xa.archive" title="xa.archive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">archive</span></code></a></p></td>
+<td><p>Postmortem archive of Claude Code sessions spawned by <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.claude_cli.html#module-xa.claude_cli" title="xa.claude_cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">claude_cli</span></code></a></p></td>
+<td><p>Spawn, resume, and URL-resolve Claude Code sessions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.claude_fs.html#module-xa.claude_fs" title="xa.claude_fs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">claude_fs</span></code></a></p></td>
+<td><p>Pure filesystem view of <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.cli.html#module-xa.cli" title="xa.cli"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cli</span></code></a></p></td>
+<td><p>Command-line interface for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.config.html#module-xa.config" title="xa.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">config</span></code></a></p></td>
+<td><p>TOML config loader for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.hosts.html#module-xa.hosts" title="xa.hosts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hosts</span></code></a></p></td>
+<td><p>Host abstraction — local, SSH, HTTP backends.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.revive.html#module-xa.revive" title="xa.revive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive</span></code></a></p></td>
+<td><p>Detect — and reconnect — Claude Code panes whose Remote Control dropped.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.service.html#module-xa.service" title="xa.service"><code class="xref py py-obj docutils literal notranslate"><span class="pre">service</span></code></a></p></td>
+<td><p>FastAPI service for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.sessions.html#module-xa.sessions" title="xa.sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sessions</span></code></a></p></td>
+<td><p>The unified <code class="docutils literal notranslate"><span class="pre">Session</span></code> domain model and multi-host discovery.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.store.html#module-xa.store" title="xa.store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store</span></code></a></p></td>
+<td><p>Minimal key-value and append-log storage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.tmux.html#module-xa.tmux" title="xa.tmux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmux</span></code></a></p></td>
+<td><p>Pure tmux wrappers.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="xa.archive.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">xa.archive</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../api.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">API reference</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">xa</a><ul>
+<li><a class="reference internal" href="#xa.ArchiveRecord"><code class="docutils literal notranslate"><span class="pre">ArchiveRecord</span></code></a></li>
+<li><a class="reference internal" href="#xa.FileStore"><code class="docutils literal notranslate"><span class="pre">FileStore</span></code></a><ul>
+<li><a class="reference internal" href="#xa.FileStore.path_for"><code class="docutils literal notranslate"><span class="pre">FileStore.path_for()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.HTTPHost"><code class="docutils literal notranslate"><span class="pre">HTTPHost</span></code></a><ul>
+<li><a class="reference internal" href="#xa.HTTPHost.sync"><code class="docutils literal notranslate"><span class="pre">HTTPHost.sync()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.HistoryEntry"><code class="docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a></li>
+<li><a class="reference internal" href="#xa.Host"><code class="docutils literal notranslate"><span class="pre">Host</span></code></a></li>
+<li><a class="reference internal" href="#xa.JsonLinesStore"><code class="docutils literal notranslate"><span class="pre">JsonLinesStore</span></code></a></li>
+<li><a class="reference internal" href="#xa.LocalHost"><code class="docutils literal notranslate"><span class="pre">LocalHost</span></code></a><ul>
+<li><a class="reference internal" href="#xa.LocalHost.sync"><code class="docutils literal notranslate"><span class="pre">LocalHost.sync()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.SSHHost"><code class="docutils literal notranslate"><span class="pre">SSHHost</span></code></a><ul>
+<li><a class="reference internal" href="#xa.SSHHost.spawn"><code class="docutils literal notranslate"><span class="pre">SSHHost.spawn()</span></code></a></li>
+<li><a class="reference internal" href="#xa.SSHHost.sync"><code class="docutils literal notranslate"><span class="pre">SSHHost.sync()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#xa.Session"><code class="docutils literal notranslate"><span class="pre">Session</span></code></a></li>
+<li><a class="reference internal" href="#xa.Settings"><code class="docutils literal notranslate"><span class="pre">Settings</span></code></a></li>
+<li><a class="reference internal" href="#xa.SpawnResult"><code class="docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></li>
+<li><a class="reference internal" href="#xa.TranscriptForensics"><code class="docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a></li>
+<li><a class="reference internal" href="#xa.TranscriptMeta"><code class="docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a></li>
+<li><a class="reference internal" href="#xa.append_hidden"><code class="docutils literal notranslate"><span class="pre">append_hidden()</span></code></a></li>
+<li><a class="reference internal" href="#xa.append_label"><code class="docutils literal notranslate"><span class="pre">append_label()</span></code></a></li>
+<li><a class="reference internal" href="#xa.classify_death"><code class="docutils literal notranslate"><span class="pre">classify_death()</span></code></a></li>
+<li><a class="reference internal" href="#xa.default_events_store"><code class="docutils literal notranslate"><span class="pre">default_events_store()</span></code></a></li>
+<li><a class="reference internal" href="#xa.default_hosts"><code class="docutils literal notranslate"><span class="pre">default_hosts()</span></code></a></li>
+<li><a class="reference internal" href="#xa.default_pane_store"><code class="docutils literal notranslate"><span class="pre">default_pane_store()</span></code></a></li>
+<li><a class="reference internal" href="#xa.encode_project_slug"><code class="docutils literal notranslate"><span class="pre">encode_project_slug()</span></code></a></li>
+<li><a class="reference internal" href="#xa.get_session"><code class="docutils literal notranslate"><span class="pre">get_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.history_iter"><code class="docutils literal notranslate"><span class="pre">history_iter()</span></code></a></li>
+<li><a class="reference internal" href="#xa.iter_ephemeral_sessions"><code class="docutils literal notranslate"><span class="pre">iter_ephemeral_sessions()</span></code></a></li>
+<li><a class="reference internal" href="#xa.iter_local_sessions"><code class="docutils literal notranslate"><span class="pre">iter_local_sessions()</span></code></a></li>
+<li><a class="reference internal" href="#xa.iter_project_slugs"><code class="docutils literal notranslate"><span class="pre">iter_project_slugs()</span></code></a></li>
+<li><a class="reference internal" href="#xa.iter_transcript_events"><code class="docutils literal notranslate"><span class="pre">iter_transcript_events()</span></code></a></li>
+<li><a class="reference internal" href="#xa.iter_transcript_files"><code class="docutils literal notranslate"><span class="pre">iter_transcript_files()</span></code></a></li>
+<li><a class="reference internal" href="#xa.kill_session"><code class="docutils literal notranslate"><span class="pre">kill_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.list_sessions"><code class="docutils literal notranslate"><span class="pre">list_sessions()</span></code></a></li>
+<li><a class="reference internal" href="#xa.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li><a class="reference internal" href="#xa.load_hosts"><code class="docutils literal notranslate"><span class="pre">load_hosts()</span></code></a></li>
+<li><a class="reference internal" href="#xa.overlays"><code class="docutils literal notranslate"><span class="pre">overlays()</span></code></a></li>
+<li><a class="reference internal" href="#xa.parse_project_slug"><code class="docutils literal notranslate"><span class="pre">parse_project_slug()</span></code></a></li>
+<li><a class="reference internal" href="#xa.read_ephemeral_session"><code class="docutils literal notranslate"><span class="pre">read_ephemeral_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.reconcile"><code class="docutils literal notranslate"><span class="pre">reconcile()</span></code></a></li>
+<li><a class="reference internal" href="#xa.records"><code class="docutils literal notranslate"><span class="pre">records()</span></code></a></li>
+<li><a class="reference internal" href="#xa.resolve_bridge_url"><code class="docutils literal notranslate"><span class="pre">resolve_bridge_url()</span></code></a></li>
+<li><a class="reference internal" href="#xa.resume"><code class="docutils literal notranslate"><span class="pre">resume()</span></code></a></li>
+<li><a class="reference internal" href="#xa.resume_session"><code class="docutils literal notranslate"><span class="pre">resume_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.spawn_session"><code class="docutils literal notranslate"><span class="pre">spawn_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.transcript_forensics"><code class="docutils literal notranslate"><span class="pre">transcript_forensics()</span></code></a></li>
+<li><a class="reference internal" href="#xa.transcript_metadata"><code class="docutils literal notranslate"><span class="pre">transcript_metadata()</span></code></a></li>
+<li><a class="reference internal" href="#xa.transcript_path"><code class="docutils literal notranslate"><span class="pre">transcript_path()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=b39c9740"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>

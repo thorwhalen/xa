@@ -1,0 +1,28 @@
+xa.archive
+==========
+
+.. automodule:: xa.archive
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      append_created
+      append_gone
+      append_hidden
+      append_label
+      append_url_acquired
+      classify_death
+      overlays
+      reconcile
+      records
+      synthesize_diagnosis
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ArchiveRecord
+      PaneInspection
+   

@@ -1,0 +1,22 @@
+xa.sessions
+===========
+
+.. automodule:: xa.sessions
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_session
+      iter_local_sessions
+      kill_session
+      list_sessions
+      resume
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Session
+   

@@ -1,4 +1,0 @@
-xa.service
-==========
-.. automodule:: xa.service
-   :members:

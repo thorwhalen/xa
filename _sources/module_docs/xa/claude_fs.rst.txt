@@ -1,4 +1,0 @@
-xa.claude_fs
-============
-.. automodule:: xa.claude_fs
-   :members:

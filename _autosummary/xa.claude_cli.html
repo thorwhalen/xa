@@ -1,0 +1,636 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="xa.claude_cli.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown">
+<link rel="alternate" type="text/markdown" href="xa.claude_cli.html.md">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.claude_fs" href="xa.claude_fs.html"><link rel="prev" title="xa.archive" href="xa.archive.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>xa.claude_cli - xa</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #93342a;
+  --color-brand-content: #93342a;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">xa</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">xa</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="xa.html">xa</a><input aria-label="Toggle navigation of xa" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="xa.archive.html">xa.archive</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.cli.html">xa.cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.config.html">xa.config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="xa.hosts.html">xa.hosts</a><input aria-label="Toggle navigation of xa.hosts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.http.html">xa.hosts.http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.local.html">xa.hosts.local</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="xa.revive.html">xa.revive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.sessions.html">xa.sessions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.store.html">xa.store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.tmux.html">xa.tmux</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/_autosummary/xa.claude_cli.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-xa.claude_cli">
+<span id="xa-claude-cli"></span><h1>xa.claude_cli<a class="headerlink" href="#module-xa.claude_cli" title="Link to this heading">¶</a></h1>
+<p>Spawn, resume, and URL-resolve Claude Code sessions.</p>
+<p>Ties <code class="docutils literal notranslate"><span class="pre">xa.tmux</span></code> (pane / process control), <code class="docutils literal notranslate"><span class="pre">xa.claude_fs</span></code> (read the
+ephemeral <code class="docutils literal notranslate"><span class="pre">~/.claude/sessions/&lt;pid&gt;.json</span></code> file) and the <code class="docutils literal notranslate"><span class="pre">claude</span></code> CLI
+binary together. Everything here targets the <em>local</em> machine; remote-host
+dispatch lives in <code class="docutils literal notranslate"><span class="pre">xa.hosts</span></code> (Phase 6+).</p>
+<p>Bridge URL format: <code class="docutils literal notranslate"><span class="pre">https://claude.ai/code/&lt;bridgeSessionId&gt;</span></code>. The
+<code class="docutils literal notranslate"><span class="pre">bridgeSessionId</span></code> already starts with <code class="docutils literal notranslate"><span class="pre">session_</span></code> — do not prepend
+anything.</p>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_cli.complete_spawn" title="xa.claude_cli.complete_spawn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">complete_spawn</span></code></a>(pending)</p></td>
+<td><p>Blocking half of the spawn: wait for the URL, then report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_cli.diagnose_bridgeless" title="xa.claude_cli.diagnose_bridgeless"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diagnose_bridgeless</span></code></a>(session_name, *[, ...])</p></td>
+<td><p>Why has this session no bridge URL? Returns <code class="docutils literal notranslate"><span class="pre">(verdict,</span> <span class="pre">hint)</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_cli.find_claude_pid" title="xa.claude_cli.find_claude_pid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_claude_pid</span></code></a>(session_name, *[, tmux_bin])</p></td>
+<td><p>Return the PID of the claude process living in the tmux session.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_cli.new_archive_id" title="xa.claude_cli.new_archive_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">new_archive_id</span></code></a>()</p></td>
+<td><p>Fresh 12-char hex id used as the key for pane logs + archive events.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_cli.pid_is_claude" title="xa.claude_cli.pid_is_claude"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pid_is_claude</span></code></a>(pid)</p></td>
+<td><p>Portable positive identity check — used before ever signaling a pid.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_cli.prepare_spawn" title="xa.claude_cli.prepare_spawn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_spawn</span></code></a>(name, *, cwd[, resume_id, ...])</p></td>
+<td><p>Launch the tmux session and return without waiting for the URL.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_cli.resolve_bridge_url" title="xa.claude_cli.resolve_bridge_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_bridge_url</span></code></a>(session_name, *[, ...])</p></td>
+<td><p>Return <code class="docutils literal notranslate"><span class="pre">(url,</span> <span class="pre">source)</span></code> for a live tmux-hosted claude session.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_cli.resume_session" title="xa.claude_cli.resume_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume_session</span></code></a>(claude_session_id, *, cwd[, ...])</p></td>
+<td><p>Launch <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span> <span class="pre">&lt;id&gt;</span></code> in a new detached tmux session.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_cli.spawn_session" title="xa.claude_cli.spawn_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spawn_session</span></code></a>(name, *, cwd[, claude_bin, ...])</p></td>
+<td><p>Create a detached tmux session running <code class="docutils literal notranslate"><span class="pre">claude</span></code> in <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_cli.supported_cli_flags" title="xa.claude_cli.supported_cli_flags"><code class="xref py py-obj docutils literal notranslate"><span class="pre">supported_cli_flags</span></code></a>([claude_bin, ttl_sec])</p></td>
+<td><p>Long-form flags advertised by <code class="docutils literal notranslate"><span class="pre">&lt;claude_bin&gt;</span> <span class="pre">--help</span></code>, cached per binary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_cli.tmux_session_dedicated_to" title="xa.claude_cli.tmux_session_dedicated_to"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmux_session_dedicated_to</span></code></a>(session_name, ...)</p></td>
+<td><p>Is killing this whole tmux session equivalent to killing this claude?</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_cli.wait_for_bridge_url" title="xa.claude_cli.wait_for_bridge_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wait_for_bridge_url</span></code></a>(session_name, *, ...[, ...])</p></td>
+<td><p>Poll the ephemeral session file until a bridge URL appears.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_cli.PendingSpawn" title="xa.claude_cli.PendingSpawn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PendingSpawn</span></code></a>(name, cwd, claude_home, ...)</p></td>
+<td><p>A launched tmux session whose bridge-URL handshake hasn't finished.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpawnResult</span></code></a>(name, cwd, claude_pid, ...[, ...])</p></td>
+<td><p>What <code class="docutils literal notranslate"><span class="pre">spawn_session</span></code> / <code class="docutils literal notranslate"><span class="pre">resume_session</span></code> return to the caller.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.claude_cli.PendingSpawn">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">PendingSpawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warning</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_ctx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#PendingSpawn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.PendingSpawn" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A launched tmux session whose bridge-URL handshake hasn’t finished.</p>
+<p>Returned by <a class="reference internal" href="#xa.claude_cli.prepare_spawn" title="xa.claude_cli.prepare_spawn"><code class="xref py py-func docutils literal notranslate"><span class="pre">prepare_spawn()</span></code></a> — the fast, synchronous part (tmux
+session exists, pane log piping, <code class="docutils literal notranslate"><span class="pre">created</span></code> archive event emitted).
+Pass it to <a class="reference internal" href="#xa.claude_cli.complete_spawn" title="xa.claude_cli.complete_spawn"><code class="xref py py-func docutils literal notranslate"><span class="pre">complete_spawn()</span></code></a> to run the slow part (URL wait,
+prompt dismissal); services may do that from a background thread so
+the caller gets an immediate acknowledgment.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.claude_cli.SpawnResult">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">SpawnResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bridge_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warning</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#SpawnResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.SpawnResult" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>What <code class="docutils literal notranslate"><span class="pre">spawn_session</span></code> / <code class="docutils literal notranslate"><span class="pre">resume_session</span></code> return to the caller.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.complete_spawn">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">complete_spawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pending</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#complete_spawn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.complete_spawn" title="Link to this definition">¶</a></dt>
+<dd><p>Blocking half of the spawn: wait for the URL, then report.</p>
+<p>Safe to call from a background thread — all state it touches (tmux,
+<code class="docutils literal notranslate"><span class="pre">~/.claude/sessions/</span></code>, the append-only events log) is shared
+machine-wide, not per-process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.diagnose_bridgeless">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">diagnose_bridgeless</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_pid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#diagnose_bridgeless"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.diagnose_bridgeless" title="Link to this definition">¶</a></dt>
+<dd><p>Why has this session no bridge URL? Returns <code class="docutils literal notranslate"><span class="pre">(verdict,</span> <span class="pre">hint)</span></code>.</p>
+<p>One pane capture, classified by <a class="reference internal" href="xa.revive.html#xa.revive.classify" title="xa.revive.classify"><code class="xref py py-func docutils literal notranslate"><span class="pre">xa.revive.classify()</span></code></a> — the single
+rule engine for reading a claude pane. Only meaningful for a session
+with no bridge id: a connected session’s pane renders conversation text,
+which may legitimately quote <code class="docutils literal notranslate"><span class="pre">/login</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.find_claude_pid">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">find_claude_pid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#find_claude_pid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.find_claude_pid" title="Link to this definition">¶</a></dt>
+<dd><p>Return the PID of the claude process living in the tmux session.</p>
+<p>Walks <strong>every</strong> pane’s process tree (a claude can live in any window
+of a multi-window session, not just the first pane). Recognizes both
+the native binary (<code class="docutils literal notranslate"><span class="pre">comm</span> <span class="pre">==</span> <span class="pre">&quot;claude&quot;</span></code>) and npm/bun installs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.new_archive_id">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">new_archive_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#new_archive_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.new_archive_id" title="Link to this definition">¶</a></dt>
+<dd><p>Fresh 12-char hex id used as the key for pane logs + archive events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.pid_is_claude">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">pid_is_claude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pid</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#pid_is_claude"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.pid_is_claude" title="Link to this definition">¶</a></dt>
+<dd><p>Portable positive identity check — used before ever signaling a pid.</p>
+<p>Liveness (<a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.ephemeral_session_alive" title="xa.claude_fs.ephemeral_session_alive"><code class="xref py py-func docutils literal notranslate"><span class="pre">xa.claude_fs.ephemeral_session_alive()</span></code></a>) proves a
+process exists; this proves it is actually a claude, so a stale
+ephemeral file whose pid got recycled can never direct a kill at an
+unrelated process. Uses <code class="docutils literal notranslate"><span class="pre">/proc</span></code> where available, <code class="docutils literal notranslate"><span class="pre">ps</span></code> otherwise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.prepare_spawn">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">prepare_spawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_timeout_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_remote_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_log_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#prepare_spawn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.prepare_spawn" title="Link to this definition">¶</a></dt>
+<dd><p>Launch the tmux session and return without waiting for the URL.</p>
+<p>Composes per-session claude flags (<code class="docutils literal notranslate"><span class="pre">--name</span></code> / <code class="docutils literal notranslate"><span class="pre">--model</span></code> /
+<code class="docutils literal notranslate"><span class="pre">--effort</span></code> / <code class="docutils literal notranslate"><span class="pre">--remote-control</span></code>) when the installed binary
+supports them; requested-but-unsupported flags are reported in
+<code class="docutils literal notranslate"><span class="pre">PendingSpawn.warning</span></code> rather than failing the spawn.</p>
+<p><code class="docutils literal notranslate"><span class="pre">auto_remote_control</span></code> passes <code class="docutils literal notranslate"><span class="pre">--remote-control</span></code>, which is how xa
+asks for Remote Control now — a documented CLI flag, not a keystroke
+sent at a TUI. On a claude too old to advertise it, the host’s
+<code class="docutils literal notranslate"><span class="pre">remoteControlAtStartup</span></code> setting is the remaining path, so the
+warning says so rather than falling back to typing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.claude_cli.PendingSpawn" title="xa.claude_cli.PendingSpawn"><code class="xref py py-class docutils literal notranslate"><span class="pre">PendingSpawn</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.resolve_bridge_url">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">resolve_bridge_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scrape_lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#resolve_bridge_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.resolve_bridge_url" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">(url,</span> <span class="pre">source)</span></code> for a live tmux-hosted claude session.</p>
+<p>Primary path: find the claude descendant pid → read
+<code class="docutils literal notranslate"><span class="pre">~/.claude/sessions/&lt;pid&gt;.json</span></code> → take <code class="docutils literal notranslate"><span class="pre">bridgeSessionId</span></code>.
+Fallback: regex-scrape <code class="docutils literal notranslate"><span class="pre">capture-pane</span></code> output for the full URL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'session_file'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pane_capture'</span></code>]]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.resume_session">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">resume_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_timeout_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_remote_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_log_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#resume_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.resume_session" title="Link to this definition">¶</a></dt>
+<dd><p>Launch <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span> <span class="pre">&lt;id&gt;</span></code> in a new detached tmux session.</p>
+<p>A user-supplied <code class="docutils literal notranslate"><span class="pre">name</span></code> is also passed to <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--name</span></code> (renaming
+the resumed session’s display name); the auto-generated fallback name
+is tmux-only so a resume never clobbers the session’s existing name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.spawn_session">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">spawn_session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_timeout_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_remote_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_log_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">archive_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#spawn_session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.spawn_session" title="Link to this definition">¶</a></dt>
+<dd><p>Create a detached tmux session running <code class="docutils literal notranslate"><span class="pre">claude</span></code> in <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p>
+<p>Waits up to <code class="docutils literal notranslate"><span class="pre">url_timeout_sec</span></code> for the bridge URL to appear, dismissing
+the “trust this folder” prompt and enabling remote control (via the
+<code class="docutils literal notranslate"><span class="pre">--remote-control</span></code> flag on modern claude binaries, or the TUI
+handshake on older ones). The session name is also passed to
+<code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--name</span></code> so the Claude-side display name matches; <code class="docutils literal notranslate"><span class="pre">model</span></code>
+and <code class="docutils literal notranslate"><span class="pre">effort</span></code> become per-session <code class="docutils literal notranslate"><span class="pre">--model</span></code> / <code class="docutils literal notranslate"><span class="pre">--effort</span></code> flags.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">archive_store</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">pane_store</span></code>) are given, emits
+<code class="docutils literal notranslate"><span class="pre">created</span></code> + <code class="docutils literal notranslate"><span class="pre">url_acquired</span></code> events to the archive and pipes the pane
+output to a file under <code class="docutils literal notranslate"><span class="pre">pane_store</span></code>.</p>
+<p>Services that want an immediate return should call
+<a class="reference internal" href="#xa.claude_cli.prepare_spawn" title="xa.claude_cli.prepare_spawn"><code class="xref py py-func docutils literal notranslate"><span class="pre">prepare_spawn()</span></code></a> and run <a class="reference internal" href="#xa.claude_cli.complete_spawn" title="xa.claude_cli.complete_spawn"><code class="xref py py-func docutils literal notranslate"><span class="pre">complete_spawn()</span></code></a> in the background
+instead — this function is simply the composition of the two.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.supported_cli_flags">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">supported_cli_flags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">ttl_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">900.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#supported_cli_flags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.supported_cli_flags" title="Link to this definition">¶</a></dt>
+<dd><p>Long-form flags advertised by <code class="docutils literal notranslate"><span class="pre">&lt;claude_bin&gt;</span> <span class="pre">--help</span></code>, cached per binary.</p>
+<p>Lets spawn compose modern per-session flags (<code class="docutils literal notranslate"><span class="pre">--remote-control</span></code>,
+<code class="docutils literal notranslate"><span class="pre">--name</span></code>, <code class="docutils literal notranslate"><span class="pre">--model</span></code>, <code class="docutils literal notranslate"><span class="pre">--effort</span></code>) while degrading gracefully on
+older installs. Empty set when the binary can’t be executed — callers
+then omit every optional flag, matching pre-flag behavior. Only
+successful probes are cached (for <code class="docutils literal notranslate"><span class="pre">ttl_sec</span></code>); failures are retried.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#frozenset" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.tmux_session_dedicated_to">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">tmux_session_dedicated_to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_pid</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#tmux_session_dedicated_to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.tmux_session_dedicated_to" title="Link to this definition">¶</a></dt>
+<dd><p>Is killing this whole tmux session equivalent to killing this claude?</p>
+<p>True iff the session consists of a single pane whose claude is
+<code class="docutils literal notranslate"><span class="pre">claude_pid</span></code>. xa-spawned sessions always qualify; a claude living in
+one window of a user’s multi-window workspace never does — killing
+the session there would destroy unrelated panes, so callers must fall
+back to signaling the pid instead.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_cli.wait_for_bridge_url">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_cli.</span></span><span class="sig-name descname"><span class="pre">wait_for_bridge_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deadline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#wait_for_bridge_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_cli.wait_for_bridge_url" title="Link to this definition">¶</a></dt>
+<dd><p>Poll the ephemeral session file until a bridge URL appears.</p>
+<p>Nothing is typed into the pane. Claude Code connects Remote Control by
+itself — from the <code class="docutils literal notranslate"><span class="pre">--remote-control</span></code> flag <code class="xref py py-func docutils literal notranslate"><span class="pre">_claude_argv()</span></code> passes,
+or from the host’s <code class="docutils literal notranslate"><span class="pre">remoteControlAtStartup</span></code> setting — and records the
+<code class="docutils literal notranslate"><span class="pre">bridgeSessionId</span></code> when it does. This function’s whole job is to wait
+for that write.</p>
+<p>Until 0.1.10 this drove the TUI instead: dismissing the workspace-trust
+prompt with a blind Enter and sending <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> once a prompt
+glyph appeared. That emulated, by scraping and typing, what the flag and
+the setting do properly — and every upstream redraw was a chance for it
+to type into the wrong thing. See <a class="reference internal" href="xa.revive.html#module-xa.revive" title="xa.revive"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xa.revive</span></code></a> for the pane reading
+that <em>is</em> still warranted: reconnecting a session whose Remote Control
+dropped is a gap Claude Code genuinely leaves open.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'session_file'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pane_capture'</span></code>]]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="xa.claude_fs.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">xa.claude_fs</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="xa.archive.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">xa.archive</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">xa.claude_cli</a><ul>
+<li><a class="reference internal" href="#xa.claude_cli.PendingSpawn"><code class="docutils literal notranslate"><span class="pre">PendingSpawn</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.SpawnResult"><code class="docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.complete_spawn"><code class="docutils literal notranslate"><span class="pre">complete_spawn()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.diagnose_bridgeless"><code class="docutils literal notranslate"><span class="pre">diagnose_bridgeless()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.find_claude_pid"><code class="docutils literal notranslate"><span class="pre">find_claude_pid()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.new_archive_id"><code class="docutils literal notranslate"><span class="pre">new_archive_id()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.pid_is_claude"><code class="docutils literal notranslate"><span class="pre">pid_is_claude()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.prepare_spawn"><code class="docutils literal notranslate"><span class="pre">prepare_spawn()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.resolve_bridge_url"><code class="docutils literal notranslate"><span class="pre">resolve_bridge_url()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.resume_session"><code class="docutils literal notranslate"><span class="pre">resume_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.spawn_session"><code class="docutils literal notranslate"><span class="pre">spawn_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.supported_cli_flags"><code class="docutils literal notranslate"><span class="pre">supported_cli_flags()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.tmux_session_dedicated_to"><code class="docutils literal notranslate"><span class="pre">tmux_session_dedicated_to()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_cli.wait_for_bridge_url"><code class="docutils literal notranslate"><span class="pre">wait_for_bridge_url()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=b39c9740"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>

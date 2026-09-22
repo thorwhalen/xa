@@ -1,4 +1,0 @@
-xa.hosts.http
-=============
-.. automodule:: xa.hosts.http
-   :members:

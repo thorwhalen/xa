@@ -1,0 +1,26 @@
+xa.service
+==========
+
+.. automodule:: xa.service
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      RC_ENABLE_TIMEOUT_SEC
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      allow_all
+      build_api
+      make_basic_auth
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Captcha
+   

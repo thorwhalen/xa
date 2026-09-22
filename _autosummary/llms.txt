@@ -1,0 +1,26 @@
+# xa
+
+> Tools for managing remote Claude Code sessions across projects and machines
+
+
+## Pages in this subsection
+
+- [xa](xa.html.md): xa — tools for managing remote Claude Code sessions.
+- [xa.archive](xa.archive.html.md): Postmortem archive of Claude Code sessions spawned by &#96;xa&#96;.
+- [xa.claude_cli](xa.claude_cli.html.md): Spawn, resume, and URL-resolve Claude Code sessions.
+- [xa.claude_fs](xa.claude_fs.html.md): Pure filesystem view of &#96;~/.claude/&#96;.
+- [xa.cli](xa.cli.html.md): Command-line interface for &#96;xa&#96;.
+- [xa.config](xa.config.html.md): TOML config loader for &#96;xa&#96;.
+- [xa.hosts](xa.hosts.html.md): Host abstraction — local, SSH, HTTP backends.
+- [xa.hosts.http](xa.hosts.http.html.md): HTTP host — a remote &#96;xa serve&#96; instance.
+- [xa.hosts.local](xa.hosts.local.html.md): Local in-process host.
+- [xa.hosts.ssh](xa.hosts.ssh.html.md): SSH-backed host.
+- [xa.revive](xa.revive.html.md): Detect — and reconnect — Claude Code panes whose Remote Control dropped.
+- [xa.service](xa.service.html.md): FastAPI service for &#96;xa&#96;.
+- [xa.sessions](xa.sessions.html.md): The unified &#96;Session&#96; domain model and multi-host discovery.
+- [xa.store](xa.store.html.md): Minimal key-value and append-log storage.
+- [xa.tmux](xa.tmux.html.md): Pure tmux wrappers.
+
+## Optional
+
+- [Top-level llms.txt](../llms.txt): Complete documentation index.

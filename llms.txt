@@ -1,0 +1,34 @@
+# xa
+
+> Tools for managing remote Claude Code sessions across projects and machines
+
+
+## Pages
+
+- [xa](index.html.md): &#42;&#42;Manage Claude Code sessions across projects and machines.&#42;&#42;
+- [API reference](api.html.md): | &#96;xa&#96;   | xa — tools for managing remote Claude Code sessions.   |
+- [xa](_autosummary/xa.html.md): xa — tools for managing remote Claude Code sessions.
+- [xa.archive](_autosummary/xa.archive.html.md): Postmortem archive of Claude Code sessions spawned by &#96;xa&#96;.
+- [xa.claude_cli](_autosummary/xa.claude_cli.html.md): Spawn, resume, and URL-resolve Claude Code sessions.
+- [xa.claude_fs](_autosummary/xa.claude_fs.html.md): Pure filesystem view of &#96;~/.claude/&#96;.
+- [xa.cli](_autosummary/xa.cli.html.md): Command-line interface for &#96;xa&#96;.
+- [xa.config](_autosummary/xa.config.html.md): TOML config loader for &#96;xa&#96;.
+- [xa.hosts](_autosummary/xa.hosts.html.md): Host abstraction — local, SSH, HTTP backends.
+- [xa.hosts.http](_autosummary/xa.hosts.http.html.md): HTTP host — a remote &#96;xa serve&#96; instance.
+- [xa.hosts.local](_autosummary/xa.hosts.local.html.md): Local in-process host.
+- [xa.hosts.ssh](_autosummary/xa.hosts.ssh.html.md): SSH-backed host.
+- [xa.revive](_autosummary/xa.revive.html.md): Detect — and reconnect — Claude Code panes whose Remote Control dropped.
+- [xa.service](_autosummary/xa.service.html.md): FastAPI service for &#96;xa&#96;.
+- [xa.sessions](_autosummary/xa.sessions.html.md): The unified &#96;Session&#96; domain model and multi-host discovery.
+- [xa.store](_autosummary/xa.store.html.md): Minimal key-value and append-log storage.
+- [xa.tmux](_autosummary/xa.tmux.html.md): Pure tmux wrappers.
+- [For AI agents](ai-agents.html.md): &#96;xa&#96; ships artifacts for coding agents alongside its code. This page lists
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-09-22 13:02 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+
+## Optional
+
+- [xa.md](xa.md): Complete documentation in a single file.
+
+## Build
+
+- [build_info.json](build_info.json): build provenance (commit, version, tool versions, whether the docs match the package)

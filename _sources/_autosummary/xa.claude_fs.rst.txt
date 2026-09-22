@@ -1,0 +1,32 @@
+xa.claude\_fs
+=============
+
+.. automodule:: xa.claude_fs
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      encode_project_slug
+      ephemeral_session_alive
+      history_iter
+      iter_ephemeral_sessions
+      iter_project_slugs
+      iter_transcript_events
+      iter_transcript_files
+      parse_project_slug
+      read_ephemeral_session
+      remote_control_at_startup
+      transcript_forensics
+      transcript_metadata
+      transcript_path
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HistoryEntry
+      TranscriptForensics
+      TranscriptMeta
+   

@@ -1,0 +1,12 @@
+xa.hosts.http
+=============
+
+.. automodule:: xa.hosts.http
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      HTTPHost
+   

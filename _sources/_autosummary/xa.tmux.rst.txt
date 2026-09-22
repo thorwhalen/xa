@@ -1,0 +1,34 @@
+xa.tmux
+=======
+
+.. automodule:: xa.tmux
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      capture_pane
+      descendants
+      kill_session
+      list_panes
+      list_sessions
+      new_session
+      pane_count
+      pane_current_path
+      pane_pid
+      pane_pids
+      pane_target
+      pipe_pane_to_file
+      proc_comm
+      rename_session
+      send_keys
+      session_target
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TmuxPane
+      TmuxSession
+   

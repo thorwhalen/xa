@@ -1,4 +1,0 @@
-xa.hosts.ssh
-============
-.. automodule:: xa.hosts.ssh
-   :members:

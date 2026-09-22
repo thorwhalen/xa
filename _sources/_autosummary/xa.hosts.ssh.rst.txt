@@ -1,0 +1,12 @@
+xa.hosts.ssh
+============
+
+.. automodule:: xa.hosts.ssh
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SSHHost
+   

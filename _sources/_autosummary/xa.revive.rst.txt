@@ -1,0 +1,60 @@
+xa.revive
+=========
+
+.. automodule:: xa.revive
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      NO_CLAUDE
+      HELD_ELSEWHERE
+      CONNECTED
+      RECONNECTING
+      NEEDS_HUMAN
+      NEEDS_LOGIN
+      NEEDS_TRUST
+      API_STALLED
+      SERVER_MODE
+      RECONNECTABLE
+      UNKNOWN
+      VERDICTS
+      BLOCKED_ON_HUMAN
+      ACTIONABLE
+      MARKERS
+      RC_PILL
+      DEFAULT_RULES
+      PROMPT_LINE
+      TYPEABLE_STATUS
+      DFLT_MIN_INTERVAL_SEC
+      RECONNECT_KEYS
+      REPORT_ORDER
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      classify
+      evidence_for
+      format_actions
+      has_live_claude
+      hint_for
+      local_panes
+      prompt_is_clear
+      refusal_to_type
+      restart_server_mode
+      revive
+      server_mode_command
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PaneRef
+      PaneState
+      Probe
+      RateGuard
+      ReviveAction
+      SessionPanes
+   
