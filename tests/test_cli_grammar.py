@@ -72,19 +72,18 @@ def test_archive_list_does_not_shadow_top_level_list(parser):
     assert top is not nested
 
 
-def test_archive_group_listing_row_has_no_help_yet():
-    # Pinned, not endorsed. ARCHIVE_GROUP_KWARGS says ``help=``, but the row a
-    # group gets in the *parent's* --help is fed by ``title``; ``help`` only
-    # reaches add_subparsers(), where it renders nowhere the user looks. So the
-    # `archive` row has always been bare -- under argh, and identically under cw.
-    # See https://github.com/thorwhalen/xa/issues/13. When that is fixed, this
-    # test is what will tell you.
+def test_archive_group_listing_row_has_help():
+    # The row a group gets in the *parent's* --help is fed by
+    # ``group_kwargs["title"]``; ``help`` only reaches add_subparsers(), where it
+    # renders nowhere the user looks. Asserted against the constant as well, so
+    # the two cannot drift. See https://github.com/thorwhalen/xa/issues/13.
     parser = cli.mk_parser()
     action = next(
         a for a in parser._actions if isinstance(a, argparse._SubParsersAction)
     )
     entry = next(c for c in action._choices_actions if c.dest == "archive")
-    assert entry.help is None
+    assert entry.help == "Postmortem archive (list, log, forensics)."
+    assert entry.help == cli.ARCHIVE_GROUP_KWARGS["title"]
 
 
 @pytest.mark.parametrize(
