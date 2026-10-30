@@ -6,10 +6,11 @@
 <link rel="alternate" type="text/markdown" href="store.html.md">
 <link rel="describedby" href="../../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>xa.store - xa</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -425,6 +426,18 @@
 <span class="sd">    """</span>
     <span class="k">return</span> <span class="n">FileStore</span><span class="p">(</span><span class="n">state_dir</span> <span class="o">/</span> <span class="s2">"revive"</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">".stamp"</span><span class="p">)</span></div>
 
+
+
+<div class="viewcode-block" id="default_revive_check_store">
+<a class="viewcode-back" href="../../_autosummary/xa.store.html#xa.default_revive_check_store">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">default_revive_check_store</span><span class="p">(</span><span class="n">state_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_STATE_DIR</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileStore</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The report-only check's streak counters (``&lt;state_dir&gt;/revive-check/streaks.json``).</span>
+
+<span class="sd">    Kept apart from :func:`default_revive_store` so a check tick can never be mistaken for</span>
+<span class="sd">    a reconnect attempt by the rate guard.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">FileStore</span><span class="p">(</span><span class="n">state_dir</span> <span class="o">/</span> <span class="s2">"revive-check"</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">".json"</span><span class="p">)</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -453,7 +466,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=b39c9740"></script>
+</div><script src="../../_static/documentation_options.js?v=1adce326"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

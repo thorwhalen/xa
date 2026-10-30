@@ -23,7 +23,7 @@
 - [xa.store](_autosummary/xa.store.html.md): Minimal key-value and append-log storage.
 - [xa.tmux](_autosummary/xa.tmux.html.md): Pure tmux wrappers.
 - [For AI agents](ai-agents.html.md): &#96;xa&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-09-22 13:02 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-30 13:47 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
 
 ## Optional
 

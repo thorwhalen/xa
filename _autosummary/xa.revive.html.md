@@ -89,11 +89,13 @@ pane as `"tmux": "session:@window.%pane"`, so the pane refs are exact and
 | [`DFLT_MIN_INTERVAL_SEC`](#xa.revive.DFLT_MIN_INTERVAL_SEC) | Long enough that a cron tick can never turn into a keystroke storm, short enough that a real network change is followed within one settling period.            |
 | [`RECONNECT_KEYS`](#xa.revive.RECONNECT_KEYS)        | The keystrokes that reconnect a REPL session.                                                                                                                  |
 | [`REPORT_ORDER`](#xa.revive.REPORT_ORDER)          | Verdicts worth a human's eye, in the order a report should present them.                                                                                       |
+| [`DFLT_CHECK_TICKS`](#xa.revive.DFLT_CHECK_TICKS)      | Consecutive ticks a pane must stay reconnectable before the check escalates.                                                                                   |
 
 ### Functions
 
-| [`classify`](#xa.revive.classify)(probe, \*[, rules])                      | Return the verdict for `probe`.                                                                              |
+| [`check`](#xa.revive.check)(\*[, panes, store, ticks, actionable])      | Report-only revive check, meant for a timer: **sends nothing, ever.**                                        |
 |----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| [`classify`](#xa.revive.classify)(probe, \*[, rules])                      | Return the verdict for `probe`.                                                                              |
 | [`evidence_for`](#xa.revive.evidence_for)(probe, verdict, \*[, rules])         | The marker that earned `verdict`, for a report a human has to trust.                                         |
 | [`format_actions`](#xa.revive.format_actions)(actions)                           | One line per pane, most actionable first.                                                                    |
 | [`has_live_claude`](#xa.revive.has_live_claude)(ref)                              | Default relevance test: the recorded pid is a *claude* that still exists.                                    |
@@ -107,13 +109,14 @@ pane as `"tmux": "session:@window.%pane"`, so the pane refs are exact and
 
 ### Classes
 
-| [`PaneRef`](#xa.revive.PaneRef)(target[, host, claude_pid, cwd, ...])     | Identity of one candidate pane — everything known *without* reading it.   |
-|----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| [`PaneState`](#xa.revive.PaneState)(ref, tail, verdict[, evidence])         | A pane, as read and judged.                                               |
-| [`Probe`](#xa.revive.Probe)(text[, ref])                                | The complete, pure input to a classification rule.                        |
-| [`RateGuard`](#xa.revive.RateGuard)(\*[, store, min_interval_sec, clock])   | Refuses to touch the same pane twice inside `min_interval_sec`.           |
-| [`ReviveAction`](#xa.revive.ReviveAction)(target, verdict[, keys, sent, ...])  | What was (or would be) done to one pane, and why.                         |
-| [`SessionPanes`](#xa.revive.SessionPanes)(\*[, panes, is_relevant, tail, ...]) | Live view of the panes worth judging: `{tmux target: PaneState}`.         |
+| [`CheckResult`](#xa.revive.CheckResult)(looked_at, streaks, escalate)         | One tick of [`check()`](#xa.revive.check): every pane looked at, and the ones to escalate.   |
+|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| [`PaneRef`](#xa.revive.PaneRef)(target[, host, claude_pid, cwd, ...])     | Identity of one candidate pane — everything known *without* reading it.                                                 |
+| [`PaneState`](#xa.revive.PaneState)(ref, tail, verdict[, evidence])         | A pane, as read and judged.                                                                                             |
+| [`Probe`](#xa.revive.Probe)(text[, ref])                                | The complete, pure input to a classification rule.                                                                      |
+| [`RateGuard`](#xa.revive.RateGuard)(\*[, store, min_interval_sec, clock])   | Refuses to touch the same pane twice inside `min_interval_sec`.                                                         |
+| [`ReviveAction`](#xa.revive.ReviveAction)(target, verdict[, keys, sent, ...])  | What was (or would be) done to one pane, and why.                                                                       |
+| [`SessionPanes`](#xa.revive.SessionPanes)(\*[, panes, is_relevant, tail, ...]) | Live view of the panes worth judging: `{tmux target: PaneState}`.                                                       |
 
 ### xa.revive.ACTIONABLE *= frozenset({'reconnectable'})*
 
@@ -134,6 +137,12 @@ in [`hint_for()`](#xa.revive.hint_for).
 
 Remote Control is up. Nothing to do.
 
+### *class* xa.revive.CheckResult(looked_at, streaks, escalate)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+One tick of [`check()`](#xa.revive.check): every pane looked at, and the ones to escalate.
+
 ### xa.revive.DEFAULT_RULES *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Callable](https://docs.python.org/3/library/typing.html#typing.Callable)[[[Probe](#xa.revive.Probe)], [bool](https://docs.python.org/3/builtins/functions.html#bool)]], ...]* *= (('no_claude', <function \_no_claude>), ('held_elsewhere', <function \_any_of.<locals>._pred>), ('reconnecting', <function \_any_of.<locals>._pred>), ('connected', <function \_pill_present>), ('connected', <function \_any_of.<locals>._pred>), ('needs_login', <function \_any_of.<locals>._pred>), ('needs_trust', <function \_any_of.<locals>._pred>), ('needs_human', <function \_any_of.<locals>._pred>), ('api_stalled', <function \_any_of.<locals>._pred>), ('server_mode', <function \_any_of.<locals>._pred>), ('reconnectable', <function \_any_of.<locals>._pred>), ('reconnectable', <function \_bridge_down>), ('unknown', <function \_always>))*
 
 Ordered `(verdict, predicate)` pairs; **first match wins**.
@@ -152,6 +161,11 @@ taken back without asking.
 “Remote Control disconnected” in its scrollback for as long as it stays on
 screen, so a text rule placed above the pill would report a healthy
 session as broken until the line scrolled away.
+
+### xa.revive.DFLT_CHECK_TICKS *= 2*
+
+Consecutive ticks a pane must stay reconnectable before the check escalates. One tick can
+be a transient (the drop that a VPN toggle clears within a minute); two cannot.
 
 ### xa.revive.DFLT_MIN_INTERVAL_SEC *= 600.0*
 
@@ -214,7 +228,7 @@ Identity of one candidate pane — everything known *without* reading it.
 `target` is a tmux target: a full pane ref (`session:@window.%pane`,
 which is what the ephemeral session file records) or a bare session name.
 
-#### status *: [str](https://docs.python.org/3/builtins/stdtypes.html#str) | [None](https://docs.python.org/3/builtins/constants.html#None)* *= None*
+#### status *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]* *= None*
 
 `idle` / `busy` / `waiting` as the session last reported it.
 `None` on a claude too old to record one.
@@ -367,15 +381,36 @@ The pane says nothing either way. Never acted on.
 
 Every verdict [`DEFAULT_RULES`](#xa.revive.DEFAULT_RULES) can produce. Custom rules may add more.
 
+### xa.revive.check(, panes=None, store=None, ticks=2, actionable=frozenset({'reconnectable'}))
+
+Report-only revive check, meant for a timer: **sends nothing, ever.**
+
+Looks at each live pane once (one tmux capture per pane) and counts, per pane, the
+consecutive ticks it has been reconnectable. A pane is escalated only once that count
+reaches `ticks`; a pane that recovers, or is no longer there, loses its streak. Panes
+that are reconnectable but that [`revive()`](#xa.revive.revive) would refuse to type into (unsent prompt
+text, busy) are still reported, with the reason, since a human may need to look. There
+is deliberately no `apply` here: moving to unattended `--apply` is a separate,
+later decision (#11).
+
+```pycon
+>>> refs = [PaneRef(target='a:@1.%1', claude_pid=1)]
+>>> panes = SessionPanes(panes=lambda: refs, is_relevant=lambda r: True,
+...                      tail=lambda r: '/rc failed\n\u276f ')
+>>> state = {}
+>>> [check(panes=panes, store=state).quiet for _ in range(2)]
+[True, False]
+```
+
+* **Return type:**
+  [`CheckResult`](#xa.revive.CheckResult)
+
 ### xa.revive.classify(probe, \*, rules=(('no_claude', <function \_no_claude>), ('held_elsewhere', <function \_any_of.<locals>._pred>), ('reconnecting', <function \_any_of.<locals>._pred>), ('connected', <function \_pill_present>), ('connected', <function \_any_of.<locals>._pred>), ('needs_login', <function \_any_of.<locals>._pred>), ('needs_trust', <function \_any_of.<locals>._pred>), ('needs_human', <function \_any_of.<locals>._pred>), ('api_stalled', <function \_any_of.<locals>._pred>), ('server_mode', <function \_any_of.<locals>._pred>), ('reconnectable', <function \_any_of.<locals>._pred>), ('reconnectable', <function \_bridge_down>), ('unknown', <function \_always>)))
 
 Return the verdict for `probe`. Pure — no I/O, no tmux, no clock.
 
 A session whose footer pill is gone and whose session file records no
 bridge id has dropped:
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> dropped = PaneRef(target='w:@1.%1', claude_pid=42)
@@ -414,12 +449,12 @@ And a healthy, quiet, connected pane is simply left alone:
 'connected'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 ### xa.revive.evidence_for(probe, verdict, \*, rules=(('no_claude', <function \_no_claude>), ('held_elsewhere', <function \_any_of.<locals>._pred>), ('reconnecting', <function \_any_of.<locals>._pred>), ('connected', <function \_pill_present>), ('connected', <function \_any_of.<locals>._pred>), ('needs_login', <function \_any_of.<locals>._pred>), ('needs_trust', <function \_any_of.<locals>._pred>), ('needs_human', <function \_any_of.<locals>._pred>), ('api_stalled', <function \_any_of.<locals>._pred>), ('server_mode', <function \_any_of.<locals>._pred>), ('reconnectable', <function \_any_of.<locals>._pred>), ('reconnectable', <function \_bridge_down>), ('unknown', <function \_always>)))
 
 The marker that earned `verdict`, for a report a human has to trust.
-
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ```pycon
 >>> ref = PaneRef(target='w:@1.%1', claude_pid=1)
@@ -427,12 +462,12 @@ The marker that earned `verdict`, for a report a human has to trust.
 '/rc failed'
 ```
 
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 ### xa.revive.format_actions(actions)
 
 One line per pane, most actionable first.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> print(format_actions([
@@ -443,6 +478,9 @@ One line per pane, most actionable first.
 reconnectable  a:@1.%1  would send /remote-control  [/rc failed]
 connected      b:@1.%1
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### xa.revive.has_live_claude(ref)
 
@@ -463,15 +501,15 @@ the three can’t drift. Only the verdicts a person can actually clear get
 a line; `connected`/`unknown`/`reconnectable` return `None`
 (nothing to do, nothing known, or xa’s own job respectively).
 
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
-
 ```pycon
 >>> hint_for(CONNECTED) is None
 True
 >>> hint_for(NEEDS_TRUST, tmux_name='sess').startswith('Claude is waiting')
 True
 ```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ### xa.revive.local_panes(, claude_home=PosixPath('/home/runner/.claude'))
 
@@ -500,9 +538,6 @@ Conservative by construction — a pane whose prompt line cannot be found
 is reported as not clear, because “I could not see the buffer” and “the
 buffer is empty” must never collapse into the same answer.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> prompt_is_clear('---\n❯ \n---')
 True
@@ -511,6 +546,9 @@ False
 >>> prompt_is_clear('no prompt line here at all')
 False
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### xa.revive.refusal_to_type(state)
 
@@ -521,9 +559,6 @@ reported status catches a session mid-turn whose buffer happens to be
 empty, and the buffer check catches an idle session holding text the
 status knows nothing about.
 
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
-
 ```pycon
 >>> ref = PaneRef(target='t', claude_pid=1, status='idle')
 >>> refusal_to_type(PaneState(ref=ref, tail='❯ ', verdict=RECONNECTABLE))
@@ -531,6 +566,9 @@ status knows nothing about.
 >>> refusal_to_type(PaneState(ref=busy, tail='❯ ', verdict=RECONNECTABLE))
 'session is busy'
 ```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ### xa.revive.restart_server_mode(state, , cwd=None, apply=False, rate_guard=None, send=None, resolve_cwd=None)
 
@@ -545,9 +583,6 @@ would only create something to drift.
 
 Refuses whenever a live claude still owns the pane: this sends a *shell*
 command, and a running TUI would take it as prompt text.
-
-* **Return type:**
-  [`ReviveAction`](#xa.revive.ReviveAction)
 
 ```pycon
 >>> ref = PaneRef(target='srv:@1.%1', cwd='/srv/app')
@@ -569,6 +604,9 @@ command, and a running TUI would take it as prompt text.
 'a claude still owns this pane — keystrokes would land in its prompt'
 ```
 
+* **Return type:**
+  [`ReviveAction`](#xa.revive.ReviveAction)
+
 ### xa.revive.revive(, panes=None, apply=False, include_held_elsewhere=False, rate_guard=None, send=None, actionable=frozenset({'reconnectable'}))
 
 Reconnect every dropped pane. \*\*Dry run unless `apply=True`.\*\*
@@ -581,9 +619,6 @@ useful next to what was looked at.
 taken over from another device. That steals the session back from
 whatever device holds it; it is off by default and should stay a
 deliberate keystroke.
-
-* **Return type:**
-  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`ReviveAction`](#xa.revive.ReviveAction)]
 
 ```pycon
 >>> refs = [
@@ -609,6 +644,9 @@ deliberate keystroke.
 [('a:@1.%1', ('/remote-control', 'Enter'))]
 ```
 
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`ReviveAction`](#xa.revive.ReviveAction)]
+
 ### xa.revive.server_mode_command(cwd)
 
 Keystrokes that restart a Remote Control *server* in `cwd`.
@@ -617,12 +655,12 @@ Keystrokes that restart a Remote Control *server* in `cwd`.
 recorded **for that directory** (within ~4h), which is why the directory
 — and nothing else — is what a restart needs to know.
 
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
-
 ```pycon
 >>> server_mode_command('/root/py/proj')
 ('cd /root/py/proj && claude remote-control -c', 'Enter')
 >>> server_mode_command(None)
 ('claude remote-control -c', 'Enter')
 ```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]

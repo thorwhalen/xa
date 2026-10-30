@@ -146,15 +146,15 @@ may not be the claude pane in a multi-window session — pass the full
 ref whenever you have one. Session names in xa match
 `[A-Za-z0-9_.-]` so they can never contain a `:`.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> pane_target('foo')
 'foo:'
 >>> pane_target('foo:@1.%2')
 'foo:@1.%2'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### xa.tmux.pipe_pane_to_file(name, , path, binary='tmux')
 
@@ -203,10 +203,10 @@ Always pass `"Enter"` for newline. `name` may be a session name
 
 Return the canonical target string for a session.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> session_target('foo')
 'foo:'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)

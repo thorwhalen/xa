@@ -5,7 +5,7 @@ orphan: true
 
 # About this build
 
-This documentation was built on **2026-09-22 13:02 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/70fba9709483acd9c96fc1120f616657d9faba8a"><code>70fba97</code></a> on branch <code>main</code>, for **xa 0.1.12** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-30 13:47 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/86ef896a811451459f45bb6cb6e60277f550236c"><code>86ef896</code></a> on branch <code>main</code>, for **xa 0.1.13** (from <code>pyproject.toml</code>).
 
 :::{note}
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -15,9 +15,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 | | |
 |---|---|
-| Commit | <a href="https://github.com/thorwhalen/xa/commit/70fba9709483acd9c96fc1120f616657d9faba8a"><code>70fba9709483acd9c96fc1120f616657d9faba8a</code></a> |
+| Commit | <a href="https://github.com/thorwhalen/xa/commit/86ef896a811451459f45bb6cb6e60277f550236c"><code>86ef896a811451459f45bb6cb6e60277f550236c</code></a> |
 | Branch | <code>main</code> |
-| Tags at this commit | <code>0.1.12</code> |
+| Tags at this commit | <code>0.1.13</code> |
 | Working tree | clean |
 | Remote | <code>https://github.com/thorwhalen/xa</code> |
 
@@ -26,18 +26,18 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 | | |
 |---|---|
 | Repository | <code>thorwhalen/xa</code> |
-| Run | <a href="https://github.com/thorwhalen/xa/actions/runs/35730744333">35730744333</a> |
+| Run | <a href="https://github.com/thorwhalen/xa/actions/runs/41065935673">41065935673</a> |
 | Ref | <code>refs/heads/main</code> |
-| Event commit | <code>2e31bccddf652c5d9b23cc3f96be83ef5ba38f40</code> (in the history of the built commit) |
+| Event commit | <code>d9de7e9eebc595b47d16b2d348c4bf21afa148d9</code> (in the history of the built commit) |
 
 ## Tools
 
 | | |
 |---|---|
-| epythet | 0.2.12 |
-| Sphinx | 9.1.0 |
+| epythet | 0.2.22 |
+| Sphinx | 9.1.1 |
 | docutils | 0.22.4 |
-| Python | 3.12.14 |
+| Python | 3.12.15 |
 
 ## Configuration as resolved
 
@@ -53,14 +53,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/xa/0.1.12/">0.1.12</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/xa/0.1.13/">0.1.13</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/xa && cd xa
-git checkout 70fba9709483acd9c96fc1120f616657d9faba8a
-pip install "epythet==0.2.12"
+git checkout 86ef896a811451459f45bb6cb6e60277f550236c
+pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

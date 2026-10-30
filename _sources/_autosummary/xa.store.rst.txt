@@ -10,6 +10,7 @@ xa.store
    
       default_events_store
       default_pane_store
+      default_revive_check_store
       default_revive_store
    
    .. rubric:: Classes

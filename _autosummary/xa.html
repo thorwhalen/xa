@@ -9,10 +9,11 @@
 <link rel="alternate" type="text/markdown" href="xa.html.md">
 <link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.archive" href="xa.archive.html"><link rel="prev" title="API reference" href="../api.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>xa - xa</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -424,7 +425,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.ArchiveRecord">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">ArchiveRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gone_detected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gone_reason</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pane_log_bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forensics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/archive.html#ArchiveRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.ArchiveRecord" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -432,7 +433,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.FileStore">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">FileStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#FileStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.FileStore" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Directory of files, accessed by key.</p>
 <p>Values are <code class="docutils literal notranslate"><span class="pre">bytes</span></code>. Keys must match <code class="docutils literal notranslate"><span class="pre">[A-Za-z0-9_.-]+</span></code> — this
 rejects path traversal attempts like <code class="docutils literal notranslate"><span class="pre">../etc/passwd</span></code>.</p>
@@ -444,7 +445,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dd><p>Public path accessor (for callers that need to hand the path to tmux).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -454,7 +455,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.HTTPHost">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">HTTPHost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/http.html#HTTPHost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.HTTPHost" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Client for a remote <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">serve</span></code> instance.</p>
 <dl class="field-list simple">
 </dl>
@@ -464,7 +465,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dd><p>HTTP sessions are fetched fresh on each listing — no separate sync.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -474,7 +475,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.HistoryEntry">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">HistoryEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pasted_contents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#HistoryEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.HistoryEntry" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One line from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code>.</p>
 <dl class="field-list simple">
 </dl>
@@ -483,14 +484,14 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.Host">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">Host</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts.html#Host"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.Host" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
 <p>Duck-typed interface every transport satisfies.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.JsonLinesStore">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">JsonLinesStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#JsonLinesStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.JsonLinesStore" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Append-only JSONL file with an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> reader.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
@@ -508,7 +509,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.LocalHost">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">LocalHost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alive_predicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/local.html#LocalHost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.LocalHost" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>The machine <code class="docutils literal notranslate"><span class="pre">xa</span></code> is running on.</p>
 <dl class="field-list simple">
 </dl>
@@ -518,7 +519,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dd><p>No-op — local has nothing to sync.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -528,19 +529,19 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.SSHHost">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">SSHHost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'~/.claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.cache/xa/remotes')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stale_threshold_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ssh_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ssh'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rsync_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rsync'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/hosts/ssh.html#SSHHost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.SSHHost" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Transcripts via rsync; actions via ssh exec.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Logical name used in <code class="docutils literal notranslate"><span class="pre">Session.host</span></code> and elsewhere.</p></li>
-<li><p><strong>host</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – SSH hostname / alias. Matches cc-sessions: either an
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Logical name used in <code class="docutils literal notranslate"><span class="pre">Session.host</span></code> and elsewhere.</p></li>
+<li><p><strong>host</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – SSH hostname / alias. Matches cc-sessions: either an
 <code class="docutils literal notranslate"><span class="pre">~/.ssh/config</span></code> alias (<code class="docutils literal notranslate"><span class="pre">devbox</span></code>) or a raw host (<code class="docutils literal notranslate"><span class="pre">1.2.3.4</span></code>).</p></li>
-<li><p><strong>user</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Optional SSH user for raw hosts.</p></li>
-<li><p><strong>remote_claude_home</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Remote path to <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">~/.claude</span></code> which
+<li><p><strong>user</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Optional SSH user for raw hosts.</p></li>
+<li><p><strong>remote_claude_home</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – Remote path to <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">~/.claude</span></code> which
 resolves relative to the SSH user’s home on the remote side.</p></li>
-<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span>) – Where to stage the rsync’d tree locally.</p></li>
-<li><p><strong>stale_threshold_sec</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Re-sync when the cached copy is older than this. <code class="docutils literal notranslate"><span class="pre">0</span></code> means
+<li><p><strong>cache_dir</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span>) – Where to stage the rsync’d tree locally.</p></li>
+<li><p><strong>stale_threshold_sec</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Re-sync when the cached copy is older than this. <code class="docutils literal notranslate"><span class="pre">0</span></code> means
 always sync.</p></li>
 </ul>
 </dd>
@@ -566,7 +567,7 @@ hold an SSH connection open for up to 2 minutes).</p>
 <p>Non-existent remote directories are tolerated (rsync returns 23).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -576,7 +577,7 @@ hold an SSH connection open for up to 2 minutes).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.Session">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">Session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bridge_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_user_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forked_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modified</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcript_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_first_turn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_pane</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#Session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.Session" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Canonical session record — valid across hosts and states.</p>
 <p>Fields that don’t apply to a given state are <code class="docutils literal notranslate"><span class="pre">None</span></code>. Discovery
 functions return fresh instances; callers should treat it as
@@ -588,7 +589,7 @@ immutable.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.Settings">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">Settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cache_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stale_threshold_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'tmux'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/config.html#Settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.Settings" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -596,7 +597,7 @@ immutable.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.SpawnResult">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">SpawnResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_pid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bridge_session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warning</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_cli.html#SpawnResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.SpawnResult" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>What <code class="docutils literal notranslate"><span class="pre">spawn_session</span></code> / <code class="docutils literal notranslate"><span class="pre">resume_session</span></code> return to the caller.</p>
 <dl class="field-list simple">
 </dl>
@@ -605,7 +606,7 @@ immutable.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.TranscriptForensics">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">TranscriptForensics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transcript_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_command</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_exit_code</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_tool_result_tail</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_assistant_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_interrupted</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#TranscriptForensics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.TranscriptForensics" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Postmortem facts extracted by walking a transcript from the end.</p>
 <p><code class="docutils literal notranslate"><span class="pre">user_interrupted</span></code> is the raw marker presence — it is <strong>ambiguous</strong>
 (also fires on phone-standby bridge drops), so do not derive user intent
@@ -617,7 +618,7 @@ from it alone. Callers should corroborate against pane-log tails.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.TranscriptMeta">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">TranscriptMeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_slug</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_title</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_user_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">forked_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">modified</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#TranscriptMeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.TranscriptMeta" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Summary of a transcript JSONL, cheap enough to compute for listings.</p>
 <dl class="field-list simple">
 </dl>
@@ -629,7 +630,7 @@ from it alone. Callers should corroborate against pane-log tails.</p>
 <dd><p>Mark an archived session as hidden (or un-hide it).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -643,7 +644,7 @@ from it alone. Callers should corroborate against pane-log tails.</p>
 up later. Empty-string or <code class="docutils literal notranslate"><span class="pre">None</span></code> label clears any prior label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -660,7 +661,7 @@ get without reading kernel logs (which would need root and is not
 portable).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'clean_exit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'abrupt'</span></code>, <code class="docutils literal notranslate"><span class="pre">'interrupted'</span></code>, <code class="docutils literal notranslate"><span class="pre">'tool_crash'</span></code>, <code class="docutils literal notranslate"><span class="pre">'oom_killed'</span></code>, <code class="docutils literal notranslate"><span class="pre">'replaced'</span></code>, <code class="docutils literal notranslate"><span class="pre">'missing'</span></code>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'clean_exit'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'abrupt'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'interrupted'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'tool_crash'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'oom_killed'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'replaced'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'missing'</span></span></code></span>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -682,7 +683,7 @@ portable).</p>
 <dd><p>The out-of-the-box registry: one local host, nothing else.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="xa.hosts.html#xa.hosts.Host" title="xa.hosts.Host"><code class="xref py py-class docutils literal notranslate"><span class="pre">Host</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="xa.hosts.html#xa.hosts.Host" title="xa.hosts.Host"><code class="xref py py-class docutils literal notranslate"><span class="pre">Host</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -702,17 +703,17 @@ portable).</p>
 <dt class="sig sig-object py" id="xa.encode_project_slug">
 <span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">encode_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#encode_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.encode_project_slug" title="Link to this definition">¶</a></dt>
 <dd><p>Encode a cwd into the <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug form.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/root/py/proj/tt/glossa'</span><span class="p">)</span>
 <span class="go">'-root-py-proj-tt-glossa'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
 <span class="go">'-'</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -722,7 +723,7 @@ portable).</p>
 <p>Raises <code class="docutils literal notranslate"><span class="pre">LookupError</span></code> if the prefix is ambiguous.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -735,7 +736,7 @@ portable).</p>
 every transcript.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.HistoryEntry" title="xa.claude_fs.HistoryEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.HistoryEntry" title="xa.claude_fs.HistoryEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -751,7 +752,7 @@ callers who care about actual liveness must validate each dict with
 <code class="xref py py-func docutils literal notranslate"><span class="pre">ephemeral_session_alive()</span></code> (or an equivalent predicate).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -765,7 +766,7 @@ sessions directly from a fake <code class="docutils literal notranslate"><span c
 <a class="reference internal" href="#xa.LocalHost" title="xa.LocalHost"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalHost</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -776,7 +777,7 @@ sessions directly from a fake <code class="docutils literal notranslate"><span c
 <dd><p>Yield slugs (directory names) under <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -789,7 +790,7 @@ sessions directly from a fake <code class="docutils literal notranslate"><span c
 append-only on a live process, so the tail can be partial.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -803,7 +804,7 @@ the <code class="docutils literal notranslate"><span class="pre">memory/</span><
 stores alongside transcripts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -821,7 +822,7 @@ applies its own scoping). Returns a short description of what was
 killed (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;tmux:mysess&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;pid:1234&quot;</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -842,7 +843,7 @@ that default <a class="reference internal" href="#xa.LocalHost" title="xa.LocalH
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="xa.sessions.html#xa.sessions.Session" title="xa.sessions.Session"><code class="xref py py-class docutils literal notranslate"><span class="pre">Session</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -854,7 +855,7 @@ that default <a class="reference internal" href="#xa.LocalHost" title="xa.LocalH
 <p>Missing file → <code class="docutils literal notranslate"><span class="pre">(defaults,</span> <span class="pre">{&quot;local&quot;:</span> <span class="pre">LocalHost()})</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference internal" href="xa.config.html#xa.config.Settings" title="xa.config.Settings"><code class="xref py py-class docutils literal notranslate"><span class="pre">Settings</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference internal" href="xa.config.html#xa.config.Settings" title="xa.config.Settings"><code class="xref py py-class docutils literal notranslate"><span class="pre">Settings</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -865,7 +866,7 @@ that default <a class="reference internal" href="#xa.LocalHost" title="xa.LocalH
 <dd><p>Shortcut: just the host registry.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -879,7 +880,7 @@ look up by whatever id they know (archive id, claude_session_id,
 tmux name) and apply the overlay if present.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -888,11 +889,6 @@ tmux name) and apply the overlay if present.</p>
 <dt class="sig sig-object py" id="xa.parse_project_slug">
 <span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">parse_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#parse_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.parse_project_slug" title="Link to this definition">¶</a></dt>
 <dd><p>Decode a <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug back to a cwd.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">'-root-py-proj-tt-glossa'</span><span class="p">)</span>
 <span class="go">'/root/py/proj/tt/glossa'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">parse_project_slug</span><span class="p">(</span><span class="s1">'-Users-thorwhalen-tw-server'</span><span class="p">)</span>
@@ -902,6 +898,11 @@ tmux name) and apply the overlay if present.</p>
 <p>NB: This transform is lossy — a cwd with literal <code class="docutils literal notranslate"><span class="pre">-</span></code> in segment names
 round-trips to a different slug. Claude Code itself has the same
 limitation, so we accept it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -910,7 +911,7 @@ limitation, so we accept it.</p>
 <dd><p>Read the per-process session file for <code class="docutils literal notranslate"><span class="pre">pid</span></code> if present.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -924,7 +925,7 @@ calling twice with the same live list produces no new events the
 second time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -935,7 +936,7 @@ second time.</p>
 <dd><p>Return per-session summaries, newest-first (by creation time).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="xa.archive.html#xa.archive.ArchiveRecord" title="xa.archive.ArchiveRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArchiveRecord</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="xa.archive.html#xa.archive.ArchiveRecord" title="xa.archive.ArchiveRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ArchiveRecord</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -949,7 +950,7 @@ second time.</p>
 Fallback: regex-scrape <code class="docutils literal notranslate"><span class="pre">capture-pane</span></code> output for the full URL.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<code class="docutils literal notranslate"><span class="pre">'session_file'</span></code>, <code class="docutils literal notranslate"><span class="pre">'pane_capture'</span></code>]]]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'session_file'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'pane_capture'</span></span></code></span>]]]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1036,11 +1037,6 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
 <dt class="sig sig-object py" id="xa.transcript_path">
 <span class="sig-prename descclassname"><span class="pre">xa.</span></span><span class="sig-name descname"><span class="pre">transcript_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#transcript_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.transcript_path" title="Link to this definition">¶</a></dt>
 <dd><p>Return the transcript path for <code class="docutils literal notranslate"><span class="pre">(cwd,</span> <span class="pre">session_id)</span></code> if it exists.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
@@ -1053,6 +1049,11 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
 <span class="go">True</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <p class="rubric">Modules</p>
@@ -1216,7 +1217,7 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=b39c9740"></script>
+</div><script src="../_static/documentation_options.js?v=1adce326"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

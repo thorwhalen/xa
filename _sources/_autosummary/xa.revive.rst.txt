@@ -30,11 +30,13 @@ xa.revive
       DFLT_MIN_INTERVAL_SEC
       RECONNECT_KEYS
       REPORT_ORDER
+      DFLT_CHECK_TICKS
    
    .. rubric:: Functions
 
    .. autosummary::
    
+      check
       classify
       evidence_for
       format_actions
@@ -51,6 +53,7 @@ xa.revive
 
    .. autosummary::
    
+      CheckResult
       PaneRef
       PaneState
       Probe

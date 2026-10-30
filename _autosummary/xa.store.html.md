@@ -16,10 +16,11 @@ the archive API.
 
 ### Functions
 
-| [`default_events_store`](#xa.store.default_events_store)([state_dir])   | The event log at `<state_dir>/events.jsonl`.                                                                                 |
-|--------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| [`default_pane_store`](#xa.store.default_pane_store)([state_dir])     | Per-session pane logs at `<state_dir>/panes/<id>.log`.                                                                       |
-| [`default_revive_store`](#xa.store.default_revive_store)([state_dir])   | Per-pane last-reconnect stamps for [`xa.revive.RateGuard`](xa.revive.html.md#xa.revive.RateGuard). |
+| [`default_events_store`](#xa.store.default_events_store)([state_dir])       | The event log at `<state_dir>/events.jsonl`.                                                                                 |
+|------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| [`default_pane_store`](#xa.store.default_pane_store)([state_dir])         | Per-session pane logs at `<state_dir>/panes/<id>.log`.                                                                       |
+| [`default_revive_check_store`](#xa.store.default_revive_check_store)([state_dir]) | The report-only check's streak counters (`<state_dir>/revive-check/streaks.json`).                                           |
+| [`default_revive_store`](#xa.store.default_revive_store)([state_dir])       | Per-pane last-reconnect stamps for [`xa.revive.RateGuard`](xa.revive.html.md#xa.revive.RateGuard). |
 
 ### Classes
 
@@ -69,6 +70,16 @@ The event log at `<state_dir>/events.jsonl`.
 ### xa.store.default_pane_store(state_dir=PosixPath('/home/runner/.xa'))
 
 Per-session pane logs at `<state_dir>/panes/<id>.log`.
+
+* **Return type:**
+  [`FileStore`](#xa.store.FileStore)
+
+### xa.store.default_revive_check_store(state_dir=PosixPath('/home/runner/.xa'))
+
+The report-only check’s streak counters (`<state_dir>/revive-check/streaks.json`).
+
+Kept apart from [`default_revive_store()`](#xa.store.default_revive_store) so a check tick can never be mistaken for
+a reconnect attempt by the rate guard.
 
 * **Return type:**
   [`FileStore`](#xa.store.FileStore)

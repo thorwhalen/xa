@@ -6,10 +6,11 @@
 <link rel="alternate" type="text/markdown" href="revive.html.md">
 <link rel="describedby" href="../../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>xa.revive - xa</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -1275,6 +1276,95 @@
         <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"  "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">))</span>
     <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
 
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># The report-only check (unattended, #11)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+<span class="c1">#: Consecutive ticks a pane must stay reconnectable before the check escalates. One tick can</span>
+<span class="c1">#: be a transient (the drop that a VPN toggle clears within a minute); two cannot.</span>
+<span class="n">DFLT_CHECK_TICKS</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">_STREAKS_KEY</span> <span class="o">=</span> <span class="s2">"streaks"</span>
+
+
+<div class="viewcode-block" id="CheckResult">
+<a class="viewcode-back" href="../../_autosummary/xa.revive.html#xa.revive.CheckResult">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CheckResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""One tick of :func:`check`: every pane looked at, and the ones to escalate."""</span>
+
+    <span class="n">looked_at</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">streaks</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span>
+        <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span>
+    <span class="p">]</span>  <span class="c1"># reconnectable panes -&gt; consecutive ticks, this one included</span>
+    <span class="n">escalate</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">ReviveAction</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>  <span class="c1"># panes at or past the threshold</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">quiet</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">escalate</span></div>
+
+
+
+<div class="viewcode-block" id="check">
+<a class="viewcode-back" href="../../_autosummary/xa.revive.html#xa.revive.check">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">panes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ticks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_CHECK_TICKS</span><span class="p">,</span>
+    <span class="n">actionable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">ACTIONABLE</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CheckResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Report-only revive check, meant for a timer: **sends nothing, ever.**</span>
+
+<span class="sd">    Looks at each live pane once (one tmux capture per pane) and counts, per pane, the</span>
+<span class="sd">    consecutive ticks it has been reconnectable. A pane is escalated only once that count</span>
+<span class="sd">    reaches ``ticks``; a pane that recovers, or is no longer there, loses its streak. Panes</span>
+<span class="sd">    that are reconnectable but that :func:`revive` would refuse to type into (unsent prompt</span>
+<span class="sd">    text, busy) are still reported, with the reason, since a human may need to look. There</span>
+<span class="sd">    is deliberately no ``apply`` here: moving to unattended ``--apply`` is a separate,</span>
+<span class="sd">    later decision (#11).</span>
+
+<span class="sd">    &gt;&gt;&gt; refs = [PaneRef(target='a:@1.%1', claude_pid=1)]</span>
+<span class="sd">    &gt;&gt;&gt; panes = SessionPanes(panes=lambda: refs, is_relevant=lambda r: True,</span>
+<span class="sd">    ...                      tail=lambda r: '/rc failed\n\u276f ')</span>
+<span class="sd">    &gt;&gt;&gt; state = {}</span>
+<span class="sd">    &gt;&gt;&gt; [check(panes=panes, store=state).quiet for _ in range(2)]</span>
+<span class="sd">    [True, False]</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+    <span class="n">panes</span> <span class="o">=</span> <span class="n">SessionPanes</span><span class="p">()</span> <span class="k">if</span> <span class="n">panes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">panes</span>
+    <span class="n">store</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">default_revive_check_store</span><span class="p">()</span> <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">store</span>
+    <span class="n">act_on</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">actionable</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">store</span><span class="p">[</span><span class="n">_STREAKS_KEY</span><span class="p">])</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">previous</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">streaks</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">escalate</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ReviveAction</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">looked_at</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">panes</span><span class="p">):</span>
+        <span class="n">looked_at</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">panes</span><span class="p">[</span><span class="n">target</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">verdict</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">act_on</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">streaks</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">previous</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">streaks</span><span class="p">[</span><span class="n">target</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">ticks</span><span class="p">:</span>
+            <span class="n">escalate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ReviveAction</span><span class="p">(</span>
+                    <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                    <span class="n">verdict</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">verdict</span><span class="p">,</span>
+                    <span class="n">skipped</span><span class="o">=</span><span class="n">refusal_to_type</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="sa">f</span><span class="s2">"reconnectable for </span><span class="si">{</span><span class="n">streaks</span><span class="p">[</span><span class="n">target</span><span class="p">]</span><span class="si">}</span><span class="s2"> ticks"</span><span class="p">,</span>
+                    <span class="n">evidence</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">evidence</span><span class="p">,</span>
+                    <span class="n">cwd</span><span class="o">=</span><span class="n">state</span><span class="o">.</span><span class="n">ref</span><span class="o">.</span><span class="n">cwd</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+    <span class="n">store</span><span class="p">[</span><span class="n">_STREAKS_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">streaks</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">CheckResult</span><span class="p">(</span><span class="n">looked_at</span><span class="o">=</span><span class="n">looked_at</span><span class="p">,</span> <span class="n">streaks</span><span class="o">=</span><span class="n">streaks</span><span class="p">,</span> <span class="n">escalate</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">escalate</span><span class="p">))</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -1303,7 +1393,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=b39c9740"></script>
+</div><script src="../../_static/documentation_options.js?v=1adce326"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

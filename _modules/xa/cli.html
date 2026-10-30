@@ -6,10 +6,11 @@
 <link rel="alternate" type="text/markdown" href="cli.html.md">
 <link rel="describedby" href="../../llms.txt" type="text/markdown"><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>xa.cli - xa</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -258,7 +259,7 @@
 <span></span><span class="sd">"""Command-line interface for ``xa``.</span>
 
 <span class="sd">Exposes subcommands via ``cw``: ``list``, ``info``, ``history``, ``spawn``,</span>
-<span class="sd">``resume``, ``kill``, ``serve``, ``sync``, ``pick``, ``gen-secret``, ``revive``,</span>
+<span class="sd">``resume``, ``kill``, ``serve``, ``sync``, ``pick``, ``gen-secret``, ``revive``, ``revive-check``,</span>
 <span class="sd">and the ``archive`` group (``list``, ``log``, ``forensics``).</span>
 
 <span class="sd">Entry point: ``xa`` (see ``[project.scripts]`` in ``pyproject.toml``).</span>
@@ -1147,6 +1148,33 @@
 
 
 
+<div class="viewcode-block" id="revive_check_cmd">
+<a class="viewcode-back" href="../../_autosummary/xa.cli.html#xa.cli.revive_check_cmd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">revive_check_cmd</span><span class="p">(</span><span class="n">ticks</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">json_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.</span>
+
+<span class="sd">    Sends nothing, ever. Counts consecutive ticks each pane stays reconnectable and</span>
+<span class="sd">    reports (and exits 1) only for panes at or past ``--ticks``.</span>
+
+<span class="sd">    :param ticks: Consecutive reconnectable ticks before a pane is reported.</span>
+<span class="sd">    :param json_out: Emit JSON for the escalated panes instead of the table.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">revive</span> <span class="k">as</span> <span class="n">rv</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">ticks</span><span class="o">=</span><span class="n">ticks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">quiet</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">json_out</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">([</span><span class="n">asdict</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">escalate</span><span class="p">],</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Remote Control dropped for </span><span class="si">{</span><span class="n">ticks</span><span class="si">}</span><span class="s2">+ ticks (nothing was sent):"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">rv</span><span class="o">.</span><span class="n">format_actions</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">escalate</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="ne">SystemExit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
 <span class="c1"># The subcommand name is the mapping key, so the handlers keep their own</span>
 <span class="c1"># ``_cmd``-suffixed names (which is what the tests and the rest of the package</span>
 <span class="c1"># call them) and the command line reads the way a user types it. That includes</span>
@@ -1164,6 +1192,7 @@
     <span class="s2">"pick"</span><span class="p">:</span> <span class="n">pick_cmd</span><span class="p">,</span>
     <span class="s2">"gen-secret"</span><span class="p">:</span> <span class="n">gen_secret_cmd</span><span class="p">,</span>
     <span class="s2">"revive"</span><span class="p">:</span> <span class="n">revive_cmd</span><span class="p">,</span>
+    <span class="s2">"revive-check"</span><span class="p">:</span> <span class="n">revive_check_cmd</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">ARCHIVE_COMMANDS</span> <span class="o">=</span> <span class="p">{</span>
@@ -1241,7 +1270,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=b39c9740"></script>
+</div><script src="../../_static/documentation_options.js?v=1adce326"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

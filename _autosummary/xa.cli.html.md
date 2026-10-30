@@ -3,7 +3,7 @@
 Command-line interface for `xa`.
 
 Exposes subcommands via `cw`: `list`, `info`, `history`, `spawn`,
-`resume`, `kill`, `serve`, `sync`, `pick`, `gen-secret`, `revive`,
+`resume`, `kill`, `serve`, `sync`, `pick`, `gen-secret`, `revive`, `revive-check`,
 and the `archive` group (`list`, `log`, `forensics`).
 
 Entry point: `xa` (see `[project.scripts]` in `pyproject.toml`).
@@ -23,6 +23,7 @@ Entry point: `xa` (see `[project.scripts]` in `pyproject.toml`).
 | [`mk_parser`](#xa.cli.mk_parser)()                                       | The `xa` parser -- a plain [`argparse.ArgumentParser`](https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser), built, not run. |
 | [`pick_cmd`](#xa.cli.pick_cmd)([project, limit, host])                  | Interactive session picker — pick a row by number, then choose an action.                                                                        |
 | [`resume_cmd`](#xa.cli.resume_cmd)(session_id[, name, cwd, timeout, ...]) | Resume a past session (`claude --resume`) in a new tmux pane.                                                                                    |
+| [`revive_check_cmd`](#xa.cli.revive_check_cmd)([ticks, json_out])               | Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.                                                          |
 | [`revive_cmd`](#xa.cli.revive_cmd)([apply, include_held_elsewhere, ...])  | Report — and optionally reconnect — panes whose Remote Control dropped.                                                                          |
 | [`serve_cmd`](#xa.cli.serve_cmd)([host, port, mount, username, ...])     | Run the xa HTTP service (requires the `xa[service]` extra).                                                                                      |
 | [`spawn_cmd`](#xa.cli.spawn_cmd)(cwd[, name, timeout, ...])              | Spawn a detached claude-in-tmux session and print its remote URL.                                                                                |
@@ -153,6 +154,19 @@ Resume a past session (`claude --resume`) in a new tmux pane.
   * **timeout** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – Seconds to wait for the bridge URL.
   * **model** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --model` (omitted → claude’s default).
   * **effort** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --effort` (omitted → claude’s default).
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### xa.cli.revive_check_cmd(ticks=2, json_out=False)
+
+Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.
+
+Sends nothing, ever. Counts consecutive ticks each pane stays reconnectable and
+reports (and exits 1) only for panes at or past `--ticks`.
+
+* **Parameters:**
+  * **ticks** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Consecutive reconnectable ticks before a pane is reported.
+  * **json_out** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Emit JSON for the escalated panes instead of the table.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 

@@ -9,10 +9,11 @@
 <link rel="alternate" type="text/markdown" href="xa.store.html.md">
 <link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.tmux" href="xa.tmux.html"><link rel="prev" title="xa.sessions" href="xa.sessions.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>xa.store - xa</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -287,7 +288,10 @@ the archive API.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#xa.store.default_pane_store" title="xa.store.default_pane_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_pane_store</span></code></a>([state_dir])</p></td>
 <td><p>Per-session pane logs at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/panes/&lt;id&gt;.log</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xa.store.default_revive_store" title="xa.store.default_revive_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_revive_store</span></code></a>([state_dir])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.store.default_revive_check_store" title="xa.store.default_revive_check_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_revive_check_store</span></code></a>([state_dir])</p></td>
+<td><p>The report-only check's streak counters (<code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/revive-check/streaks.json</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.store.default_revive_store" title="xa.store.default_revive_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_revive_store</span></code></a>([state_dir])</p></td>
 <td><p>Per-pane last-reconnect stamps for <a class="reference internal" href="xa.revive.html#xa.revive.RateGuard" title="xa.revive.RateGuard"><code class="xref py py-class docutils literal notranslate"><span class="pre">xa.revive.RateGuard</span></code></a>.</p></td>
 </tr>
 </tbody>
@@ -309,7 +313,7 @@ the archive API.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.store.FileStore">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">FileStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#FileStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.FileStore" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Directory of files, accessed by key.</p>
 <p>Values are <code class="docutils literal notranslate"><span class="pre">bytes</span></code>. Keys must match <code class="docutils literal notranslate"><span class="pre">[A-Za-z0-9_.-]+</span></code> — this
 rejects path traversal attempts like <code class="docutils literal notranslate"><span class="pre">../etc/passwd</span></code>.</p>
@@ -321,7 +325,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dd><p>Public path accessor (for callers that need to hand the path to tmux).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -331,7 +335,7 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.store.JsonLinesStore">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">JsonLinesStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#JsonLinesStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.JsonLinesStore" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Append-only JSONL file with an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code> reader.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">pathlib</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">td</span><span class="p">:</span>
@@ -361,6 +365,19 @@ rejects path traversal attempts like <code class="docutils literal notranslate">
 <dt class="sig sig-object py" id="xa.store.default_pane_store">
 <span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">default_pane_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#default_pane_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.default_pane_store" title="Link to this definition">¶</a></dt>
 <dd><p>Per-session pane logs at <code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/panes/&lt;id&gt;.log</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.store.FileStore" title="xa.store.FileStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileStore</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.store.default_revive_check_store">
+<span class="sig-prename descclassname"><span class="pre">xa.store.</span></span><span class="sig-name descname"><span class="pre">default_revive_check_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.xa')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/store.html#default_revive_check_store"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.store.default_revive_check_store" title="Link to this definition">¶</a></dt>
+<dd><p>The report-only check’s streak counters (<code class="docutils literal notranslate"><span class="pre">&lt;state_dir&gt;/revive-check/streaks.json</span></code>).</p>
+<p>Kept apart from <a class="reference internal" href="#xa.store.default_revive_store" title="xa.store.default_revive_store"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_revive_store()</span></code></a> so a check tick can never be mistaken for
+a reconnect attempt by the rate guard.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.store.FileStore" title="xa.store.FileStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileStore</span></code></a></span></p>
@@ -444,6 +461,7 @@ different process.</p>
 <li><a class="reference internal" href="#xa.store.JsonLinesStore"><code class="docutils literal notranslate"><span class="pre">JsonLinesStore</span></code></a></li>
 <li><a class="reference internal" href="#xa.store.default_events_store"><code class="docutils literal notranslate"><span class="pre">default_events_store()</span></code></a></li>
 <li><a class="reference internal" href="#xa.store.default_pane_store"><code class="docutils literal notranslate"><span class="pre">default_pane_store()</span></code></a></li>
+<li><a class="reference internal" href="#xa.store.default_revive_check_store"><code class="docutils literal notranslate"><span class="pre">default_revive_check_store()</span></code></a></li>
 <li><a class="reference internal" href="#xa.store.default_revive_store"><code class="docutils literal notranslate"><span class="pre">default_revive_store()</span></code></a></li>
 </ul>
 </li>
@@ -456,7 +474,7 @@ different process.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=b39c9740"></script>
+</div><script src="../_static/documentation_options.js?v=1adce326"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

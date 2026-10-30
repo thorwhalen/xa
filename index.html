@@ -9,10 +9,11 @@
 <link rel="alternate" type="text/markdown" href="index.html.md">
 <link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="API reference" href="api.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>xa</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -515,6 +516,33 @@ against <code class="docutils literal notranslate"><span class="pre">bridgeSessi
 verified against a live session rather than inferred — getting the pill
 backwards would send <code class="docutils literal notranslate"><span class="pre">/remote-control</span></code> at healthy sessions, which opens a
 modal menu inside them.</p>
+<section id="unattended-a-report-only-check">
+<h3>Unattended: a report-only check<a class="headerlink" href="#unattended-a-report-only-check" title="Link to this heading">¶</a></h3>
+<p>A drop happens at 03:00, when nobody is typing <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">revive</span></code>. The unattended form is <strong>report-only</strong>: it never sends a key. <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">revive-check</span></code> makes one tmux capture per pane, counts the consecutive ticks each pane stays <code class="docutils literal notranslate"><span class="pre">reconnectable</span></code>, prints nothing while everything is fine, and prints the offenders and exits 1 only once a pane has stayed reconnectable for two ticks (<code class="docutils literal notranslate"><span class="pre">--ticks</span></code>), so a drop that clears within a minute never pages anyone. Run it on the host that actually has the panes; a hook is the wrong shape (it fires in the session that is starting, and the sessions that need reviving are the ones doing nothing).</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="c1"># ~/.config/systemd/user/xa-revive-check.service</span>
+<span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">xa revive-check (report-only: sends nothing)</span>
+<span class="k">[Service]</span>
+<span class="na">Type</span><span class="o">=</span><span class="s">oneshot</span>
+<span class="na">ExecStart</span><span class="o">=</span><span class="s">%h/.local/bin/xa revive-check</span>
+
+<span class="c1"># ~/.config/systemd/user/xa-revive-check.timer</span>
+<span class="k">[Unit]</span>
+<span class="na">Description</span><span class="o">=</span><span class="s">Run xa revive-check every 5 minutes</span>
+<span class="k">[Timer]</span>
+<span class="na">OnBootSec</span><span class="o">=</span><span class="s">5min</span>
+<span class="na">OnUnitActiveSec</span><span class="o">=</span><span class="s">5min</span>
+<span class="k">[Install]</span>
+<span class="na">WantedBy</span><span class="o">=</span><span class="s">timers.target</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>systemctl<span class="w"> </span>--user<span class="w"> </span>daemon-reload<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>systemctl<span class="w"> </span>--user<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>--now<span class="w"> </span>xa-revive-check.timer
+systemctl<span class="w"> </span>--user<span class="w"> </span>--failed<span class="w">          </span><span class="c1"># a failed unit = a pane stayed dropped for two ticks</span>
+journalctl<span class="w"> </span>--user<span class="w"> </span>-u<span class="w"> </span>xa-revive-check<span class="w"> </span>-n<span class="w"> </span><span class="m">20</span>
+</pre></div>
+</div>
+<p>Moving to <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">revive</span> <span class="pre">--apply</span></code> on a timer is deliberately not offered here: the gates (held-elsewhere, unsent prompt text, busy/stalled) are verified against the TUI as it renders today, and unattended is the one configuration with no human to notice a redraw that makes a gate wrong. Run the report for a few weeks first; only when it has been right does <code class="docutils literal notranslate"><span class="pre">--apply</span></code> earn a timer. One gap is unverified: an <em>unclean</em> drop whose disconnect message has scrolled away and whose <code class="docutils literal notranslate"><span class="pre">bridgeSessionId</span></code> lingers would not be detected; it needs a real network-loss reproduction.</p>
+</section>
 </section>
 <section id="the-rest-of-the-cli">
 <h2>The rest of the CLI<a class="headerlink" href="#the-rest-of-the-cli" title="Link to this heading">¶</a></h2>
@@ -833,7 +861,7 @@ testing conventions, known pitfalls).</p>
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-09-22 13:02 UTC from <a href="https://github.com/thorwhalen/xa/commit/70fba9709483acd9c96fc1120f616657d9faba8a">70fba97</a> (main) · xa 0.1.12 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-30 13:47 UTC from <a href="https://github.com/thorwhalen/xa/commit/86ef896a811451459f45bb6cb6e60277f550236c">86ef896</a> (main) · xa 0.1.13 · <a href="about-this-build.html">about this build</a></p>
         </article>
       </div>
       <footer>
@@ -886,7 +914,10 @@ testing conventions, known pitfalls).</p>
 <li><a class="reference internal" href="#what-happens-if-you-try-to-skip-the-guardrails">What happens if you try to skip the guardrails</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reviving-dropped-remote-control-sessions">Reviving dropped Remote Control sessions</a></li>
+<li><a class="reference internal" href="#reviving-dropped-remote-control-sessions">Reviving dropped Remote Control sessions</a><ul>
+<li><a class="reference internal" href="#unattended-a-report-only-check">Unattended: a report-only check</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#the-rest-of-the-cli">The rest of the CLI</a><ul>
 <li><a class="reference internal" href="#commands">Commands</a></li>
 </ul>
@@ -909,7 +940,7 @@ testing conventions, known pitfalls).</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=b39c9740"></script>
+</div><script src="_static/documentation_options.js?v=1adce326"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

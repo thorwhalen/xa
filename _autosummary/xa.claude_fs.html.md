@@ -73,15 +73,15 @@ Summary of a transcript JSONL, cheap enough to compute for listings.
 
 Encode a cwd into the `~/.claude/projects/` slug form.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> encode_project_slug('/root/py/proj/tt/glossa')
 '-root-py-proj-tt-glossa'
 >>> encode_project_slug('/')
 '-'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### xa.claude_fs.ephemeral_session_alive(eph, , proc_root=PosixPath('/proc'))
 
@@ -162,9 +162,6 @@ stores alongside transcripts.
 
 Decode a `~/.claude/projects/` slug back to a cwd.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> parse_project_slug('-root-py-proj-tt-glossa')
 '/root/py/proj/tt/glossa'
@@ -175,6 +172,9 @@ Decode a `~/.claude/projects/` slug back to a cwd.
 NB: This transform is lossy — a cwd with literal `-` in segment names
 round-trips to a different slug. Claude Code itself has the same
 limitation, so we accept it.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### xa.claude_fs.read_ephemeral_session(pid, , claude_home=PosixPath('/home/runner/.claude'))
 
@@ -229,9 +229,6 @@ should use `iter_transcript_events` directly.
 
 Return the transcript path for `(cwd, session_id)` if it exists.
 
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]
-
 ```pycon
 >>> from pathlib import Path
 >>> import tempfile
@@ -244,3 +241,6 @@ Return the transcript path for `(cwd, session_id)` if it exists.
 ...     p == f
 True
 ```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]

@@ -251,6 +251,36 @@ verified against a live session rather than inferred — getting the pill
 backwards would send `/remote-control` at healthy sessions, which opens a
 modal menu inside them.
 
+### Unattended: a report-only check
+
+A drop happens at 03:00, when nobody is typing `xa revive`. The unattended form is **report-only**: it never sends a key. `xa revive-check` makes one tmux capture per pane, counts the consecutive ticks each pane stays `reconnectable`, prints nothing while everything is fine, and prints the offenders and exits 1 only once a pane has stayed reconnectable for two ticks (`--ticks`), so a drop that clears within a minute never pages anyone. Run it on the host that actually has the panes; a hook is the wrong shape (it fires in the session that is starting, and the sessions that need reviving are the ones doing nothing).
+
+```ini
+# ~/.config/systemd/user/xa-revive-check.service
+[Unit]
+Description=xa revive-check (report-only: sends nothing)
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/xa revive-check
+
+# ~/.config/systemd/user/xa-revive-check.timer
+[Unit]
+Description=Run xa revive-check every 5 minutes
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+systemctl --user daemon-reload && systemctl --user enable --now xa-revive-check.timer
+systemctl --user --failed          # a failed unit = a pane stayed dropped for two ticks
+journalctl --user -u xa-revive-check -n 20
+```
+
+Moving to `xa revive --apply` on a timer is deliberately not offered here: the gates (held-elsewhere, unsent prompt text, busy/stalled) are verified against the TUI as it renders today, and unattended is the one configuration with no human to notice a redraw that makes a gate wrong. Run the report for a few weeks first; only when it has been right does `--apply` earn a timer. One gap is unverified: an *unclean* drop whose disconnect message has scrolled away and whose `bridgeSessionId` lingers would not be detected; it needs a real network-loss reproduction.
+
 ## The rest of the CLI
 
 Already have some Claude Code sessions on this machine? List them:
