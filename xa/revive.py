@@ -976,7 +976,9 @@ class CheckResult:
     """One tick of :func:`check`: every pane looked at, and the ones to escalate."""
 
     looked_at: int
-    streaks: Mapping[str, int]  # reconnectable panes -> consecutive ticks, this one included
+    streaks: Mapping[
+        str, int
+    ]  # reconnectable panes -> consecutive ticks, this one included
     escalate: tuple[ReviveAction, ...]  # panes at or past the threshold
 
     @property
@@ -1031,7 +1033,8 @@ def check(
                 ReviveAction(
                     target=target,
                     verdict=state.verdict,
-                    skipped=refusal_to_type(state) or f"reconnectable for {streaks[target]} ticks",
+                    skipped=refusal_to_type(state)
+                    or f"reconnectable for {streaks[target]} ticks",
                     evidence=state.evidence,
                     cwd=state.ref.cwd,
                 )
