@@ -27,6 +27,7 @@ TOP_LEVEL = {
     "pick",
     "gen-secret",
     "revive",
+    "revive-check",
     "archive",
 }
 
@@ -95,6 +96,7 @@ def test_archive_group_listing_row_has_help():
         ("gen-secret", {"--length"}),
         ("revive", {"--apply", "--include-held-elsewhere", "--server-mode",
                     "--min-interval", "--json-out"}),
+        ("revive-check", {"--ticks", "--json-out"}),
     ],
 )
 def test_verb_offers_its_flags(parser, command, flags):

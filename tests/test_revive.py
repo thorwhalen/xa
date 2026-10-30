@@ -604,3 +604,46 @@ def test_module_doctests_pass():
     )
     assert result.attempted > 0
     assert result.failed == 0
+
+
+# --------------------------------------------------------------------------- #
+# the report-only check (#11)
+# --------------------------------------------------------------------------- #
+
+
+def test_check_escalates_only_after_two_ticks_and_never_sends():
+    panes = panes_from({"a:@1.%1": "/rc failed", "b:@1.%1": "all quiet\n   /rc"})
+    store = {}
+    first = rv.check(panes=panes, store=store)
+    assert first.quiet and first.looked_at == 2 and first.streaks == {"a:@1.%1": 1}
+    second = rv.check(panes=panes, store=store)
+    assert [a.target for a in second.escalate] == ["a:@1.%1"]
+    assert not any(a.sent for a in second.escalate)  # nothing is ever typed (tm._run raises)
+
+
+def test_check_forgets_a_pane_that_recovers_or_goes_away():
+    store = {}
+    bad = panes_from({"a:@1.%1": "/rc failed"})
+    ok = panes_from({"a:@1.%1": "all quiet\n   /rc"})
+    rv.check(panes=bad, store=store)
+    assert rv.check(panes=ok, store=store).streaks == {}
+    assert rv.check(panes=bad, store=store).quiet  # the streak restarted from 1
+    gone = panes_from({})
+    assert rv.check(panes=gone, store=store).streaks == {}
+    assert rv.check(panes=bad, store=store).quiet
+
+
+def test_check_reports_why_a_pane_would_not_be_typed_into():
+    panes = rv.SessionPanes(
+        panes=lambda: [ref("a:@1.%1")],
+        is_relevant=lambda r: True,
+        tail=lambda r: "/rc failed\n❯ half typed text",
+    )
+    store = {}
+    rv.check(panes=panes, store=store)
+    (action,) = rv.check(panes=panes, store=store).escalate
+    assert action.skipped and "reconnectable" not in action.skipped
+
+
+def test_check_tolerates_a_corrupt_streak_file():
+    assert rv.check(panes=panes_from({"a:@1.%1": "/rc failed"}), store={"streaks": b"not json"}).quiet

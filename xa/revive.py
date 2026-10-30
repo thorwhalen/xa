@@ -958,3 +958,83 @@ def format_actions(actions: Sequence[ReviveAction]) -> str:
             bits.append(f"[{action.evidence}]")
         lines.append("  ".join(bits))
     return "\n".join(lines)
+
+
+# --------------------------------------------------------------------------- #
+# The report-only check (unattended, #11)
+# --------------------------------------------------------------------------- #
+
+#: Consecutive ticks a pane must stay reconnectable before the check escalates. One tick can
+#: be a transient (the drop that a VPN toggle clears within a minute); two cannot.
+DFLT_CHECK_TICKS = 2
+
+_STREAKS_KEY = "streaks"
+
+
+@dataclass(frozen=True)
+class CheckResult:
+    """One tick of :func:`check`: every pane looked at, and the ones to escalate."""
+
+    looked_at: int
+    streaks: Mapping[str, int]  # reconnectable panes -> consecutive ticks, this one included
+    escalate: tuple[ReviveAction, ...]  # panes at or past the threshold
+
+    @property
+    def quiet(self) -> bool:
+        return not self.escalate
+
+
+def check(
+    *,
+    panes: Optional[Mapping] = None,
+    store=None,
+    ticks: int = DFLT_CHECK_TICKS,
+    actionable: Iterable[str] = ACTIONABLE,
+) -> CheckResult:
+    r"""Report-only revive check, meant for a timer: **sends nothing, ever.**
+
+    Looks at each live pane once (one tmux capture per pane) and counts, per pane, the
+    consecutive ticks it has been reconnectable. A pane is escalated only once that count
+    reaches ``ticks``; a pane that recovers, or is no longer there, loses its streak. Panes
+    that are reconnectable but that :func:`revive` would refuse to type into (unsent prompt
+    text, busy) are still reported, with the reason, since a human may need to look. There
+    is deliberately no ``apply`` here: moving to unattended ``--apply`` is a separate,
+    later decision (#11).
+
+    >>> refs = [PaneRef(target='a:@1.%1', claude_pid=1)]
+    >>> panes = SessionPanes(panes=lambda: refs, is_relevant=lambda r: True,
+    ...                      tail=lambda r: '/rc failed\n\u276f ')
+    >>> state = {}
+    >>> [check(panes=panes, store=state).quiet for _ in range(2)]
+    [True, False]
+    """
+    import json
+
+    panes = SessionPanes() if panes is None else panes
+    store = st.default_revive_check_store() if store is None else store
+    act_on = set(actionable)
+    try:
+        previous = json.loads(store[_STREAKS_KEY])
+    except (KeyError, ValueError):
+        previous = {}
+    streaks: dict[str, int] = {}
+    escalate: list[ReviveAction] = []
+    looked_at = 0
+    for target in sorted(panes):
+        looked_at += 1
+        state = panes[target]
+        if state.verdict not in act_on:
+            continue
+        streaks[target] = int(previous.get(target, 0)) + 1
+        if streaks[target] >= ticks:
+            escalate.append(
+                ReviveAction(
+                    target=target,
+                    verdict=state.verdict,
+                    skipped=refusal_to_type(state) or f"reconnectable for {streaks[target]} ticks",
+                    evidence=state.evidence,
+                    cwd=state.ref.cwd,
+                )
+            )
+    store[_STREAKS_KEY] = json.dumps(streaks).encode()
+    return CheckResult(looked_at=looked_at, streaks=streaks, escalate=tuple(escalate))
