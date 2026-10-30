@@ -150,3 +150,12 @@ def default_revive_store(state_dir: Path = DEFAULT_STATE_DIR) -> FileStore:
     different process.
     """
     return FileStore(state_dir / "revive", suffix=".stamp")
+
+
+def default_revive_check_store(state_dir: Path = DEFAULT_STATE_DIR) -> FileStore:
+    """The report-only check's streak counters (``<state_dir>/revive-check/streaks.json``).
+
+    Kept apart from :func:`default_revive_store` so a check tick can never be mistaken for
+    a reconnect attempt by the rate guard.
+    """
+    return FileStore(state_dir / "revive-check", suffix=".json")

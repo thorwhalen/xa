@@ -1,7 +1,7 @@
 """Command-line interface for ``xa``.
 
 Exposes subcommands via ``cw``: ``list``, ``info``, ``history``, ``spawn``,
-``resume``, ``kill``, ``serve``, ``sync``, ``pick``, ``gen-secret``, ``revive``,
+``resume``, ``kill``, ``serve``, ``sync``, ``pick``, ``gen-secret``, ``revive``, ``revive-check``,
 and the ``archive`` group (``list``, ``log``, ``forensics``).
 
 Entry point: ``xa`` (see ``[project.scripts]`` in ``pyproject.toml``).
@@ -848,6 +848,30 @@ def revive_cmd(
         print("\n(dry run — re-run with --apply to send)", file=sys.stderr)
 
 
+def revive_check_cmd(ticks: int = 2, json_out: bool = False) -> None:
+    """Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.
+
+    Sends nothing, ever. Counts consecutive ticks each pane stays reconnectable and
+    reports (and exits 1) only for panes at or past ``--ticks``.
+
+    :param ticks: Consecutive reconnectable ticks before a pane is reported.
+    :param json_out: Emit JSON for the escalated panes instead of the table.
+    """
+    from dataclasses import asdict
+
+    from xa import revive as rv
+
+    result = rv.check(ticks=ticks)
+    if result.quiet:
+        return
+    if json_out:
+        print(json.dumps([asdict(a) for a in result.escalate], indent=2, default=str))
+    else:
+        print(f"Remote Control dropped for {ticks}+ ticks (nothing was sent):")
+        print(rv.format_actions(result.escalate))
+    raise SystemExit(1)
+
+
 # The subcommand name is the mapping key, so the handlers keep their own
 # ``_cmd``-suffixed names (which is what the tests and the rest of the package
 # call them) and the command line reads the way a user types it. That includes
@@ -865,6 +889,7 @@ TOP_COMMANDS = {
     "pick": pick_cmd,
     "gen-secret": gen_secret_cmd,
     "revive": revive_cmd,
+    "revive-check": revive_check_cmd,
 }
 
 ARCHIVE_COMMANDS = {
