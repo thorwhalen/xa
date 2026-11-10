@@ -18,7 +18,8 @@ Six layers, bottom up. Each only imports from layers below (with one documented 
 | 5  | `xa.sessions` | `Session` dataclass + `list_sessions(hosts=…)` + `get_session` / `kill_session` / `resume` |
 | 4  | `xa.hosts.*` | `Host` Protocol + `LocalHost` / `SSHHost` / `HTTPHost` |
 | 4  | `xa.archive` | event log + `reconcile` + `classify_death` + `records` |
-| 3b | `xa.claude_cli` | `spawn_session` / `resume_session` / `resolve_bridge_url` / `wait_for_bridge_url` / `diagnose_bridgeless` |
+| 4  | `xa.recovery` | what a transcript says about its launch (`launch_facts`: first cwd, permission mode, model, effort), `sessions_alive_at_shutdown`, bulk `resume_all` |
+| 3b | `xa.claude_cli` | `spawn_session` / `resume_session` / `resolve_bridge_url` / `wait_for_bridge_url` / `diagnose_bridgeless`; `account_env_tokens` (the pane's account env, from crowsnest) |
 | 3b | `xa.revive` | **the** pane-reading rule engine — dropped-RC detection + reconnection + every adverse-state verdict: `SessionPanes`, `classify`, `hint_for`, `DEFAULT_RULES`, `RateGuard`, `revive`, `restart_server_mode` |
 | 3a | `xa.tmux` | pure tmux wrappers (nothing Claude-specific) |
 | 2  | `xa.claude_fs` | read-only view of `~/.claude/` — transcripts, ephemeral files, history |
@@ -41,7 +42,7 @@ XA_RUN_INTEGRATION=1 pytest -q  # also runs the gated real-claude spawn test
 Test layout mirrors source: `tests/test_<module>.py`. Conventions:
 
 - **Pure modules** (`claude_fs`, `archive`, `store`, `config`): fixture-based, fully hermetic.
-- **tmux** (`test_tmux.py`): requires real tmux (auto-skip if absent). Each test uses a `xa-test-<hex>` session name and cleans up in `finally`.
+- **tmux** (`test_tmux.py`, `test_recovery.py`): requires real tmux (auto-skip if absent). `tests/conftest.py` points the whole suite at a **private tmux server** (unsets `$TMUX`, sets `$TMUX_TMPDIR`), so no test can reach the machine's live sessions. Keep it that way: never call tmux with an explicit socket of the real server. A fake `claude` is a shell script that answers `--help` and records its argv/env.
 - **FastAPI** (`test_service.py`, `test_hosts_http.py`): the HTTP host test stands up a real uvicorn server on a random port in a daemon thread.
 - **CLI** (`test_cli.py`, `test_pick.py`): drive via `subprocess` + `XA_CLAUDE_HOME` env var pointing at a fixture.
 - **SSH** (`test_hosts_ssh.py`): monkeypatches `SSHHost._run` — never actually SSH.

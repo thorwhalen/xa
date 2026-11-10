@@ -17,9 +17,10 @@ What lives under ``~/.claude/`` (as of Claude Code 2.x):
   line carries ``sessionId`` + ``cwd``.
 - ``sessions-index.json`` — summary index (not yet consumed here).
 
-All functions are read-only. All paths default to ``~/.claude/`` but accept
-a ``claude_home`` override (set ``XA_CLAUDE_HOME`` in the env to point at a
-fixture tree during testing).
+All functions are read-only. All paths default to the account's home
+(:func:`default_claude_home`: ``$XA_CLAUDE_HOME``, else Claude Code's own
+``$CLAUDE_CONFIG_DIR``, else ``~/.claude/``) and accept a ``claude_home``
+override. ``XA_CLAUDE_HOME`` is also how tests point xa at a fixture tree.
 """
 
 from __future__ import annotations
@@ -32,7 +33,29 @@ from pathlib import Path
 from typing import Any, Iterator, Optional
 
 
-DEFAULT_CLAUDE_HOME = Path(os.environ.get("XA_CLAUDE_HOME") or Path.home() / ".claude")
+#: Claude Code picks its account by this variable: config, credentials and
+#: transcripts all move with it. Unset means the default home.
+CLAUDE_HOME_ENV_VAR = "CLAUDE_CONFIG_DIR"
+
+
+def default_claude_home(environ: Optional[dict] = None) -> Path:
+    """The Claude home xa reads (and launches sessions under) by default.
+
+    ``$XA_CLAUDE_HOME`` first (xa's own override), then ``$CLAUDE_CONFIG_DIR``
+    (so an xa run from a second account's shell sees that account), then
+    ``~/.claude``.
+
+    >>> str(default_claude_home({'CLAUDE_CONFIG_DIR': '/h/iq'}))
+    '/h/iq'
+    >>> str(default_claude_home({'XA_CLAUDE_HOME': '/x', 'CLAUDE_CONFIG_DIR': '/h/iq'}))
+    '/x'
+    """
+    env = os.environ if environ is None else environ
+    chosen = env.get("XA_CLAUDE_HOME") or env.get(CLAUDE_HOME_ENV_VAR)
+    return Path(chosen).expanduser() if chosen else Path.home() / ".claude"
+
+
+DEFAULT_CLAUDE_HOME = default_claude_home()
 
 _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 _PID_RE = re.compile(r"^\d+$")

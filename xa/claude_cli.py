@@ -28,6 +28,11 @@ from xa import tmux as tm
 DEFAULT_CLAUDE_BIN = "claude"
 CLAUDE_WEB_BASE = "https://claude.ai/code"
 
+BYPASS_MODE = "bypassPermissions"
+_BYPASS_FLAG = "--dangerously-skip-permissions"
+_ALLOW_BYPASS_FLAG = "--allow-dangerously-skip-permissions"
+_MODE_FLAG = "--permission-mode"
+
 _URL_RE = re.compile(r"https://claude\.ai/code/session_[A-Za-z0-9_-]+")
 
 UrlSource = Literal["session_file", "pane_capture"]
@@ -101,6 +106,8 @@ def _claude_argv(
     claude_name: Optional[str] = None,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
+    allow_bypass: bool = False,
     remote_control: bool = False,
 ) -> tuple[list[str], list[str]]:
     """Compose the claude invocation from what the binary supports.
@@ -108,11 +115,28 @@ def _claude_argv(
     Returns ``(argv, skipped)`` where ``skipped`` lists requested flags the
     binary does not advertise. ``--remote-control`` goes last and bare so
     its optional value can never swallow a following argument.
+
+    ``permission_mode`` is claude's own spelling (``'bypassPermissions'``
+    becomes ``--dangerously-skip-permissions``; ``None``/``''`` adds nothing).
+    ``allow_bypass`` keeps bypass *reachable* (shift-tab) for a session that
+    starts in another mode, which is how a session launched with the bypass
+    flag and later switched to ``auto`` comes back.
+
+    >>> _claude_argv('claude', supported=frozenset({'--dangerously-skip-permissions'}),
+    ...              resume_id='abc', permission_mode='bypassPermissions')[0]
+    ['claude', '--resume', 'abc', '--dangerously-skip-permissions']
     """
     argv = [claude_bin]
     skipped: list[str] = []
     if resume_id:
         argv += ["--resume", resume_id]
+    for flag in _permission_flags(permission_mode, allow_bypass=allow_bypass):
+        if flag in supported:
+            argv.append(flag)
+            if flag == _MODE_FLAG:
+                argv.append(permission_mode)
+        else:
+            skipped.append(flag)
     for flag, value in (
         ("--name", claude_name),
         ("--model", model),
@@ -130,6 +154,42 @@ def _claude_argv(
         else:
             skipped.append("--remote-control")
     return argv, skipped
+
+
+def _permission_flags(mode: Optional[str], *, allow_bypass: bool) -> list[str]:
+    """The flag names (values excluded) that start claude in ``mode``.
+
+    >>> _permission_flags('auto', allow_bypass=True)
+    ['--allow-dangerously-skip-permissions', '--permission-mode']
+    >>> _permission_flags('default', allow_bypass=False)
+    []
+    """
+    if mode == BYPASS_MODE:
+        return [_BYPASS_FLAG]
+    flags = [_ALLOW_BYPASS_FLAG] if allow_bypass else []
+    if mode and mode != "default":
+        flags.append(_MODE_FLAG)
+    return flags
+
+
+def account_env_tokens(claude_home: Path) -> list[str]:
+    """The ``env -u ... K=V`` prefix that runs a command under ``claude_home``'s account.
+
+    A tmux pane's shell inherits the tmux *server's* global environment, which
+    belongs to whoever started the server: possibly another account
+    (``CLAUDE_CONFIG_DIR=<other home>``), possibly a long-dead session
+    (``CLAUDECODE``, ``CLAUDE_CODE_SESSION_ID``, its messaging socket, its
+    effort). ``tmux new-session -e`` can only *set* variables, and the default
+    home is reached only by ``CLAUDE_CONFIG_DIR`` being absent, so the command
+    itself unsets every session marker and states the account either way round.
+
+    The variable lists are crowsnest's (:func:`crowsnest.spawn.child_env`,
+    :func:`crowsnest.spawn.env_prefix`), derived there from the claude binary's
+    own name table, so they are not re-derived here.
+    """
+    from crowsnest.spawn import child_env, env_prefix
+
+    return env_prefix(child_env(home=claude_home))
 
 
 # --------------------------------------------------------------------------- #
@@ -328,6 +388,8 @@ def prepare_spawn(
     claude_name: Optional[str] = None,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
+    allow_bypass: bool = False,
     pane_log_path: Optional[Path] = None,
     archive_store=None,
     pane_store=None,
@@ -345,6 +407,11 @@ def prepare_spawn(
     sent at a TUI. On a claude too old to advertise it, the host's
     ``remoteControlAtStartup`` setting is the remaining path, so the
     warning says so rather than falling back to typing.
+
+    ``claude_home`` is also the session's *account*: the pane runs claude
+    under it (:func:`account_env_tokens`), whatever the tmux server's own
+    environment says. ``permission_mode`` / ``allow_bypass`` are passed to
+    :func:`_claude_argv`.
     """
     if not Path(cwd).is_dir():
         raise FileNotFoundError(f"cwd does not exist: {cwd}")
@@ -356,8 +423,11 @@ def prepare_spawn(
         claude_name=claude_name,
         model=model,
         effort=effort,
+        permission_mode=permission_mode,
+        allow_bypass=allow_bypass,
         remote_control=auto_remote_control,
     )
+    argv = account_env_tokens(Path(claude_home)) + argv
     shell_cmd = f"cd {shlex.quote(cwd)} && exec " + " ".join(
         shlex.quote(a) for a in argv
     )
@@ -374,7 +444,11 @@ def prepare_spawn(
         ctx.emit_created(name=name, cwd=cwd, pane_log=pane_log, tmux_bin=tmux_bin)
 
     warnings = []
-    hard_skips = [f for f in skipped if f in ("--model", "--effort")]
+    hard_skips = [
+        f
+        for f in skipped
+        if f in ("--model", "--effort", _BYPASS_FLAG, _ALLOW_BYPASS_FLAG, _MODE_FLAG)
+    ]
     if hard_skips:
         warnings.append(
             "Installed claude does not support "
@@ -533,6 +607,7 @@ def spawn_session(
     auto_remote_control: bool = True,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
     pane_log_path: Optional[Path] = None,
     archive_store=None,
     pane_store=None,
@@ -566,6 +641,7 @@ def spawn_session(
         claude_name=name,
         model=model,
         effort=effort,
+        permission_mode=permission_mode,
         pane_log_path=pane_log_path,
         archive_store=archive_store,
         pane_store=pane_store,
@@ -586,6 +662,8 @@ def resume_session(
     auto_remote_control: bool = True,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
+    allow_bypass: bool = False,
     pane_log_path: Optional[Path] = None,
     archive_store=None,
     pane_store=None,
@@ -619,6 +697,8 @@ def resume_session(
         claude_name=claude_name,
         model=model,
         effort=effort,
+        permission_mode=permission_mode,
+        allow_bypass=allow_bypass,
         pane_log_path=pane_log_path,
         archive_store=archive_store,
         pane_store=pane_store,

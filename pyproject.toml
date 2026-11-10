@@ -16,6 +16,9 @@ authors = [
 ]
 dependencies = [
     "cw>=0.1.1,<0.2",
+    # child_env / env_prefix / pick_permission_mode: the account and
+    # session-marker env rules for a pane, and the root-bypass rule (#23).
+    "crowsnest>=0.0.95,<0.1",
 ]
 
 [project.license]

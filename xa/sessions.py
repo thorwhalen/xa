@@ -277,14 +277,40 @@ def resume(
     hosts: Optional[Mapping[str, object]] = None,
     **opts,
 ) -> ccli.SpawnResult:
-    """Resume a transcript / archived session on its originating host."""
+    """Resume a transcript / archived session on its originating host, as it was launched.
+
+    Whatever the caller leaves unset comes from the transcript
+    (:func:`xa.recovery.launch_facts`): the cwd it was started in, its model
+    and effort, and its permission mode (:func:`xa.recovery.resume_permission`),
+    so a session started with ``--dangerously-skip-permissions`` comes back
+    with it. ``permission_mode=''`` asks for claude's default explicitly.
+    """
     if not session.claude_session_id:
         raise ValueError("session has no claude_session_id — cannot resume")
-    target_cwd = cwd or session.cwd
+    facts = None
+    if session.transcript_path is not None and Path(session.transcript_path).is_file():
+        from xa import recovery
+
+        facts = recovery.launch_facts(Path(session.transcript_path))
+        opts = {**launch_opts(facts), **{k: v for k, v in opts.items() if v is not None}}
+    target_cwd = cwd or (facts.cwd if facts else None) or session.cwd
     if not target_cwd:
         raise ValueError("cannot infer cwd — pass cwd=...")
     h = _host_for(session, hosts)
     return h.resume(session.claude_session_id, cwd=target_cwd, name=name, **opts)
+
+
+def launch_opts(facts) -> dict:
+    """The resume keyword arguments that bring ``facts`` back as it was launched."""
+    from xa import recovery
+
+    mode, allow, _warning = recovery.resume_permission(facts)
+    return {
+        "model": facts.model,
+        "effort": facts.effort,
+        "permission_mode": mode,
+        "allow_bypass": allow,
+    }
 
 
 def _host_for(session: Session, hosts: Optional[Mapping[str, object]]) -> object:
