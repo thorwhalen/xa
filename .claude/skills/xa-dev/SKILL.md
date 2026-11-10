@@ -18,11 +18,12 @@ Six layers, bottom up. Each only imports from layers below (with one documented 
 | 5  | `xa.sessions` | `Session` dataclass + `list_sessions(hosts=…)` + `get_session` / `kill_session` / `resume` |
 | 4  | `xa.hosts.*` | `Host` Protocol + `LocalHost` / `SSHHost` / `HTTPHost` |
 | 4  | `xa.archive` | event log + `reconcile` + `classify_death` + `records` |
-| 4  | `xa.recovery` | what a transcript says about its launch (`launch_facts`: first cwd, permission mode, model, effort), `sessions_alive_at_shutdown`, bulk `resume_all` |
-| 3b | `xa.claude_cli` | `spawn_session` / `resume_session` / `resolve_bridge_url` / `wait_for_bridge_url` / `diagnose_bridgeless`; `account_env_tokens` (the pane's account env, from crowsnest) |
+| 4  | `xa.recovery` | shutdown detection (`last_shutdown_time`, `boot_time`, `sessions_alive_at_shutdown`) and bulk `resume_all` |
+| 3b | `xa.claude_cli` | `spawn_session` / `resume_session` / `resolve_bridge_url` / `wait_for_bridge_url` / `diagnose_bridgeless` |
 | 3b | `xa.revive` | **the** pane-reading rule engine — dropped-RC detection + reconnection + every adverse-state verdict: `SessionPanes`, `classify`, `hint_for`, `DEFAULT_RULES`, `RateGuard`, `revive`, `restart_server_mode` |
 | 3a | `xa.tmux` | pure tmux wrappers (nothing Claude-specific) |
-| 2  | `xa.claude_fs` | read-only view of `~/.claude/` — transcripts, ephemeral files, history |
+| 2  | `xa.claude_fs` | read-only view of `~/.claude/` — transcripts, ephemeral files, history; `launch_facts` (first cwd, permission mode, model: how a session was launched) and `resume_model` |
+| 1  | `xa.claude_env` | the env and flags a fresh claude starts with: `account_env_tokens` (unset identity markers, state the account), `permission_args`, `bypass_refused`, `resume_permission`. No xa imports: crowsnest is to import it from here |
 | 1  | `xa.store`, `xa.config` | JsonLinesStore, FileStore, TOML loader |
 
 Full design doc: `misc/docs/design.md`. Research on Claude Code internals: `misc/docs/research.md`. Phased plan: `misc/docs/roadmap.md`.

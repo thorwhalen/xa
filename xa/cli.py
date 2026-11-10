@@ -293,13 +293,21 @@ def _explicit_permission_mode(mode: "Optional[str]") -> "Optional[str]":
     """``--permission-mode`` in claude's spelling, refused early where claude would refuse it."""
     if mode is None:
         return None
-    from crowsnest.spawn import pick_permission_mode
+    from xa import claude_env as cenv
 
     try:
-        return pick_permission_mode(mode)
+        picked = cenv.canonical_permission_mode(mode)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         sys.exit(2)
+    if picked == cenv.BYPASS_MODE and cenv.bypass_refused():
+        print(
+            f"error: Claude Code refuses {cenv.BYPASS_FLAG} to root; set "
+            f"{cenv.SANDBOX_VAR}=1 where the session starts, or pick another mode.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    return picked
 
 
 def spawn_cmd(
@@ -383,9 +391,10 @@ def resume_cmd(
 ) -> None:
     """Resume past sessions (``claude --resume``) in new tmux panes, as they were launched.
 
-    Each comes back in its original cwd, under its account, with its model,
-    effort and permission mode (``--dangerously-skip-permissions`` included)
-    read from its transcript; any of these flags overrides the transcript.
+    Each comes back in its original cwd, under its account, with its model
+    (when its family differs from the account default) and permission mode
+    (``--dangerously-skip-permissions`` included) read from its transcript;
+    any of these flags overrides the transcript.
 
     ``--since-shutdown`` finds the sessions that were alive at the last
     shutdown and lists them (a dry run); add ``--apply`` to resume them all.
@@ -395,7 +404,7 @@ def resume_cmd(
     :param cwd: Override cwd (defaults to the session's original cwd).
     :param timeout: Seconds to wait for each bridge URL.
     :param model: Per-session ``claude --model`` (omitted → the transcript's model).
-    :param effort: Per-session ``claude --effort`` (omitted → the transcript's effort).
+    :param effort: Per-session ``claude --effort`` (omitted → the account's default).
     :param home: Claude home (account) to resume from and run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).
     :param permission_mode: Override the transcript's permission mode (``bypass``, ``auto``, ``default``...).
     :param since_shutdown: Select the sessions alive at the last shutdown instead of ids.
@@ -409,12 +418,23 @@ def resume_cmd(
         if session_ids:
             print("error: give session ids or --since-shutdown, not both", file=sys.stderr)
             sys.exit(2)
+        per_session = {"--name": name, "--cwd": cwd, "--model": model, "--effort": effort}
+        given = [flag for flag, v in per_session.items() if v is not None]
+        if given:
+            print(
+                f"error: {', '.join(given)} name one session; with --since-shutdown "
+                "each session comes back as its transcript says (only "
+                "--permission-mode applies to all)",
+                file=sys.stderr,
+            )
+            sys.exit(2)
         _resume_since_shutdown(
             claude_home=claude_home,
             apply=apply,
             window=window,
             timeout=timeout,
             json_out=json_out,
+            permission_mode=mode,
         )
         return
     if not session_ids:
@@ -473,12 +493,26 @@ def _fmt_clock(ts: "Optional[float]") -> str:
 
 
 def _resume_since_shutdown(
-    *, claude_home: Path, apply: bool, window: float, timeout: float, json_out: bool
+    *,
+    claude_home: Path,
+    apply: bool,
+    window: float,
+    timeout: float,
+    json_out: bool,
+    permission_mode: "Optional[str]" = None,
 ) -> None:
     """The ``--since-shutdown`` half of :func:`resume_cmd`: list, or resume with ``apply``."""
     from xa import recovery
 
-    scan = recovery.sessions_alive_at_shutdown(claude_home=claude_home, window_sec=window)
+    local = next(
+        (h for h in _configured_hosts().values() if getattr(h, "kind", None) == "local"),
+        None,
+    )
+    claude_bin = getattr(local, "claude_bin", None)
+    tmux_bin = getattr(local, "tmux_bin", None)
+    scan = recovery.sessions_alive_at_shutdown(
+        claude_home=claude_home, window_sec=window, tmux_bin=tmux_bin
+    )
     if not json_out:
         anchor = {
             "last": "shutdown record (`last`)",
@@ -493,20 +527,28 @@ def _resume_since_shutdown(
         print(f"sessions:  {len(scan.candidates)}")
         print()
 
+    from xa.claude_env import resume_permission
+
     def _mode(f) -> str:
-        mode, allow, _ = recovery.resume_permission(f)
+        if permission_mode is not None:
+            return permission_mode or "-"
+        mode, allow, _ = resume_permission(f.permission_mode, bypass_seen=f.bypass_seen)
         return (mode or "-") + ("+allow-bypass" if allow else "")
+
+    def _model(f) -> str:
+        return recovery.cfs.resume_model(f, claude_home=claude_home) or "(account default)"
 
     if not apply:
         if json_out:
             for f in scan.candidates:
-                print(json.dumps({**asdict(f), "resume_mode": _mode(f)}, default=str))
+                row = {**asdict(f), "resume_mode": _mode(f), "resume_model": _model(f)}
+                print(json.dumps(row, default=str))
             return
         rows = [
             [
                 _short_id(f.session_id),
                 _truncate(f.name or "", 24),
-                f.model or "-",
+                _model(f),
                 _mode(f),
                 f.last_type or "?",
                 _truncate(f.cwd or "?", 60),
@@ -519,7 +561,12 @@ def _resume_since_shutdown(
         return
 
     done = recovery.resume_all(
-        scan.candidates, claude_home=claude_home, url_timeout_sec=timeout
+        scan.candidates,
+        claude_home=claude_home,
+        claude_bin=claude_bin,
+        tmux_bin=tmux_bin,
+        url_timeout_sec=timeout,
+        permission_mode=permission_mode,
     )
     rows = []
     for r in done:

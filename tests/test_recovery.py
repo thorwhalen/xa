@@ -2,7 +2,7 @@
 
 Everything runs against fake transcripts and, for the end-to-end test, a fake
 ``claude`` inside a private tmux server (``conftest.py``) whose global
-environment is deliberately polluted the way the 2026-11-10 recovery found it.
+environment is deliberately polluted the way a real recovery found it (#23).
 """
 
 from __future__ import annotations
@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 
 from xa import claude_cli as ccli
+from xa import claude_env as cenv
 from xa import claude_fs as cfs
 from xa import recovery as rc
 
@@ -85,12 +86,12 @@ def _session_events(cwd: str, sid: str, *, later_cwd: str, model="claude-sonnet-
 
 
 def test_cwd_is_the_first_cwd_not_the_last(tmp_path: Path) -> None:
-    """The 2026-11-10 bug: the last cwd put 32 of 65 sessions in the wrong folder."""
+    """Resuming in the last cwd puts a session that cd-ed elsewhere in the wrong folder (#23)."""
     cwd, later = "/work/proj", "/work/proj/memory"
     path = _write_transcript(
         tmp_path, cwd, SID_A, _session_events(cwd, SID_A, later_cwd=later)
     )
-    assert rc.launch_facts(path).cwd == cwd
+    assert cfs.launch_facts(path).cwd == cwd
 
 
 def test_cwd_prefers_the_one_matching_the_project_folder(tmp_path: Path) -> None:
@@ -99,7 +100,7 @@ def test_cwd_prefers_the_one_matching_the_project_folder(tmp_path: Path) -> None
     events = [{"type": "user", "cwd": "/somewhere/else", "sessionId": SID_A}]
     events += _session_events(cwd, SID_A, later_cwd="/tmp")
     path = _write_transcript(tmp_path, cwd, SID_A, events)
-    assert rc.launch_facts(path).cwd == cwd
+    assert cfs.launch_facts(path).cwd == cwd
 
 
 def test_launch_facts_reads_mode_model_effort_name(tmp_path: Path) -> None:
@@ -107,7 +108,7 @@ def test_launch_facts_reads_mode_model_effort_name(tmp_path: Path) -> None:
     path = _write_transcript(
         tmp_path, cwd, SID_A, _session_events(cwd, SID_A, later_cwd="/tmp")
     )
-    f = rc.launch_facts(path)
+    f = cfs.launch_facts(path)
     assert f.session_id == SID_A
     assert f.permission_mode == "auto"  # the last one recorded
     assert f.bypass_seen is True
@@ -117,24 +118,22 @@ def test_launch_facts_reads_mode_model_effort_name(tmp_path: Path) -> None:
     assert f.last_type == "cost-state"
 
 
-def test_resume_permission_keeps_bypass_reachable(monkeypatch) -> None:
-    monkeypatch.delenv("IS_SANDBOX", raising=False)
-    monkeypatch.setenv("CROWSNEST_CONFIG", "/no/such/config.toml")
-    f = rc.LaunchFacts(SID_A, Path("t"), "/p", "auto", True, None, None, None, None, 0)
-    assert rc.resume_permission(f, euid=501) == ("auto", True, None)
-    g = rc.LaunchFacts(
-        SID_A, Path("t"), "/p", "bypassPermissions", True, None, None, None, None, 0
+def test_resume_permission_keeps_bypass_reachable() -> None:
+    rp = cenv.resume_permission
+    assert rp("auto", bypass_seen=True, euid=501) == ("auto", True, None)
+    assert rp("bypassPermissions", bypass_seen=True, euid=501) == (
+        "bypassPermissions",
+        False,
+        None,
     )
-    assert rc.resume_permission(g, euid=501) == ("bypassPermissions", False, None)
-    mode, allow, warning = rc.resume_permission(g, euid=0)
+    mode, allow, warning = rp("bypassPermissions", bypass_seen=True, euid=0, environ={})
     assert (mode, allow) == ("", False) and "root" in warning
-    import crowsnest.spawn as cn_spawn
-
-    if hasattr(cn_spawn, "SANDBOX_VAR"):  # crowsnest's rule since its #161
-        monkeypatch.setenv("IS_SANDBOX", "1")  # where claude accepts bypass as root
-        assert rc.resume_permission(g, euid=0) == ("bypassPermissions", False, None)
-    h = rc.LaunchFacts(SID_A, Path("t"), "/p", "", False, None, None, None, None, 0)
-    assert rc.resume_permission(h, euid=501) == ("", False, None)
+    assert rp("auto", bypass_seen=True, euid=0, environ={})[:2] == ("auto", False)
+    sandboxed = {"IS_SANDBOX": "1"}  # where claude accepts bypass from root
+    assert rp("bypassPermissions", bypass_seen=True, euid=0, environ=sandboxed)[0] == (
+        "bypassPermissions"
+    )
+    assert rp("", bypass_seen=False, euid=501) == ("", False, None)
 
 
 # --------------------------------------------------------------------------- #
@@ -193,7 +192,7 @@ def test_account_env_unsets_config_dir_for_the_default_home(monkeypatch) -> None
     """The default home is reached only by the variable's absence: an unset, not -e."""
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", "/h/other")
     monkeypatch.setenv("CLAUDECODE", "1")
-    tokens = ccli.account_env_tokens(Path("~/.claude").expanduser())
+    tokens = cenv.account_env_tokens(Path("~/.claude").expanduser())
     assert tokens[0] == "env"
     pairs = list(zip(tokens, tokens[1:]))
     assert ("-u", "CLAUDE_CONFIG_DIR") in pairs
@@ -204,12 +203,14 @@ def test_account_env_unsets_config_dir_for_the_default_home(monkeypatch) -> None
 
 
 def test_account_env_states_a_second_home(tmp_path: Path) -> None:
-    tokens = ccli.account_env_tokens(tmp_path)
+    tokens = cenv.account_env_tokens(tmp_path)
     assert f"CLAUDE_CONFIG_DIR={tmp_path.resolve()}" in tokens
 
 
 def test_default_claude_home_follows_the_account() -> None:
-    assert cfs.default_claude_home({"CLAUDE_CONFIG_DIR": "/h/iq"}) == Path("/h/iq")
+    assert cfs.default_claude_home({"CLAUDE_CONFIG_DIR": "/h/second"}) == Path(
+        "/h/second"
+    )
     assert cfs.default_claude_home({}) == Path.home() / ".claude"
 
 
@@ -228,11 +229,25 @@ def test_parse_last_stamp_rolls_the_year_back() -> None:
 def test_last_shutdown_time_reads_macos_and_linux_shapes(monkeypatch) -> None:
     before = time.mktime((2026, 11, 10, 10, 0, 0, 0, 0, -1))
     mac = "reboot time    Tue Nov 10 09:52\nshutdown time   Tue Nov 10 09:50\n"
-    linux = "shutdown system down  6.8.0-45 Tue Nov 10 09:50 - 09:52  (00:01)\n"
+    linux = (
+        "reboot   system boot  6.8.0-45 Tue Nov 10 09:52   still running\n"
+        "shutdown system down  6.8.0-45 Tue Nov 10 09:50 - 09:52  (00:01)\n"
+    )
     for platform, out in (("darwin", mac), ("linux", linux)):
         monkeypatch.setattr(rc.sys, "platform", platform)
         ts = rc.last_shutdown_time(before=before, run=lambda argv, out=out: out)
         assert time.localtime(ts)[:5] == (2026, 11, 10, 9, 50)
+
+
+def test_a_crash_has_no_shutdown_record_for_this_boot(monkeypatch) -> None:
+    """Two reboots before any shutdown: the older record belongs to another boot."""
+    monkeypatch.setattr(rc.sys, "platform", "darwin")
+    out = (
+        "reboot time    Tue Nov 10 10:42\n"
+        "reboot time    Tue Nov 10 10:02\n"
+        "shutdown time  Tue Nov 10 10:00\n"
+    )
+    assert rc.last_shutdown_time(before=time.time(), run=lambda argv: out) is None
 
 
 def _home_with_three_sessions(tmp_path: Path, *, shutdown: float) -> Path:
@@ -268,21 +283,25 @@ def test_sessions_alive_at_shutdown_skips_live_sessions(tmp_path: Path) -> None:
     assert scan.candidates == []
 
 
-def test_a_stale_shutdown_record_falls_back_to_the_latest_write(tmp_path: Path) -> None:
-    """A record from an earlier power cycle must not open a days-wide window."""
+def test_no_shutdown_record_falls_back_to_the_latest_write(
+    tmp_path: Path, monkeypatch
+) -> None:
     shutdown = 1_800_000_000.0
     home = _home_with_three_sessions(tmp_path, shutdown=shutdown)
+    monkeypatch.setattr(rc, "last_shutdown_time", lambda **kw: None)
     scan = rc.sessions_alive_at_shutdown(
-        claude_home=home, shutdown=shutdown - 86400, boot=shutdown + 120, live_ids=set()
+        claude_home=home, boot=shutdown + 120, live_ids=set()
     )
     assert scan.anchor_source == "latest-write"
     assert [f.session_id for f in scan.candidates] == [SID_A]
 
 
 def test_tmux_name_for_is_unique_and_safe() -> None:
-    f = rc.LaunchFacts(SID_A, Path("t"), None, "", False, None, None, "a/b c!", None, 0)
+    f = cfs.LaunchFacts(
+        SID_A, Path("t"), None, "", False, None, None, "a/b c!", None, 0
+    )
     assert rc.tmux_name_for(f) == "a-b-c"
-    g = rc.LaunchFacts(SID_A, Path("t"), None, "", False, None, None, None, None, 0)
+    g = cfs.LaunchFacts(SID_A, Path("t"), None, "", False, None, None, None, None, 0)
     assert rc.tmux_name_for(g) == "resumed-aaaaaaaa"
 
 
@@ -302,6 +321,9 @@ def test_session_resume_fills_launch_facts_from_the_transcript(tmp_path: Path) -
     seen = {}
 
     class _Host:
+        kind = "local"
+        claude_home = tmp_path / "home"  # no settings.json: no account default
+
         def resume(self, sid, *, cwd, **opts):
             seen.update(sid=sid, cwd=cwd, **opts)
 
@@ -329,7 +351,7 @@ def test_session_resume_fills_launch_facts_from_the_transcript(tmp_path: Path) -
     sess.resume(s, hosts={"h": _Host()}, model=None)
     assert seen["cwd"] == cwd
     assert seen["model"] == "claude-sonnet-5-5"
-    assert seen["effort"] == "high"
+    assert "effort" not in seen
     assert (seen["permission_mode"], seen["allow_bypass"]) == ("auto", True)
     sess.resume(s, hosts={"h": _Host()}, model="opus", permission_mode="")
     assert seen["model"] == "opus" and seen["permission_mode"] == ""
@@ -346,7 +368,7 @@ if [ "$1" = "--help" ]; then
   echo "--dangerously-skip-permissions --allow-dangerously-skip-permissions"
   exit 0
 fi
-{{ pwd; printf '%s\\n' "$@"; echo ---; env; }} > {record}/"$$".txt
+{{ pwd; printf '%s\\n' "$@"; echo ---; env | cut -d= -f1; }} > {record}/"$$".txt
 echo "Do you trust the files in this folder?"
 sleep 30
 """
@@ -397,7 +419,7 @@ def test_resume_all_end_to_end_in_a_polluted_tmux_server(
             SID_A,
             _session_events(str(cwd), SID_A, later_cwd=str(tmp_path)),
         )
-        facts = rc.launch_facts(path)
+        facts = cfs.launch_facts(path)
         done = rc.resume_all(
             [facts],
             claude_home=home,
@@ -421,7 +443,7 @@ def test_resume_all_end_to_end_in_a_polluted_tmux_server(
         assert "--allow-dangerously-skip-permissions" in args
         assert args[args.index("--permission-mode") + 1] == "auto"
         assert args[args.index("--model") + 1] == "claude-sonnet-5-5"
-        assert args[args.index("--effort") + 1] == "high"
+        assert "--effort" not in args  # never restored: may sit below effortLevel
         for leaked in (
             "CLAUDE_CONFIG_DIR",
             "CLAUDECODE",
@@ -436,3 +458,72 @@ def test_resume_all_end_to_end_in_a_polluted_tmux_server(
             ["tmux", "kill-session", "-t", "xa-test-keepalive:"], capture_output=True
         )
         subprocess.run(["tmux", "kill-session", "-t", "lookout:"], capture_output=True)
+
+
+def test_headless_runs_are_not_candidates(tmp_path: Path) -> None:
+    shutdown = 1_800_000_000.0
+    home = tmp_path / "home"
+    events = [
+        {"type": "user", "cwd": "/w/a", "sessionId": SID_A, "entrypoint": "sdk-cli"}
+    ]
+    path = _write_transcript(home, "/w/a", SID_A, events)
+    os.utime(path, (shutdown + 5, shutdown + 5))
+    scan = rc.sessions_alive_at_shutdown(
+        claude_home=home, shutdown=shutdown, boot=shutdown + 120, live_ids=set()
+    )
+    assert scan.candidates == []
+
+
+def test_resume_ids_are_read_from_pane_start_commands() -> None:
+    cmd = f"cd /w && exec env -u CLAUDECODE claude --resume {SID_A} --remote-control"
+    assert rc._RESUME_ID_RE.findall(cmd) == [SID_A]
+    assert rc._RESUME_ID_RE.findall(f"claude '--resume' '{SID_B}'") == [SID_B]
+
+
+def test_slug_matches_claude_for_underscores_and_dots(tmp_path: Path) -> None:
+    assert cfs.encode_project_slug("/p/i/_zodals") == "-p-i--zodals"
+    cwd = "/p/tt/tw_platform"
+    events = [{"type": "user", "cwd": "/elsewhere", "sessionId": SID_A}]
+    events += [{"type": "user", "cwd": cwd, "sessionId": SID_A}]
+    path = _write_transcript(tmp_path, cwd, SID_A, events)
+    assert path.parent.name == "-p-tt-tw-platform"
+    assert cfs.launch_facts(path).cwd == cwd
+
+
+def test_resume_model_keeps_the_account_default_of_the_same_family(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "settings.json").write_text(json.dumps({"model": "opus[1m]"}))
+    opus = cfs.LaunchFacts(
+        SID_A, Path("t"), None, "", False, "claude-opus-5-5", None, None, None, 0
+    )
+    sonnet = cfs.LaunchFacts(
+        SID_A, Path("t"), None, "", False, "claude-sonnet-5-5", None, None, None, 0
+    )
+    assert cfs.resume_model(opus, claude_home=tmp_path) is None  # keeps the 1M window
+    assert cfs.resume_model(sonnet, claude_home=tmp_path) == "claude-sonnet-5-5"
+
+
+def test_unknown_recorded_mode_is_dropped_with_a_warning() -> None:
+    mode, allow, warning = cenv.resume_permission(
+        "renamedMode", bypass_seen=False, euid=501
+    )
+    assert (mode, allow) == ("", False) and "renamedMode" in warning
+
+
+def test_account_env_keeps_settings_and_writes_no_secret(monkeypatch) -> None:
+    monkeypatch.setenv("CLAUDE_CODE_OAUTH_TOKEN", "sk-secret")
+    monkeypatch.setenv("CLAUDE_CODE_USE_BEDROCK", "1")
+    tokens = cenv.account_env_tokens(Path("~/.claude").expanduser())
+    joined = " ".join(tokens)
+    assert "sk-secret" not in joined  # never on a command line
+    assert "CLAUDE_CODE_OAUTH_TOKEN" not in joined  # left to the shell, not unset
+    assert "CLAUDE_CODE_USE_BEDROCK" not in joined
+
+
+def test_since_shutdown_refuses_per_session_flags(capsys) -> None:
+    from xa import cli
+
+    with pytest.raises(SystemExit) as e:
+        cli.resume_cmd(since_shutdown=True, model="opus")
+    assert e.value.code == 2 and "--model" in capsys.readouterr().err

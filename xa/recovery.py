@@ -8,20 +8,21 @@ Two questions, answered from the transcripts alone (the processes are gone):
    :func:`sessions_alive_at_shutdown` returns the transcripts whose last write
    falls in ``[shutdown - window, boot)``. The shutdown time comes from
    ``last`` (:func:`last_shutdown_time`), the boot time from the kernel
-   (:func:`boot_time`). Sessions resumed since then have been written after
-   boot and drop out by themselves, so applying twice resumes nothing twice.
+   (:func:`boot_time`), and the record counts only when it belongs to this
+   boot. Sessions resumed since then, running now, or already sitting in a tmux
+   pane started with ``--resume <id>`` are never candidates, so applying twice
+   resumes nothing twice. Headless runs (``claude -p``, the SDK) are skipped.
 
-2. **How was each one launched?** :func:`launch_facts` reads one transcript
+2. **How was each one launched?** :func:`xa.claude_fs.launch_facts` reads one transcript
    for what ``claude --resume`` needs in order to come back the same:
 
    - the **cwd**: the *first* ``cwd`` whose slug is the transcript's project
      folder. A session that ``cd``-ed elsewhere records later cwds too, and
-     resuming in the last one puts it in the wrong folder (32 of 65 sessions
-     in the 2026-11-10 recovery, thorwhalen/xa#23);
+     resuming in the last one puts it in the wrong folder (thorwhalen/xa#23);
    - the **permission mode**: the last one recorded, plus whether bypass was
      ever reached (only a session started with the bypass flag can reach it);
-   - the **model** of the last assistant turn, and the last recorded
-     **effort**, so a sonnet session does not come back on the account default.
+   - the **model** of the last assistant turn, pinned only when its family
+     differs from the account default's (:func:`xa.claude_fs.resume_model`).
 
 What a shutdown with no clean exit (a power cut, a kernel panic) leaves is not
 covered: no process wrote anything at the moment it died, so there is nothing
@@ -39,8 +40,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, Optional
 
+from xa import claude_env as cenv
 from xa import claude_fs as cfs
-from xa.claude_cli import BYPASS_MODE
+from xa.claude_fs import LaunchFacts, launch_facts
 
 
 #: How long before the shutdown record a session's last write may land and
@@ -48,128 +50,20 @@ from xa.claude_cli import BYPASS_MODE
 #: has to cover at least the minute it rounds down.
 DFLT_WINDOW_SEC = 120.0
 
-#: A shutdown record further than this before boot belongs to an earlier
-#: power cycle, not to the one that killed these sessions.
-MAX_SHUTDOWN_TO_BOOT_SEC = 3600.0
-
 _NAME_RE = re.compile(r"[^A-Za-z0-9_.-]+")
 _LAST_STAMP_RE = re.compile(
     r"\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+"
     r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\s+(\d{2}):(\d{2})"
 )
 _MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
+_RESUME_ID_RE = re.compile(
+    r"--resume[\s=']+'?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
+)
 
 
 # --------------------------------------------------------------------------- #
-# what one transcript says about its launch
+# naming
 # --------------------------------------------------------------------------- #
-
-
-@dataclass(frozen=True)
-class LaunchFacts:
-    """What ``claude --resume`` needs to bring one session back as it was."""
-
-    session_id: str
-    transcript: Path
-    cwd: Optional[str]
-    permission_mode: str  # last recorded, claude's spelling; '' when none
-    bypass_seen: bool  # bypass was reached, so the session had the flag
-    model: Optional[str]
-    effort: Optional[str]
-    name: Optional[str]  # agent name, else custom title
-    last_type: Optional[str]  # type of the final entry ('cost-state' on exit)
-    last_write: float  # transcript mtime
-
-
-def launch_facts(path: Path) -> LaunchFacts:
-    """Read one transcript for the cwd, mode, model and name it was launched with.
-
-    One forward pass; malformed lines are skipped like everywhere else in xa.
-    """
-    path = Path(path)
-    slug = path.parent.name
-    first_cwd: Optional[str] = None
-    home_cwd: Optional[str] = None
-    mode = ""
-    bypass_seen = False
-    model: Optional[str] = None
-    effort: Optional[str] = None
-    agent_name: Optional[str] = None
-    title: Optional[str] = None
-    session_id: Optional[str] = None
-    last_type: Optional[str] = None
-
-    for ev in cfs.iter_transcript_events(path):
-        last_type = ev.get("type") or last_type
-        session_id = session_id or ev.get("sessionId")
-        cwd = ev.get("cwd")
-        if isinstance(cwd, str) and cwd:
-            first_cwd = first_cwd or cwd
-            if home_cwd is None and cfs.encode_project_slug(cwd) == slug:
-                home_cwd = cwd
-        pm = ev.get("permissionMode")
-        if isinstance(pm, str) and pm:
-            mode = pm
-            bypass_seen = bypass_seen or pm == BYPASS_MODE
-        if isinstance(ev.get("effort"), str) and ev["effort"]:
-            effort = ev["effort"]
-        if isinstance(ev.get("agentName"), str) and ev["agentName"]:
-            agent_name = ev["agentName"]
-        if isinstance(ev.get("customTitle"), str) and ev["customTitle"]:
-            title = ev["customTitle"]
-        msg = ev.get("message")
-        if ev.get("type") == "assistant" and isinstance(msg, dict):
-            m = msg.get("model")
-            if isinstance(m, str) and m and not m.startswith("<"):
-                model = m  # '<synthetic>' marks a turn no model produced
-
-    try:
-        mtime = path.stat().st_mtime
-    except OSError:
-        mtime = 0.0
-    return LaunchFacts(
-        session_id=session_id or path.stem,
-        transcript=path,
-        cwd=home_cwd or first_cwd,
-        permission_mode=mode,
-        bypass_seen=bypass_seen,
-        model=model,
-        effort=effort,
-        name=agent_name or title,
-        last_type=last_type,
-        last_write=mtime,
-    )
-
-
-def resume_permission(
-    facts: LaunchFacts, *, euid: Optional[int] = None
-) -> tuple[str, bool, Optional[str]]:
-    """``(permission_mode, allow_bypass, warning)`` for resuming ``facts``.
-
-    The session comes back in the mode it was last in. If it ever reached
-    bypass it was started with the bypass flag, so bypass stays reachable
-    (``allow_bypass``) even when it was last in another mode.
-
-    Where Claude Code would refuse the bypass flags (root without
-    ``IS_SANDBOX=1``; the rule is :func:`crowsnest.spawn.pick_permission_mode`'s,
-    not re-derived here) they are dropped with a warning, since the refusal is
-    invisible behind tmux: the machine's own settings then decide.
-
-    >>> f = LaunchFacts('s', Path('t'), '/p', 'auto', True, None, None, None, None, 0.0)
-    >>> resume_permission(f, euid=501)
-    ('auto', True, None)
-    """
-    mode = facts.permission_mode
-    allow = facts.bypass_seen and mode != BYPASS_MODE
-    if mode == BYPASS_MODE or allow:
-        from crowsnest.spawn import pick_permission_mode
-
-        try:
-            pick_permission_mode(BYPASS_MODE, euid=euid)
-        except ValueError as e:
-            kept = "" if mode == BYPASS_MODE else mode
-            return kept, False, f"resuming without the bypass flags: {e}"
-    return mode, allow, None
 
 
 def tmux_name_for(facts: LaunchFacts, *, taken: Iterable[str] = ()) -> str:
@@ -246,24 +140,29 @@ def parse_last_stamp(text: str, *, before: float) -> Optional[float]:
 def last_shutdown_time(
     *, before: Optional[float] = None, run: Callable[[list[str]], str] = _run
 ) -> Optional[float]:
-    """Unix time of the last recorded shutdown, from ``last`` (minute resolution).
+    """Unix time of the shutdown that preceded the current boot, or ``None``.
 
-    ``last -x shutdown`` on Linux. macOS prints its ``shutdown time`` records
-    under ``last reboot`` (``last shutdown`` prints none there). The first line
-    naming a shutdown wins; ``None`` when no command prints one.
+    Read from ``last`` (minute resolution), newest record first: the current
+    boot's ``reboot`` line, then its shutdown. A second ``reboot`` line before
+    any shutdown means this boot followed a crash (no clean shutdown), and an
+    older record must not stand in for it. ``last -x reboot shutdown`` on
+    Linux; macOS prints both kinds under ``last reboot``.
     """
     before = time.time() if before is None else before
-    commands = (
-        [["last", "-x", "shutdown"]]
+    argv = (
+        ["last", "-x", "reboot", "shutdown"]
         if sys.platform.startswith("linux")
-        else [["last", "reboot"], ["last", "shutdown"]]
+        else ["last", "reboot"]
     )
-    for argv in commands:
-        for line in run(argv).splitlines():
-            if "shutdown" in line:
-                ts = parse_last_stamp(line, before=before)
-                if ts is not None:
-                    return ts
+    reboots = 0
+    for line in run(argv).splitlines():
+        word = line.split(maxsplit=1)[0] if line.strip() else ""
+        if word == "reboot":
+            reboots += 1
+            if reboots > 1:
+                return None
+        elif word == "shutdown":
+            return parse_last_stamp(line, before=before)
     return None
 
 
@@ -284,13 +183,31 @@ class ShutdownScan:
     hi: Optional[float]
 
 
-def live_session_ids(*, claude_home: Path) -> set[str]:
-    """Session ids that have a running claude right now (stale files excluded)."""
-    return {
+def live_session_ids(*, claude_home: Path, tmux_bin: Optional[str] = None) -> set[str]:
+    """Session ids running right now: a live claude, or a tmux pane resuming them.
+
+    The pane scan covers a resume that has not written anything yet (it is
+    still at a trust or login prompt), which the session files cannot show.
+    """
+    from xa import tmux as tm
+
+    ids = {
         eph["sessionId"]
         for eph in cfs.iter_ephemeral_sessions(claude_home=claude_home)
         if eph.get("sessionId") and cfs.ephemeral_session_alive(eph)
     }
+    out = tm._run(
+        [
+            tmux_bin or tm.DEFAULT_TMUX_BIN,
+            "list-panes",
+            "-a",
+            "-F",
+            "#{pane_start_command}",
+        ]
+    )
+    if out.returncode == 0:
+        ids |= set(_RESUME_ID_RE.findall(out.stdout))
+    return ids
 
 
 def sessions_alive_at_shutdown(
@@ -300,21 +217,22 @@ def sessions_alive_at_shutdown(
     shutdown: Optional[float] = None,
     boot: Optional[float] = None,
     live_ids: Optional[set[str]] = None,
+    tmux_bin: Optional[str] = None,
 ) -> ShutdownScan:
     """The sessions of ``claude_home`` whose last write fell at the last shutdown.
 
     The window is ``[shutdown - window_sec, boot)``. With no shutdown record
-    for this boot (none at all, or one from an earlier power cycle), the anchor
-    is the latest transcript write before boot instead, and the window is
+    for this boot (a crash, or ``last`` unreadable), the anchor is the latest
+    transcript write before boot instead, and the window is
     ``[anchor - window_sec, anchor]``: the dry run says which was used.
     ``shutdown`` / ``boot`` / ``live_ids`` default to what this machine reports.
-    Sessions in ``live_ids`` (running now) are never candidates.
+    Sessions in ``live_ids`` (running now) and headless runs are never candidates.
     """
     boot = boot_time() if boot is None else boot
     if shutdown is None:
         shutdown = last_shutdown_time(before=boot)
     if live_ids is None:
-        live_ids = live_session_ids(claude_home=claude_home)
+        live_ids = live_session_ids(claude_home=claude_home, tmux_bin=tmux_bin)
 
     stats: list[tuple[Path, float]] = []
     for path in cfs.iter_transcript_files(claude_home=claude_home):
@@ -324,11 +242,7 @@ def sessions_alive_at_shutdown(
             continue
     before_boot = [mt for _, mt in stats if boot is None or mt < boot]
 
-    if (
-        shutdown is not None
-        and boot is not None
-        and 0 <= boot - shutdown <= MAX_SHUTDOWN_TO_BOOT_SEC
-    ):
+    if shutdown is not None and boot is not None and shutdown <= boot:
         source, lo, hi = "last", shutdown - window_sec, boot
     elif before_boot:
         anchor = max(before_boot)
@@ -341,7 +255,7 @@ def sessions_alive_at_shutdown(
         for path, mt in stats
         if lo <= mt < hi and path.stem not in live_ids
     ]
-    picked = [f for f in picked if f.session_id not in live_ids]
+    picked = [f for f in picked if f.session_id not in live_ids and not f.headless]
     picked.sort(key=lambda f: f.last_write)
     return ShutdownScan(picked, shutdown, boot, source, lo, hi)
 
@@ -369,6 +283,7 @@ def resume_all(
     tmux_bin: Optional[str] = None,
     url_timeout_sec: float = 120.0,
     auto_remote_control: bool = True,
+    permission_mode: Optional[str] = None,
     euid: Optional[int] = None,
 ) -> list[Resumed]:
     """Resume every candidate in its own tmux session, each as it was launched.
@@ -378,6 +293,8 @@ def resume_all(
     up without a Remote Control URL gets the :mod:`xa.revive` verdict for what
     it is showing (``needs_trust`` for a folder the account has not trusted,
     ``needs_login``, ...) in ``result.attention``, rather than a hang.
+    ``permission_mode`` overrides every candidate's recorded mode (``''``:
+    claude's default).
     """
     from xa import claude_cli as ccli
     from xa import tmux as tm
@@ -391,7 +308,12 @@ def resume_all(
         if not facts.cwd or not Path(facts.cwd).is_dir():
             out.append(Resumed(facts, None, skipped=f"cwd gone: {facts.cwd}"))
             continue
-        mode, allow, warning = resume_permission(facts, euid=euid)
+        if permission_mode is None:
+            mode, allow, warning = cenv.resume_permission(
+                facts.permission_mode, bypass_seen=facts.bypass_seen, euid=euid
+            )
+        else:
+            mode, allow, warning = permission_mode, False, None
         name = tmux_name_for(facts, taken=taken)
         taken.add(name)
         try:
@@ -404,8 +326,7 @@ def resume_all(
                 tmux_bin=tmux_bin,
                 url_timeout_sec=url_timeout_sec,
                 auto_remote_control=auto_remote_control,
-                model=facts.model,
-                effort=facts.effort,
+                model=cfs.resume_model(facts, claude_home=Path(claude_home)),
                 permission_mode=mode,
                 allow_bypass=allow,
             )

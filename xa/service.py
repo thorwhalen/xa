@@ -57,6 +57,8 @@ try:  # pragma: no cover - optional dep
         name: Optional[str] = None
         model: Optional[str] = None
         effort: Optional[str] = None
+        # None: as the transcript says it was launched; "" claude's default.
+        permission_mode: Optional[str] = None
 
     class LabelReq(BaseModel):
         label: Optional[str] = None  # null or "" clears
@@ -533,6 +535,19 @@ def build_api(
         for label, value in (("model", req.model), ("effort", req.effort)):
             if value and not _OPT_VALUE_RE.match(value):
                 raise HTTPException(400, f"Invalid {label} value: {value!r}")
+        perm: dict = {}
+        if req.permission_mode is not None:
+            from xa import claude_env as cenv
+
+            try:
+                perm = {
+                    "permission_mode": cenv.canonical_permission_mode(
+                        req.permission_mode
+                    ),
+                    "allow_bypass": False,
+                }
+            except ValueError as e:
+                raise HTTPException(400, str(e))
         try:
             result = sess.resume(
                 s,
@@ -541,6 +556,7 @@ def build_api(
                 claude_home=claude_home,
                 model=req.model or None,
                 effort=req.effort or None,
+                **perm,
             )
         except (ValueError, FileNotFoundError, RuntimeError) as e:
             raise HTTPException(500, str(e))
@@ -551,6 +567,7 @@ def build_api(
             "url_source": result.url_source,
             "claude_session_id": result.claude_session_id,
             "warning": result.warning,
+            "attention": result.attention,
         }
 
     @app.post("/sessions/{id}/remote-control")

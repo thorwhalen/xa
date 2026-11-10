@@ -189,6 +189,10 @@ class HTTPHost:
                 "name": opts.get("name"),
                 "model": opts.get("model"),
                 "effort": opts.get("effort"),
+                # Only the caller's own choice reaches here (sessions.resume
+                # fills launch facts for local hosts only): the remote reads
+                # its own transcript for how the session was launched.
+                "permission_mode": opts.get("permission_mode"),
             },
         )
         return SpawnResult(

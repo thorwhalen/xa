@@ -21,17 +21,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Optional
 
+from xa import claude_env as cenv
 from xa import claude_fs as cfs
 from xa import tmux as tm
+from xa.claude_env import account_env_tokens  # noqa: F401  (re-export)
 
 
 DEFAULT_CLAUDE_BIN = "claude"
 CLAUDE_WEB_BASE = "https://claude.ai/code"
-
-BYPASS_MODE = "bypassPermissions"
-_BYPASS_FLAG = "--dangerously-skip-permissions"
-_ALLOW_BYPASS_FLAG = "--allow-dangerously-skip-permissions"
-_MODE_FLAG = "--permission-mode"
 
 _URL_RE = re.compile(r"https://claude\.ai/code/session_[A-Za-z0-9_-]+")
 
@@ -116,11 +113,9 @@ def _claude_argv(
     binary does not advertise. ``--remote-control`` goes last and bare so
     its optional value can never swallow a following argument.
 
-    ``permission_mode`` is claude's own spelling (``'bypassPermissions'``
-    becomes ``--dangerously-skip-permissions``; ``None``/``''`` adds nothing).
-    ``allow_bypass`` keeps bypass *reachable* (shift-tab) for a session that
-    starts in another mode, which is how a session launched with the bypass
-    flag and later switched to ``auto`` comes back.
+    ``permission_mode`` / ``allow_bypass`` become
+    :func:`xa.claude_env.permission_args` (``'bypassPermissions'`` is
+    ``--dangerously-skip-permissions``; ``None``/``''`` adds nothing).
 
     >>> _claude_argv('claude', supported=frozenset({'--dangerously-skip-permissions'}),
     ...              resume_id='abc', permission_mode='bypassPermissions')[0]
@@ -130,13 +125,15 @@ def _claude_argv(
     skipped: list[str] = []
     if resume_id:
         argv += ["--resume", resume_id]
-    for flag in _permission_flags(permission_mode, allow_bypass=allow_bypass):
-        if flag in supported:
-            argv.append(flag)
-            if flag == _MODE_FLAG:
-                argv.append(permission_mode)
+    perm = cenv.permission_args(permission_mode, allow_bypass=allow_bypass)
+    for i, tok in enumerate(perm):
+        if not tok.startswith("--"):
+            continue  # the mode value, kept or dropped with its flag
+        takes_value = i + 1 < len(perm) and not perm[i + 1].startswith("--")
+        if tok in supported:
+            argv += perm[i : i + 2] if takes_value else [tok]
         else:
-            skipped.append(flag)
+            skipped.append(tok)
     for flag, value in (
         ("--name", claude_name),
         ("--model", model),
@@ -154,42 +151,6 @@ def _claude_argv(
         else:
             skipped.append("--remote-control")
     return argv, skipped
-
-
-def _permission_flags(mode: Optional[str], *, allow_bypass: bool) -> list[str]:
-    """The flag names (values excluded) that start claude in ``mode``.
-
-    >>> _permission_flags('auto', allow_bypass=True)
-    ['--allow-dangerously-skip-permissions', '--permission-mode']
-    >>> _permission_flags('default', allow_bypass=False)
-    []
-    """
-    if mode == BYPASS_MODE:
-        return [_BYPASS_FLAG]
-    flags = [_ALLOW_BYPASS_FLAG] if allow_bypass else []
-    if mode and mode != "default":
-        flags.append(_MODE_FLAG)
-    return flags
-
-
-def account_env_tokens(claude_home: Path) -> list[str]:
-    """The ``env -u ... K=V`` prefix that runs a command under ``claude_home``'s account.
-
-    A tmux pane's shell inherits the tmux *server's* global environment, which
-    belongs to whoever started the server: possibly another account
-    (``CLAUDE_CONFIG_DIR=<other home>``), possibly a long-dead session
-    (``CLAUDECODE``, ``CLAUDE_CODE_SESSION_ID``, its messaging socket, its
-    effort). ``tmux new-session -e`` can only *set* variables, and the default
-    home is reached only by ``CLAUDE_CONFIG_DIR`` being absent, so the command
-    itself unsets every session marker and states the account either way round.
-
-    The variable lists are crowsnest's (:func:`crowsnest.spawn.child_env`,
-    :func:`crowsnest.spawn.env_prefix`), derived there from the claude binary's
-    own name table, so they are not re-derived here.
-    """
-    from crowsnest.spawn import child_env, env_prefix
-
-    return env_prefix(child_env(home=claude_home))
 
 
 # --------------------------------------------------------------------------- #
@@ -427,7 +388,7 @@ def prepare_spawn(
         allow_bypass=allow_bypass,
         remote_control=auto_remote_control,
     )
-    argv = account_env_tokens(Path(claude_home)) + argv
+    argv = cenv.account_env_tokens(Path(claude_home)) + argv
     shell_cmd = f"cd {shlex.quote(cwd)} && exec " + " ".join(
         shlex.quote(a) for a in argv
     )
@@ -447,7 +408,8 @@ def prepare_spawn(
     hard_skips = [
         f
         for f in skipped
-        if f in ("--model", "--effort", _BYPASS_FLAG, _ALLOW_BYPASS_FLAG, _MODE_FLAG)
+        if f
+        in ("--model", "--effort", cenv.BYPASS_FLAG, cenv.ALLOW_BYPASS_FLAG, cenv.MODE_FLAG)
     ]
     if hard_skips:
         warnings.append(

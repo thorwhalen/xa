@@ -319,7 +319,7 @@ xa pick
 | `xa history [--search X]` | Grep `~/.claude/history.jsonl` |
 | `xa pick` | Interactive list → number → action |
 | `xa spawn <cwd>` | Start `claude` in tmux, print phone URL |
-| `xa resume <id>…` | `claude --resume` in a new tmux pane, in the original cwd, model, effort and permission mode |
+| `xa resume <id>…` | `claude --resume` in a new tmux pane, in the original cwd, model and permission mode |
 | `xa resume --since-shutdown [--apply]` | List the sessions alive at the last shutdown; `--apply` resumes them all |
 | `xa kill <id>` | End a live session |
 | `xa archive list` | Postmortem of every session `xa` spawned |
