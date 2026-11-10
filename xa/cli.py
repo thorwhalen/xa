@@ -416,9 +416,16 @@ def resume_cmd(
     mode = _explicit_permission_mode(permission_mode)
     if since_shutdown:
         if session_ids:
-            print("error: give session ids or --since-shutdown, not both", file=sys.stderr)
+            print(
+                "error: give session ids or --since-shutdown, not both", file=sys.stderr
+            )
             sys.exit(2)
-        per_session = {"--name": name, "--cwd": cwd, "--model": model, "--effort": effort}
+        per_session = {
+            "--name": name,
+            "--cwd": cwd,
+            "--model": model,
+            "--effort": effort,
+        }
         given = [flag for flag, v in per_session.items() if v is not None]
         if given:
             print(
@@ -452,7 +459,9 @@ def resume_cmd(
     failed = False
     for session_id in session_ids:
         try:
-            s = sess.get_session(session_id, hosts=None if hosts is None else hosts.values())
+            s = sess.get_session(
+                session_id, hosts=None if hosts is None else hosts.values()
+            )
         except LookupError as e:
             print(f"error: {e}", file=sys.stderr)
             sys.exit(2)
@@ -505,7 +514,11 @@ def _resume_since_shutdown(
     from xa import recovery
 
     local = next(
-        (h for h in _configured_hosts().values() if getattr(h, "kind", None) == "local"),
+        (
+            h
+            for h in _configured_hosts().values()
+            if getattr(h, "kind", None) == "local"
+        ),
         None,
     )
     claude_bin = getattr(local, "claude_bin", None)
@@ -536,7 +549,9 @@ def _resume_since_shutdown(
         return (mode or "-") + ("+allow-bypass" if allow else "")
 
     def _model(f) -> str:
-        return recovery.cfs.resume_model(f, claude_home=claude_home) or "(account default)"
+        return (
+            recovery.cfs.resume_model(f, claude_home=claude_home) or "(account default)"
+        )
 
     if not apply:
         if json_out:

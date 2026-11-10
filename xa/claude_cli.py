@@ -409,7 +409,13 @@ def prepare_spawn(
         f
         for f in skipped
         if f
-        in ("--model", "--effort", cenv.BYPASS_FLAG, cenv.ALLOW_BYPASS_FLAG, cenv.MODE_FLAG)
+        in (
+            "--model",
+            "--effort",
+            cenv.BYPASS_FLAG,
+            cenv.ALLOW_BYPASS_FLAG,
+            cenv.MODE_FLAG,
+        )
     ]
     if hard_skips:
         warnings.append(

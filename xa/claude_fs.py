@@ -670,13 +670,17 @@ def _model_family(model: Optional[str]) -> Optional[str]:
 def account_default_model(*, claude_home: Path = DEFAULT_CLAUDE_HOME) -> Optional[str]:
     """The ``model`` the account's ``settings.json`` sets, or ``None``."""
     try:
-        value = json.loads((Path(claude_home) / "settings.json").read_text()).get("model")
+        value = json.loads((Path(claude_home) / "settings.json").read_text()).get(
+            "model"
+        )
     except (OSError, ValueError, AttributeError):
         return None
     return value if isinstance(value, str) and value else None
 
 
-def resume_model(facts: "LaunchFacts", *, claude_home: Path = DEFAULT_CLAUDE_HOME) -> Optional[str]:
+def resume_model(
+    facts: "LaunchFacts", *, claude_home: Path = DEFAULT_CLAUDE_HOME
+) -> Optional[str]:
     """The ``--model`` that brings ``facts`` back on its own model, or ``None`` for none.
 
     ``None`` when the transcript's model is in the same family as the account's

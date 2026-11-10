@@ -320,7 +320,9 @@ def resume(
     return result
 
 
-def launch_opts(facts, *, claude_home: Path = cfs.DEFAULT_CLAUDE_HOME) -> tuple[dict, Optional[str]]:
+def launch_opts(
+    facts, *, claude_home: Path = cfs.DEFAULT_CLAUDE_HOME
+) -> tuple[dict, Optional[str]]:
     """``(resume kwargs, warning)`` that bring ``facts`` back as it was launched.
 
     Effort is deliberately not restored: the recorded per-turn value can sit
