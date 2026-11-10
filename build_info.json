@@ -1,41 +1,41 @@
 {
   "schema_version": 1,
-  "built_at": "2026-10-30T13:47:36Z",
+  "built_at": "2026-11-10T11:21:08Z",
   "package": {
     "name": "xa",
-    "version": "0.1.13",
+    "version": "0.1.14",
     "display_name": "xa",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "86ef896a811451459f45bb6cb6e60277f550236c",
-    "short_commit": "86ef896",
+    "commit": "28be7cee69d916e2cfb3ddc31428e4ac96737a39",
+    "short_commit": "28be7ce",
     "branch": "main",
     "tags": [
-      "0.1.13"
+      "0.1.14"
     ],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/xa",
-    "commit_url": "https://github.com/thorwhalen/xa/commit/86ef896a811451459f45bb6cb6e60277f550236c",
+    "commit_url": "https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/xa",
-    "sha": "d9de7e9eebc595b47d16b2d348c4bf21afa148d9",
+    "sha": "55dc1a0ad5d4b25959d3643c3824a435f0680719",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "41065935673",
-    "run_url": "https://github.com/thorwhalen/xa/actions/runs/41065935673",
+    "run_id": "42806495685",
+    "run_url": "https://github.com/thorwhalen/xa/actions/runs/42806495685",
     "server_url": "https://github.com"
   },
   "tools": {
     "epythet": "0.2.22",
     "sphinx": "9.1.1",
     "docutils": "0.22.4",
-    "python": "3.12.15"
+    "python": "3.12.16"
   },
   "config": {
     "theme": "auto",
@@ -57,16 +57,16 @@
     "docs_dir": "docsrc"
   },
   "site": {
-    "modules_documented": 15,
-    "objects_documented": 206
+    "modules_documented": 17,
+    "objects_documented": 238
   },
   "pypi": {
     "checked": true,
-    "latest": "0.1.13",
+    "latest": "0.1.14",
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/xa && cd xa\ngit checkout 86ef896a811451459f45bb6cb6e60277f550236c\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/xa && cd xa\ngit checkout 28be7cee69d916e2cfb3ddc31428e4ac96737a39\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,

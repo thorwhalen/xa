@@ -4,10 +4,18 @@ xa.claude\_fs
 .. automodule:: xa.claude_fs
 
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      CLAUDE_HOME_ENV_VAR
+   
    .. rubric:: Functions
 
    .. autosummary::
    
+      account_default_model
+      default_claude_home
       encode_project_slug
       ephemeral_session_alive
       history_iter
@@ -15,9 +23,11 @@ xa.claude\_fs
       iter_project_slugs
       iter_transcript_events
       iter_transcript_files
+      launch_facts
       parse_project_slug
       read_ephemeral_session
       remote_control_at_startup
+      resume_model
       transcript_forensics
       transcript_metadata
       transcript_path
@@ -27,6 +37,7 @@ xa.claude\_fs
    .. autosummary::
    
       HistoryEntry
+      LaunchFacts
       TranscriptForensics
       TranscriptMeta
    

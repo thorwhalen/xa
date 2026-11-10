@@ -207,6 +207,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/xa.html">xa</a><input aria-label="Toggle navigation of xa" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.archive.html">xa.archive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.claude_env.html">xa.claude_env</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.claude_fs.html">xa.claude_fs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.cli.html">xa.cli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.config.html">xa.config</a></li>
@@ -216,6 +217,7 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.service.html">xa.service</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.sessions.html">xa.sessions</a></li>
@@ -590,34 +592,39 @@ xa<span class="w"> </span><span class="nb">history</span><span class="w"> </span
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">spawn</span> <span class="pre">&lt;cwd&gt;</span></code></p></td>
 <td><p>Start <code class="docutils literal notranslate"><span class="pre">claude</span></code> in tmux, print phone URL</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">resume</span> <span class="pre">&lt;id&gt;</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code> in a new tmux pane</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">resume</span> <span class="pre">&lt;id&gt;…</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code> in a new tmux pane, in the original cwd, model and permission mode</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">kill</span> <span class="pre">&lt;id&gt;</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">resume</span> <span class="pre">--since-shutdown</span> <span class="pre">[--apply]</span></code></p></td>
+<td><p>List the sessions alive at the last shutdown; <code class="docutils literal notranslate"><span class="pre">--apply</span></code> resumes them all</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">kill</span> <span class="pre">&lt;id&gt;</span></code></p></td>
 <td><p>End a live session</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">list</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">list</span></code></p></td>
 <td><p>Postmortem of every session <code class="docutils literal notranslate"><span class="pre">xa</span></code> spawned</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">log</span> <span class="pre">&lt;id&gt;</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">log</span> <span class="pre">&lt;id&gt;</span></code></p></td>
 <td><p>Raw pane log</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">forensics</span> <span class="pre">&lt;id&gt;</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">archive</span> <span class="pre">forensics</span> <span class="pre">&lt;id&gt;</span></code></p></td>
 <td><p>Death reason + last tool use</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">sync</span> <span class="pre">[--host</span> <span class="pre">H]</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">sync</span> <span class="pre">[--host</span> <span class="pre">H]</span></code></p></td>
 <td><p>Refresh SSH-host caches</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">serve</span> <span class="pre">…</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">serve</span> <span class="pre">…</span></code></p></td>
 <td><p>Run the HTTP service (secure-by-default)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">gen-secret</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">gen-secret</span></code></p></td>
 <td><p>Cryptographically strong random hex string</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>Every command supports <code class="docutils literal notranslate"><span class="pre">--help</span></code>; every listing supports <code class="docutils literal notranslate"><span class="pre">--json-out</span></code>.</p>
+<p><strong>Accounts.</strong> <code class="docutils literal notranslate"><span class="pre">spawn</span></code> and <code class="docutils literal notranslate"><span class="pre">resume</span></code> take <code class="docutils literal notranslate"><span class="pre">--home</span> <span class="pre">&lt;dir&gt;</span></code> for a second Claude Code account (a non-default <code class="docutils literal notranslate"><span class="pre">CLAUDE_CONFIG_DIR</span></code>); without it xa uses <code class="docutils literal notranslate"><span class="pre">$XA_CLAUDE_HOME</span></code>, then <code class="docutils literal notranslate"><span class="pre">$CLAUDE_CONFIG_DIR</span></code>, then <code class="docutils literal notranslate"><span class="pre">~/.claude</span></code>. The pane runs claude under that account whatever the tmux server’s own environment holds: the command unsets every inherited session marker and either states <code class="docutils literal notranslate"><span class="pre">CLAUDE_CONFIG_DIR</span></code> or unsets it for the default home.</p>
+<p><strong>After a reboot.</strong> <code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">resume</span> <span class="pre">--since-shutdown</span></code> is a dry run: it lists the transcripts whose last write landed at the last shutdown (from <code class="docutils literal notranslate"><span class="pre">last</span></code>), with the model and permission mode each will come back in. <code class="docutils literal notranslate"><span class="pre">--apply</span></code> starts them, all at once, and reports a verdict per session (<code class="docutils literal notranslate"><span class="pre">connected</span></code>, <code class="docutils literal notranslate"><span class="pre">needs_trust</span></code> for a folder the account has not trusted, <code class="docutils literal notranslate"><span class="pre">needs_login</span></code>, …). Sessions already running, or resumed since boot, are never listed, so running it twice starts nothing twice.</p>
 </section>
 </section>
 <section id="configuration">
@@ -861,7 +868,7 @@ testing conventions, known pitfalls).</p>
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-30 13:47 UTC from <a href="https://github.com/thorwhalen/xa/commit/86ef896a811451459f45bb6cb6e60277f550236c">86ef896</a> (main) · xa 0.1.13 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-10 11:21 UTC from <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39">28be7ce</a> (main) · xa 0.1.14 · <a href="about-this-build.html">about this build</a></p>
         </article>
       </div>
       <footer>
@@ -940,7 +947,7 @@ testing conventions, known pitfalls).</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=1adce326"></script>
+</div><script src="_static/documentation_options.js?v=f2ffa296"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

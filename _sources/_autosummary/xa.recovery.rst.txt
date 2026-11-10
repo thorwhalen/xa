@@ -1,0 +1,31 @@
+xa.recovery
+===========
+
+.. automodule:: xa.recovery
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      DFLT_WINDOW_SEC
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      boot_time
+      last_shutdown_time
+      live_session_ids
+      parse_last_stamp
+      resume_all
+      sessions_alive_at_shutdown
+      tmux_name_for
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Resumed
+      ShutdownScan
+   

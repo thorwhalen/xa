@@ -11,6 +11,7 @@ xa.sessions
       get_session
       iter_local_sessions
       kill_session
+      launch_opts
       list_sessions
       resume
    

@@ -204,6 +204,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../_autosummary/xa.html">xa</a><input aria-label="Toggle navigation of xa" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.archive.html">xa.archive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_env.html">xa.claude_env</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_fs.html">xa.claude_fs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.cli.html">xa.cli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.config.html">xa.config</a></li>
@@ -213,6 +214,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.service.html">xa.service</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.sessions.html">xa.sessions</a></li>
@@ -552,14 +554,70 @@
     <span class="n">hosts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">opts</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Resume a transcript / archived session on its originating host."""</span>
+<span class="w">    </span><span class="sd">"""Resume a transcript / archived session on its originating host, as it was launched.</span>
+
+<span class="sd">    Whatever the caller leaves unset comes from the transcript</span>
+<span class="sd">    (:func:`launch_opts`): the cwd it was started in, its model when that differs</span>
+<span class="sd">    from the account default's family, and its permission mode, so a session</span>
+<span class="sd">    started with ``--dangerously-skip-permissions`` comes back with it.</span>
+<span class="sd">    ``permission_mode=''`` asks for claude's default explicitly. When a launch</span>
+<span class="sd">    fact had to be dropped (bypass refused to root), the result's ``warning``</span>
+<span class="sd">    says so.</span>
+
+<span class="sd">    Only for a local host: a remote one gets exactly what the caller set, and</span>
+<span class="sd">    its own xa reads its own transcript the same way.</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">session</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"session has no claude_session_id — cannot resume"</span><span class="p">)</span>
-    <span class="n">target_cwd</span> <span class="o">=</span> <span class="n">cwd</span> <span class="ow">or</span> <span class="n">session</span><span class="o">.</span><span class="n">cwd</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">_host_for</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">hosts</span><span class="p">)</span>
+    <span class="n">facts</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">notes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">getattr</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="s2">"kind"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"local"</span>
+        <span class="ow">and</span> <span class="n">session</span><span class="o">.</span><span class="n">transcript_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="n">Path</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+    <span class="p">):</span>
+        <span class="n">facts</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">launch_facts</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">transcript_path</span><span class="p">))</span>
+        <span class="n">derived</span><span class="p">,</span> <span class="n">note</span> <span class="o">=</span> <span class="n">launch_opts</span><span class="p">(</span>
+            <span class="n">facts</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="s2">"claude_home"</span><span class="p">,</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">given</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">opts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">derived</span><span class="p">,</span> <span class="o">**</span><span class="n">given</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">note</span> <span class="ow">and</span> <span class="s2">"permission_mode"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">given</span><span class="p">:</span>
+            <span class="n">notes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">note</span><span class="p">)</span>
+    <span class="n">target_cwd</span> <span class="o">=</span> <span class="n">cwd</span> <span class="ow">or</span> <span class="p">(</span><span class="n">facts</span><span class="o">.</span><span class="n">cwd</span> <span class="k">if</span> <span class="n">facts</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">session</span><span class="o">.</span><span class="n">cwd</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">target_cwd</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"cannot infer cwd — pass cwd=..."</span><span class="p">)</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">_host_for</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">hosts</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">h</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">target_cwd</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span></div>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">target_cwd</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">notes</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">ccli</span><span class="o">.</span><span class="n">SpawnResult</span><span class="p">):</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+
+        <span class="n">warning</span> <span class="o">=</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="o">*</span><span class="n">notes</span><span class="p">,</span> <span class="o">*</span><span class="p">([</span><span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">]</span> <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span> <span class="k">else</span> <span class="p">[])])</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">warning</span><span class="o">=</span><span class="n">warning</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="launch_opts">
+<a class="viewcode-back" href="../../_autosummary/xa.sessions.html#xa.launch_opts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">launch_opts</span><span class="p">(</span>
+    <span class="n">facts</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""``(resume kwargs, warning)`` that bring ``facts`` back as it was launched.</span>
+
+<span class="sd">    Effort is deliberately not restored: the recorded per-turn value can sit</span>
+<span class="sd">    below the account's ``effortLevel``, and the issue asked for the model.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa.claude_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">resume_permission</span>
+
+    <span class="n">mode</span><span class="p">,</span> <span class="n">allow</span><span class="p">,</span> <span class="n">warning</span> <span class="o">=</span> <span class="n">resume_permission</span><span class="p">(</span>
+        <span class="n">facts</span><span class="o">.</span><span class="n">permission_mode</span><span class="p">,</span> <span class="n">bypass_seen</span><span class="o">=</span><span class="n">facts</span><span class="o">.</span><span class="n">bypass_seen</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="n">cfs</span><span class="o">.</span><span class="n">resume_model</span><span class="p">(</span><span class="n">facts</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">),</span>
+        <span class="s2">"permission_mode"</span><span class="p">:</span> <span class="n">mode</span><span class="p">,</span>
+        <span class="s2">"allow_bypass"</span><span class="p">:</span> <span class="n">allow</span><span class="p">,</span>
+    <span class="p">},</span> <span class="n">warning</span></div>
 
 
 
@@ -603,7 +661,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1adce326"></script>
+</div><script src="../../_static/documentation_options.js?v=f2ffa296"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

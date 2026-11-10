@@ -204,6 +204,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../_autosummary/xa.html">xa</a><input aria-label="Toggle navigation of xa" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.archive.html">xa.archive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_env.html">xa.claude_env</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_fs.html">xa.claude_fs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.cli.html">xa.cli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.config.html">xa.config</a></li>
@@ -213,6 +214,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.service.html">xa.service</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.sessions.html">xa.sessions</a></li>
@@ -315,6 +317,8 @@
         <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">effort</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># None: as the transcript says it was launched; "" claude's default.</span>
+        <span class="n">permission_mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">LabelReq</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
         <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># null or "" clears</span>
@@ -805,6 +809,19 @@
         <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">model</span><span class="p">),</span> <span class="p">(</span><span class="s2">"effort"</span><span class="p">,</span> <span class="n">req</span><span class="o">.</span><span class="n">effort</span><span class="p">)):</span>
             <span class="k">if</span> <span class="n">value</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_OPT_VALUE_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Invalid </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> value: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">perm</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">req</span><span class="o">.</span><span class="n">permission_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_env</span> <span class="k">as</span> <span class="n">cenv</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">perm</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">"permission_mode"</span><span class="p">:</span> <span class="n">cenv</span><span class="o">.</span><span class="n">canonical_permission_mode</span><span class="p">(</span>
+                        <span class="n">req</span><span class="o">.</span><span class="n">permission_mode</span>
+                    <span class="p">),</span>
+                    <span class="s2">"allow_bypass"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span>
                 <span class="n">s</span><span class="p">,</span>
@@ -813,6 +830,7 @@
                 <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
                 <span class="n">model</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">model</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">effort</span><span class="o">=</span><span class="n">req</span><span class="o">.</span><span class="n">effort</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">perm</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
@@ -823,6 +841,7 @@
             <span class="s2">"url_source"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">url_source</span><span class="p">,</span>
             <span class="s2">"claude_session_id"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">,</span>
             <span class="s2">"warning"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">,</span>
+            <span class="s2">"attention"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">attention</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"/sessions/</span><span class="si">{id}</span><span class="s2">/remote-control"</span><span class="p">)</span>
@@ -1116,7 +1135,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1adce326"></script>
+</div><script src="../../_static/documentation_options.js?v=f2ffa296"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

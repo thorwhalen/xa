@@ -1,4 +1,4 @@
-> built 2026-10-30 13:47 UTC from 86ef896 (main) · xa 0.1.13. Details: build_info.json
+> built 2026-11-10 11:21 UTC from 28be7ce (main) · xa 0.1.14. Details: build_info.json
 
 # index.html.md
 
@@ -314,23 +314,28 @@ xa pick
 
 ### Commands
 
-| Command                     | Purpose                                    |
-|-----------------------------|--------------------------------------------|
-| `xa list`                   | Table of sessions across configured hosts  |
-| `xa info <id>`              | One session — metadata + forensics         |
-| `xa history [--search X]`   | Grep `~/.claude/history.jsonl`             |
-| `xa pick`                   | Interactive list → number → action         |
-| `xa spawn <cwd>`            | Start `claude` in tmux, print phone URL    |
-| `xa resume <id>`            | `claude --resume` in a new tmux pane       |
-| `xa kill <id>`              | End a live session                         |
-| `xa archive list`           | Postmortem of every session `xa` spawned   |
-| `xa archive log <id>`       | Raw pane log                               |
-| `xa archive forensics <id>` | Death reason + last tool use               |
-| `xa sync [--host H]`        | Refresh SSH-host caches                    |
-| `xa serve …`                | Run the HTTP service (secure-by-default)   |
-| `xa gen-secret`             | Cryptographically strong random hex string |
+| Command                                | Purpose                                                                              |
+|----------------------------------------|--------------------------------------------------------------------------------------|
+| `xa list`                              | Table of sessions across configured hosts                                            |
+| `xa info <id>`                         | One session — metadata + forensics                                                   |
+| `xa history [--search X]`              | Grep `~/.claude/history.jsonl`                                                       |
+| `xa pick`                              | Interactive list → number → action                                                   |
+| `xa spawn <cwd>`                       | Start `claude` in tmux, print phone URL                                              |
+| `xa resume <id>…`                      | `claude --resume` in a new tmux pane, in the original cwd, model and permission mode |
+| `xa resume --since-shutdown [--apply]` | List the sessions alive at the last shutdown; `--apply` resumes them all             |
+| `xa kill <id>`                         | End a live session                                                                   |
+| `xa archive list`                      | Postmortem of every session `xa` spawned                                             |
+| `xa archive log <id>`                  | Raw pane log                                                                         |
+| `xa archive forensics <id>`            | Death reason + last tool use                                                         |
+| `xa sync [--host H]`                   | Refresh SSH-host caches                                                              |
+| `xa serve …`                           | Run the HTTP service (secure-by-default)                                             |
+| `xa gen-secret`                        | Cryptographically strong random hex string                                           |
 
 Every command supports `--help`; every listing supports `--json-out`.
+
+**Accounts.** `spawn` and `resume` take `--home <dir>` for a second Claude Code account (a non-default `CLAUDE_CONFIG_DIR`); without it xa uses `$XA_CLAUDE_HOME`, then `$CLAUDE_CONFIG_DIR`, then `~/.claude`. The pane runs claude under that account whatever the tmux server’s own environment holds: the command unsets every inherited session marker and either states `CLAUDE_CONFIG_DIR` or unsets it for the default home.
+
+**After a reboot.** `xa resume --since-shutdown` is a dry run: it lists the transcripts whose last write landed at the last shutdown (from `last`), with the model and permission mode each will come back in. `--apply` starts them, all at once, and reports a verdict per session (`connected`, `needs_trust` for a folder the account has not trusted, `needs_login`, …). Sessions already running, or resumed since boot, are never listed, so running it twice starts nothing twice.
 
 ## Configuration
 
@@ -732,7 +737,7 @@ unrelated process. Uses `/proc` where available, `ps` otherwise.
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
-### xa.claude_cli.prepare_spawn(name, , cwd, resume_id=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, claude_name=None, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.claude_cli.prepare_spawn(name, , cwd, resume_id=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, claude_name=None, model=None, effort=None, permission_mode=None, allow_bypass=False, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Launch the tmux session and return without waiting for the URL.
 
@@ -746,6 +751,11 @@ asks for Remote Control now — a documented CLI flag, not a keystroke
 sent at a TUI. On a claude too old to advertise it, the host’s
 `remoteControlAtStartup` setting is the remaining path, so the
 warning says so rather than falling back to typing.
+
+`claude_home` is also the session’s *account*: the pane runs claude
+under it (`account_env_tokens()`), whatever the tmux server’s own
+environment says. `permission_mode` / `allow_bypass` are passed to
+`_claude_argv()`.
 
 * **Return type:**
   [`PendingSpawn`](_autosummary/xa.claude_cli.html.md#xa.claude_cli.PendingSpawn)
@@ -761,7 +771,7 @@ Fallback: regex-scrape `capture-pane` output for the full URL.
 * **Return type:**
   [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'session_file'`, `'pane_capture'`]]]
 
-### xa.claude_cli.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.claude_cli.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, allow_bypass=False, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Launch `claude --resume <id>` in a new detached tmux session.
 
@@ -772,7 +782,7 @@ is tmux-only so a resume never clobbers the session’s existing name.
 * **Return type:**
   [`SpawnResult`](_autosummary/xa.claude_cli.html.md#xa.claude_cli.SpawnResult)
 
-### xa.claude_cli.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.claude_cli.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Create a detached tmux session running `claude` in `cwd`.
 
@@ -842,6 +852,233 @@ dropped is a gap Claude Code genuinely leaves open.
   [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'session_file'`, `'pane_capture'`]]]
 
 
+# _autosummary/xa.claude_env.html.md
+
+# xa.claude_env
+
+The environment and flags a fresh `claude` process starts with: account and permissions.
+
+No xa imports and no third-party ones: this is the lowest layer, so that any
+launcher (xa’s tmux panes, crowsnest’s spawner, a future terminal-tab provider)
+can import one copy of the rules instead of re-deriving them.
+
+**Account.** Claude Code picks its account by `CLAUDE_CONFIG_DIR` (config,
+credentials and transcripts all move with it), and reaches the *default* home
+only by the variable’s absence. A command line handed to tmux runs in a shell
+whose environment is the tmux *server’s*, which belongs to whoever started the
+server: possibly another account, possibly a session long gone, whose identity
+markers (`CLAUDECODE`, `CLAUDE_CODE_SESSION_ID`, its messaging socket, its
+effort) would make the new process register as that dead session’s child.
+[`env_prefix()`](_autosummary/xa.claude_env.html.md#xa.claude_env.env_prefix) therefore states every variable it controls either way round:
+set when the child should have it, unset (`env -u`) when not. `tmux -e` can
+only set, so it cannot express the default home.
+
+**Permissions.** [`permission_args()`](_autosummary/xa.claude_env.html.md#xa.claude_env.permission_args) turns a mode into flags,
+[`bypass_refused()`](_autosummary/xa.claude_env.html.md#xa.claude_env.bypass_refused) says where claude would refuse the bypass flags (root,
+unless `IS_SANDBOX=1`; the refusal is invisible behind tmux), and
+[`resume_permission()`](_autosummary/xa.claude_env.html.md#xa.claude_env.resume_permission) picks the mode a resumed session comes back in.
+
+Moved here from `crowsnest.spawn` (thorwhalen/xa#23), whose tests and
+derivation notes it keeps; crowsnest is to import it from here.
+
+### Module Attributes
+
+| [`HOME_ENV_VAR`](_autosummary/xa.claude_env.html.md#xa.claude_env.HOME_ENV_VAR)   | Claude Code's account variable, and the home it means when unset.                                                                                                                                                                                                                                                                                                    |
+|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`ACCOUNT_VARS`](_autosummary/xa.claude_env.html.md#xa.claude_env.ACCOUNT_VARS)   | The variables that select which account a session runs under.                                                                                                                                                                                                                                                                                                        |
+| [`DROPPED_VARS`](_autosummary/xa.claude_env.html.md#xa.claude_env.DROPPED_VARS)   | they would override the account the home selects (an API key that bills elsewhere).                                                                                                                                                                                                                                                                                  |
+| [`SESSION_VARS`](_autosummary/xa.claude_env.html.md#xa.claude_env.SESSION_VARS)   | The `CLAUDE*` variables that identify *one running session* -- who it is, what started it, how to talk to it -- named so that [`env_prefix()`](_autosummary/xa.claude_env.html.md#xa.claude_env.env_prefix) can unset them whether or not *this* process has them (a tmux server keeps the markers of the session that started it and hands them to every pane it opens afterwards). |
+| [`SANDBOX_VAR`](_autosummary/xa.claude_env.html.md#xa.claude_env.SANDBOX_VAR)    | Under this variable (`"1"`) Claude Code accepts the bypass flag from root.                                                                                                                                                                                                                                                                                           |
+| [`BYPASS_MODE`](_autosummary/xa.claude_env.html.md#xa.claude_env.BYPASS_MODE)    | Claude Code's name for "skip every permission check", and its aliases.                                                                                                                                                                                                                                                                                               |
+| [`KNOWN_MODES`](_autosummary/xa.claude_env.html.md#xa.claude_env.KNOWN_MODES)    | The modes `claude --permission-mode` accepts (`default` is the older name of `manual`).                                                                                                                                                                                                                                                                              |
+
+### Functions
+
+| [`account_env_tokens`](_autosummary/xa.claude_env.html.md#xa.claude_env.account_env_tokens)(home, \*[, environ])         | The `env` prefix that runs a command under `home`'s account, markers stripped.   |
+|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| [`bypass_refused`](_autosummary/xa.claude_env.html.md#xa.claude_env.bypass_refused)(\*[, euid, environ, ...])        | Would claude refuse the bypass flags here? Root, unsandboxed, not vouched for.   |
+| [`canonical_permission_mode`](_autosummary/xa.claude_env.html.md#xa.claude_env.canonical_permission_mode)(mode)                 | `mode` spelled as claude spells it; `''` stays `''` (claude's own default).      |
+| [`child_env`](_autosummary/xa.claude_env.html.md#xa.claude_env.child_env)([environ, home, drop])                | `environ` (default `os.environ`) as a new session should inherit it.             |
+| [`env_prefix`](_autosummary/xa.claude_env.html.md#xa.claude_env.env_prefix)(env, \*[, environ, drop, markers])   | The <br/><br/>```<br/>``<br/>```<br/><br/>env -u .                               |
+| [`permission_args`](_autosummary/xa.claude_env.html.md#xa.claude_env.permission_args)(mode, \*[, allow_bypass])       | The flags that start claude in permission `mode` (`''`/`None`: none).            |
+| [`resume_permission`](_autosummary/xa.claude_env.html.md#xa.claude_env.resume_permission)(mode, \*, bypass_seen[, ...]) | `(mode, allow_bypass, warning)` for resuming a session last seen in `mode`.      |
+
+### xa.claude_env.ACCOUNT_VARS *= ('CLAUDE_CONFIG_DIR', 'CLAUDE_PROFILE')*
+
+The variables that select which account a session runs under. A shell profile
+scheme commonly pairs `CLAUDE_CONFIG_DIR` with a `CLAUDE_PROFILE` label and
+re-derives one from the other, so the two travel together or not at all.
+
+### xa.claude_env.BYPASS_MODE *= 'bypassPermissions'*
+
+Claude Code’s name for “skip every permission check”, and its aliases.
+
+### xa.claude_env.DROPPED_VARS *= ('ANTHROPIC_API_KEY',)*
+
+they would
+override the account the home selects (an API key that bills elsewhere).
+
+* **Type:**
+  Variables a new session must not inherit whatever they are set to
+
+### xa.claude_env.HOME_ENV_VAR *= 'CLAUDE_CONFIG_DIR'*
+
+Claude Code’s account variable, and the home it means when unset.
+
+### xa.claude_env.KNOWN_MODES *= frozenset({'acceptEdits', 'auto', 'bypassPermissions', 'default', 'dontAsk', 'manual', 'plan'})*
+
+The modes `claude --permission-mode` accepts (`default` is the older name of
+`manual`). A mode a newer claude adds goes here.
+
+### xa.claude_env.SANDBOX_VAR *= 'IS_SANDBOX'*
+
+Under this variable (`"1"`) Claude Code accepts the bypass flag from root.
+[`env_prefix()`](_autosummary/xa.claude_env.html.md#xa.claude_env.env_prefix) hands it on and never unsets it: a launcher may set it.
+
+### xa.claude_env.SESSION_VARS *= ('CLAUDECODE', 'CLAUDE_AGENT_SDK_VERSION', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_BACKEND', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_DISPATCHER_RATE_LIMIT_TIER', 'CLAUDE_BG_DISPATCHER_SUBSCRIPTION_TYPE', 'CLAUDE_BG_ISOLATION', 'CLAUDE_BG_MEMORY_TOGGLED_OFF', 'CLAUDE_BG_POST_CLEAR_RESPAWN', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RENDEZVOUS_SOCK', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SESSION_PERMISSION_RULES', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BG_SOURCE', 'CLAUDE_BG_STARTUP_WEDGE_MS', 'CLAUDE_BG_TCC_DISCLAIMED', 'CLAUDE_CODE_BRIDGE_SESSION_ID', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_CLOUD_SESSION_ID', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_CODE_REMOTE_SESSION_ID', 'CLAUDE_CODE_REMOTE_SESSION_ORIGIN', 'CLAUDE_CODE_REMOTE_SESSION_UUID', 'CLAUDE_CODE_SESSION_ACCESS_TOKEN', 'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SESSION_KIND', 'CLAUDE_CODE_SESSION_LOG', 'CLAUDE_CODE_SESSION_NAME', 'CLAUDE_CODE_SESSION_ORIGIN', 'CLAUDE_CODE_SPAWN_TIMESTAMP_MS', 'CLAUDE_CODE_SSE_PORT', 'CLAUDE_CODE_TRIGGER_ID', 'CLAUDE_CODE_WORKER_EPOCH', 'CLAUDE_EFFORT', 'CLAUDE_JOB_DIR', 'CLAUDE_PID', 'CLAUDE_PROJECT_DIR', 'CLAUDE_PROJECT_UUID', 'CLAUDE_SESSION_ID')*
+
+The `CLAUDE*` variables that identify *one running session* – who it is, what
+started it, how to talk to it – named so that [`env_prefix()`](_autosummary/xa.claude_env.html.md#xa.claude_env.env_prefix) can unset them
+whether or not *this* process has them (a tmux server keeps the markers of the
+session that started it and hands them to every pane it opens afterwards).
+
+*Identity, not configuration.* Claude Code reads hundreds of `CLAUDE*`
+variables, nearly all settings a person may deliberately export; those stay.
+Derived by matching the identity families (session and background-job plumbing,
+messaging and bridge sockets, job and project directories) against the name table
+of the `claude` binary (`strings $(command -v claude) | grep -oE
+'CLAUDE[A-Z0-9_]*'`), not typed out. Re-derive it when Claude Code grows a new
+family; `test_session_vars_covers_every_marker_this_live_session_carries` is the
+tripwire. Account variables are deliberately absent: see [`ACCOUNT_VARS`](_autosummary/xa.claude_env.html.md#xa.claude_env.ACCOUNT_VARS).
+
+### xa.claude_env.account_env_tokens(home, , environ=None)
+
+The `env` prefix that runs a command under `home`’s account, markers stripped.
+
+```pycon
+>>> toks = account_env_tokens('/h/b', environ={'CLAUDECODE': '1'})
+>>> toks[-1], ('-u', 'CLAUDECODE') in zip(toks, toks[1:])
+('CLAUDE_CONFIG_DIR=/h/b', True)
+```
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### xa.claude_env.bypass_refused(, euid=None, environ=None, root_bypass_ok=False)
+
+Would claude refuse the bypass flags here? Root, unsandboxed, not vouched for.
+
+`root_bypass_ok` is for a launcher known to set `IS_SANDBOX` itself.
+
+```pycon
+>>> bypass_refused(euid=0, environ={}), bypass_refused(euid=0, environ={'IS_SANDBOX': '1'})
+(True, False)
+>>> bypass_refused(euid=501, environ={})
+False
+```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### xa.claude_env.canonical_permission_mode(mode)
+
+`mode` spelled as claude spells it; `''` stays `''` (claude’s own default).
+
+Case-insensitive; every bypass alias is `'bypassPermissions'`. An unknown name
+raises `ValueError` listing the known ones.
+
+```pycon
+>>> canonical_permission_mode('Bypass'), canonical_permission_mode('acceptedits')
+('bypassPermissions', 'acceptEdits')
+```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### xa.claude_env.child_env(environ=None, , home=None, drop=('ANTHROPIC_API_KEY',))
+
+`environ` (default `os.environ`) as a new session should inherit it.
+
+The spawning session’s identity markers ([`SESSION_VARS`](_autosummary/xa.claude_env.html.md#xa.claude_env.SESSION_VARS)) go; the account
+and every `CLAUDE*` *setting* (`CLAUDE_CODE_OAUTH_TOKEN`,
+`CLAUDE_CODE_USE_BEDROCK`, …) stay. With
+`home` the child runs under that home instead: `CLAUDE_CONFIG_DIR` set to it,
+or *unset* when it is the default home. The `CLAUDE_PROFILE` label travels only
+with the account it labels. `drop` goes too (pass `()` to keep it).
+
+```pycon
+>>> child_env({'CLAUDECODE': '1', 'CLAUDE_CONFIG_DIR': '/h/b', 'PATH': '/bin'})
+{'CLAUDE_CONFIG_DIR': '/h/b', 'PATH': '/bin'}
+>>> child_env({'ANTHROPIC_API_KEY': 'sk-x', 'PATH': '/bin'})
+{'PATH': '/bin'}
+```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### xa.claude_env.env_prefix(env, , environ=None, drop=('ANTHROPIC_API_KEY',), markers=('CLAUDECODE', 'CLAUDE_AGENT_SDK_VERSION', 'CLAUDE_BG_AUTH_SNAPSHOT_PATH', 'CLAUDE_BG_BACKEND', 'CLAUDE_BG_CLAIM_AUTH', 'CLAUDE_BG_DISPATCHER_RATE_LIMIT_TIER', 'CLAUDE_BG_DISPATCHER_SUBSCRIPTION_TYPE', 'CLAUDE_BG_ISOLATION', 'CLAUDE_BG_MEMORY_TOGGLED_OFF', 'CLAUDE_BG_POST_CLEAR_RESPAWN', 'CLAUDE_BG_PTY_AUTH', 'CLAUDE_BG_RENDEZVOUS_SOCK', 'CLAUDE_BG_RV_AUTH', 'CLAUDE_BG_SESSION_PERMISSION_RULES', 'CLAUDE_BG_SOCKET_TOKENS_PATH', 'CLAUDE_BG_SOURCE', 'CLAUDE_BG_STARTUP_WEDGE_MS', 'CLAUDE_BG_TCC_DISCLAIMED', 'CLAUDE_CODE_BRIDGE_SESSION_ID', 'CLAUDE_CODE_CHILD_SESSION', 'CLAUDE_CODE_CLOUD_SESSION_ID', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDE_CODE_EXECPATH', 'CLAUDE_CODE_MESSAGING_SOCKET', 'CLAUDE_CODE_MESSAGING_TOKEN', 'CLAUDE_CODE_REMOTE_SESSION_ID', 'CLAUDE_CODE_REMOTE_SESSION_ORIGIN', 'CLAUDE_CODE_REMOTE_SESSION_UUID', 'CLAUDE_CODE_SESSION_ACCESS_TOKEN', 'CLAUDE_CODE_SESSION_ATTENDED', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_CODE_SESSION_KIND', 'CLAUDE_CODE_SESSION_LOG', 'CLAUDE_CODE_SESSION_NAME', 'CLAUDE_CODE_SESSION_ORIGIN', 'CLAUDE_CODE_SPAWN_TIMESTAMP_MS', 'CLAUDE_CODE_SSE_PORT', 'CLAUDE_CODE_TRIGGER_ID', 'CLAUDE_CODE_WORKER_EPOCH', 'CLAUDE_EFFORT', 'CLAUDE_JOB_DIR', 'CLAUDE_PID', 'CLAUDE_PROJECT_DIR', 'CLAUDE_PROJECT_UUID', 'CLAUDE_SESSION_ID'))
+
+The `env -u ... K=V ...` tokens that make a fresh shell run a command under `env`.
+
+Each name this controls – `markers`, the `CLAUDE*` names of `environ`
+that `env` lacks, [`ACCOUNT_VARS`](_autosummary/xa.claude_env.html.md#xa.claude_env.ACCOUNT_VARS), `drop` and [`DROPPED_VARS`](_autosummary/xa.claude_env.html.md#xa.claude_env.DROPPED_VARS) – is
+stated either way round: set when `env` has it, unset when it does not, because
+the shell’s environment is not this process’s. Everything else (other settings,
+and so any token) is left to the shell rather than written on a command line,
+where `ps` and tmux would show it.
+
+```pycon
+>>> env_prefix({'CLAUDE_CONFIG_DIR': '/h/b'}, environ={}, markers=('CLAUDECODE',))
+['env', '-u', 'CLAUDECODE', '-u', 'CLAUDE_PROFILE', '-u', 'ANTHROPIC_API_KEY', 'CLAUDE_CONFIG_DIR=/h/b']
+>>> env_prefix({}, environ={}, markers=('CLAUDECODE',), drop=())
+['env', '-u', 'CLAUDECODE', '-u', 'CLAUDE_CONFIG_DIR', '-u', 'CLAUDE_PROFILE', '-u', 'ANTHROPIC_API_KEY']
+```
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### xa.claude_env.permission_args(mode, , allow_bypass=False)
+
+The flags that start claude in permission `mode` (`''`/`None`: none).
+
+`allow_bypass` keeps bypass *reachable* (shift-tab) for a session that starts
+in another mode.
+
+```pycon
+>>> permission_args('bypass')
+['--dangerously-skip-permissions']
+>>> permission_args('auto', allow_bypass=True)
+['--allow-dangerously-skip-permissions', '--permission-mode', 'auto']
+>>> permission_args('')
+[]
+```
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### xa.claude_env.resume_permission(mode, , bypass_seen, euid=None, environ=None)
+
+`(mode, allow_bypass, warning)` for resuming a session last seen in `mode`.
+
+The session comes back in the mode it was last in. If it ever reached bypass
+(`bypass_seen`) it was started with the bypass flag, so bypass stays reachable
+even when it was last in another mode. Where claude would refuse the bypass flags
+([`bypass_refused()`](_autosummary/xa.claude_env.html.md#xa.claude_env.bypass_refused)) they are dropped with a warning: the machine’s own
+settings then decide, as they would for a person there. A mode this module does
+not know (renamed in a newer claude) is dropped with a warning too, since claude
+would refuse it at startup, invisibly, behind tmux.
+
+```pycon
+>>> resume_permission('auto', bypass_seen=True, euid=501)
+('auto', True, None)
+>>> resume_permission('bypassPermissions', bypass_seen=True, euid=0, environ={})[:2]
+('', False)
+```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`bool`](https://docs.python.org/3/builtins/functions.html#bool), [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]
+
+
 # _autosummary/xa.claude_fs.html.md
 
 # xa.claude_fs
@@ -865,39 +1102,67 @@ What lives under `~/.claude/` (as of Claude Code 2.x):
   line carries `sessionId` + `cwd`.
 - `sessions-index.json` — summary index (not yet consumed here).
 
-All functions are read-only. All paths default to `~/.claude/` but accept
-a `claude_home` override (set `XA_CLAUDE_HOME` in the env to point at a
-fixture tree during testing).
+All functions are read-only. All paths default to the account’s home
+([`default_claude_home()`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.default_claude_home): `$XA_CLAUDE_HOME`, else Claude Code’s own
+`$CLAUDE_CONFIG_DIR`, else `~/.claude/`) and accept a `claude_home`
+override. `XA_CLAUDE_HOME` is also how tests point xa at a fixture tree.
+
+### Module Attributes
+
+| [`CLAUDE_HOME_ENV_VAR`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.CLAUDE_HOME_ENV_VAR)   | Claude Code's account variable ([`xa.claude_env`](_autosummary/xa.claude_env.html.md#module-xa.claude_env) owns it).   |
+|------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
 
 ### Functions
 
-| [`encode_project_slug`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.encode_project_slug)(cwd)                       | Encode a cwd into the `~/.claude/projects/` slug form.                     |
-|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| [`ephemeral_session_alive`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.ephemeral_session_alive)(eph, \*[, proc_root])  | Is the process behind an ephemeral session dict actually alive?            |
-| [`history_iter`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.history_iter)(\*[, claude_home])                | Yield entries from `~/.claude/history.jsonl` in file order (oldest first). |
-| [`iter_ephemeral_sessions`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_ephemeral_sessions)(\*[, claude_home])     | Yield all live ephemeral session dicts.                                    |
-| [`iter_project_slugs`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_project_slugs)(\*[, claude_home])          | Yield slugs (directory names) under `~/.claude/projects/`.                 |
-| [`iter_transcript_events`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_transcript_events)(path)                   | Yield every event from a transcript JSONL.                                 |
-| [`iter_transcript_files`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_transcript_files)(\*[, claude_home, ...])  | Yield transcript JSONL paths, optionally restricted to one project.        |
-| [`parse_project_slug`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.parse_project_slug)(slug)                       | Decode a `~/.claude/projects/` slug back to a cwd.                         |
-| [`read_ephemeral_session`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.read_ephemeral_session)(pid, \*[, claude_home]) | Read the per-process session file for `pid` if present.                    |
-| [`remote_control_at_startup`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.remote_control_at_startup)(\*[, claude_home])   | Is this host set to auto-connect Remote Control for every session?         |
-| [`transcript_forensics`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.transcript_forensics)(path)                     | Extract postmortem-relevant facts from the tail of a transcript.           |
-| [`transcript_metadata`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.transcript_metadata)(path)                      | Summarise a transcript without holding it all in memory.                   |
-| [`transcript_path`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.transcript_path)(cwd, session_id, \*[, ...])    | Return the transcript path for `(cwd, session_id)` if it exists.           |
+| [`account_default_model`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.account_default_model)(\*[, claude_home])       | The `model` the account's `settings.json` sets, or `None`.                   |
+|-------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`default_claude_home`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.default_claude_home)([environ])                 | The Claude home xa reads (and launches sessions under) by default.           |
+| [`encode_project_slug`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.encode_project_slug)(cwd)                       | Encode a cwd into the `~/.claude/projects/` slug form.                       |
+| [`ephemeral_session_alive`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.ephemeral_session_alive)(eph, \*[, proc_root])  | Is the process behind an ephemeral session dict actually alive?              |
+| [`history_iter`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.history_iter)(\*[, claude_home])                | Yield entries from `~/.claude/history.jsonl` in file order (oldest first).   |
+| [`iter_ephemeral_sessions`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_ephemeral_sessions)(\*[, claude_home])     | Yield all live ephemeral session dicts.                                      |
+| [`iter_project_slugs`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_project_slugs)(\*[, claude_home])          | Yield slugs (directory names) under `~/.claude/projects/`.                   |
+| [`iter_transcript_events`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_transcript_events)(path)                   | Yield every event from a transcript JSONL.                                   |
+| [`iter_transcript_files`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.iter_transcript_files)(\*[, claude_home, ...])  | Yield transcript JSONL paths, optionally restricted to one project.          |
+| [`launch_facts`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.launch_facts)(path)                             | Read one transcript for the cwd, mode, model and name it was launched with.  |
+| [`parse_project_slug`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.parse_project_slug)(slug)                       | Decode a `~/.claude/projects/` slug back to a cwd.                           |
+| [`read_ephemeral_session`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.read_ephemeral_session)(pid, \*[, claude_home]) | Read the per-process session file for `pid` if present.                      |
+| [`remote_control_at_startup`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.remote_control_at_startup)(\*[, claude_home])   | Is this host set to auto-connect Remote Control for every session?           |
+| [`resume_model`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.resume_model)(facts, \*[, claude_home])         | The `--model` that brings `facts` back on its own model, or `None` for none. |
+| [`transcript_forensics`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.transcript_forensics)(path)                     | Extract postmortem-relevant facts from the tail of a transcript.             |
+| [`transcript_metadata`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.transcript_metadata)(path)                      | Summarise a transcript without holding it all in memory.                     |
+| [`transcript_path`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.transcript_path)(cwd, session_id, \*[, ...])    | Return the transcript path for `(cwd, session_id)` if it exists.             |
 
 ### Classes
 
-| [`HistoryEntry`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.HistoryEntry)(cwd, project, display, ...)   | One line from `~/.claude/history.jsonl`.                             |
-|---------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| [`TranscriptForensics`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.TranscriptForensics)(transcript_path, ...)  | Postmortem facts extracted by walking a transcript from the end.     |
-| [`TranscriptMeta`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.TranscriptMeta)(path, session_id, cwd, ...) | Summary of a transcript JSONL, cheap enough to compute for listings. |
+| [`HistoryEntry`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.HistoryEntry)(cwd, project, display, ...)      | One line from `~/.claude/history.jsonl`.                             |
+|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| [`LaunchFacts`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.LaunchFacts)(session_id, transcript, cwd, ...) | What `claude --resume` needs to bring one session back as it was.    |
+| [`TranscriptForensics`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.TranscriptForensics)(transcript_path, ...)     | Postmortem facts extracted by walking a transcript from the end.     |
+| [`TranscriptMeta`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.TranscriptMeta)(path, session_id, cwd, ...)    | Summary of a transcript JSONL, cheap enough to compute for listings. |
+
+### xa.claude_fs.CLAUDE_HOME_ENV_VAR *= 'CLAUDE_CONFIG_DIR'*
+
+Claude Code’s account variable ([`xa.claude_env`](_autosummary/xa.claude_env.html.md#module-xa.claude_env) owns it).
 
 ### *class* xa.claude_fs.HistoryEntry(cwd, project, display, pasted_contents)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One line from `~/.claude/history.jsonl`.
+
+### *class* xa.claude_fs.LaunchFacts(session_id, transcript, cwd, permission_mode, bypass_seen, model, effort, name, last_type, last_write, entrypoint=None)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+What `claude --resume` needs to bring one session back as it was.
+
+#### *property* headless *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+nothing to resume into a pane.
+
+* **Type:**
+  A `claude -p` / SDK run
 
 ### *class* xa.claude_fs.TranscriptForensics(transcript_path, line_count, last_tool_name, last_tool_command, last_tool_exit_code, last_tool_result_tail, final_assistant_text, user_interrupted)
 
@@ -915,13 +1180,43 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Summary of a transcript JSONL, cheap enough to compute for listings.
 
+### xa.claude_fs.account_default_model(, claude_home=PosixPath('/home/runner/.claude'))
+
+The `model` the account’s `settings.json` sets, or `None`.
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### xa.claude_fs.default_claude_home(environ=None)
+
+The Claude home xa reads (and launches sessions under) by default.
+
+`$XA_CLAUDE_HOME` first (xa’s own override), then `$CLAUDE_CONFIG_DIR`
+(so an xa run from a second account’s shell sees that account), then
+`~/.claude`.
+
+```pycon
+>>> str(default_claude_home({'CLAUDE_CONFIG_DIR': '/h/second'}))
+'/h/second'
+>>> str(default_claude_home({'XA_CLAUDE_HOME': '/x', 'CLAUDE_CONFIG_DIR': '/h/second'}))
+'/x'
+```
+
+* **Return type:**
+  [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)
+
 ### xa.claude_fs.encode_project_slug(cwd)
 
 Encode a cwd into the `~/.claude/projects/` slug form.
 
+Claude Code turns every character that is not a letter, digit or `-` into
+`-` (`_` and `.` included), not only `/`.
+
 ```pycon
 >>> encode_project_slug('/root/py/proj/tt/glossa')
 '-root-py-proj-tt-glossa'
+>>> encode_project_slug('/p/i/_zodals/tw_platform.v2')
+'-p-i--zodals-tw-platform-v2'
 >>> encode_project_slug('/')
 '-'
 ```
@@ -1004,6 +1299,15 @@ stores alongside transcripts.
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]
 
+### xa.claude_fs.launch_facts(path)
+
+Read one transcript for the cwd, mode, model and name it was launched with.
+
+One forward pass; malformed lines are skipped like everywhere else in xa.
+
+* **Return type:**
+  [`LaunchFacts`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.LaunchFacts)
+
 ### xa.claude_fs.parse_project_slug(slug)
 
 Decode a `~/.claude/projects/` slug back to a cwd.
@@ -1046,6 +1350,26 @@ xa uses it to explain a missing URL, never to decide behavior.
 
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
+
+### xa.claude_fs.resume_model(facts, , claude_home=PosixPath('/home/runner/.claude'))
+
+The `--model` that brings `facts` back on its own model, or `None` for none.
+
+`None` when the transcript’s model is in the same family as the account’s
+default: the default may carry what the transcript does not record (an
+`opus[1m]` default runs a 1M-token window, its turns record only
+`claude-opus-5-5`), so pinning the bare id would shrink the context of a
+session that may already be past 200k. A different family (a sonnet session
+on an opus account) is pinned, which is the case the flag exists for.
+
+```pycon
+>>> f = LaunchFacts('s', Path('t'), None, '', False, 'claude-sonnet-5-5', None, None, None, 0.0)
+>>> resume_model(f, claude_home=Path('/no/such/home'))
+'claude-sonnet-5-5'
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ### xa.claude_fs.transcript_forensics(path)
 
@@ -1106,24 +1430,24 @@ Entry point: `xa` (see `[project.scripts]` in `pyproject.toml`).
 
 ### Functions
 
-| [`archive_forensics_cmd`](_autosummary/xa.cli.html.md#xa.cli.archive_forensics_cmd)(archive_id)                 | Print rich forensics for an archived session as JSON.                                                                                            |
-|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`archive_list_cmd`](_autosummary/xa.cli.html.md#xa.cli.archive_list_cmd)([limit, json_out])               | List archived sessions (`created` events, newest first).                                                                                         |
-| [`archive_log_cmd`](_autosummary/xa.cli.html.md#xa.cli.archive_log_cmd)(archive_id[, tail_kb])            | Print the pane log for an archived session.                                                                                                      |
-| [`gen_secret_cmd`](_autosummary/xa.cli.html.md#xa.cli.gen_secret_cmd)([length])                          | Print a cryptographically strong random hex secret.                                                                                              |
-| [`history_cmd`](_autosummary/xa.cli.html.md#xa.cli.history_cmd)([search, limit, json_out])            | Grep over `~/.claude/history.jsonl`.                                                                                                             |
-| [`info_cmd`](_autosummary/xa.cli.html.md#xa.cli.info_cmd)(session_id[, json_out])                  | Show full metadata + forensics for one session.                                                                                                  |
-| [`kill_cmd`](_autosummary/xa.cli.html.md#xa.cli.kill_cmd)(session_id)                              | Kill the tmux session backing a live Claude Code session.                                                                                        |
-| [`list_cmd`](_autosummary/xa.cli.html.md#xa.cli.list_cmd)([project, limit, include_forks, ...])    | List Claude Code sessions across configured hosts, newest first.                                                                                 |
-| [`main`](_autosummary/xa.cli.html.md#xa.cli.main)()                                            | Entry point referenced by `pyproject.toml`'s `[project.scripts]`.                                                                                |
-| [`mk_parser`](_autosummary/xa.cli.html.md#xa.cli.mk_parser)()                                       | The `xa` parser -- a plain [`argparse.ArgumentParser`](https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser), built, not run. |
-| [`pick_cmd`](_autosummary/xa.cli.html.md#xa.cli.pick_cmd)([project, limit, host])                  | Interactive session picker — pick a row by number, then choose an action.                                                                        |
-| [`resume_cmd`](_autosummary/xa.cli.html.md#xa.cli.resume_cmd)(session_id[, name, cwd, timeout, ...]) | Resume a past session (`claude --resume`) in a new tmux pane.                                                                                    |
-| [`revive_check_cmd`](_autosummary/xa.cli.html.md#xa.cli.revive_check_cmd)([ticks, json_out])               | Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.                                                          |
-| [`revive_cmd`](_autosummary/xa.cli.html.md#xa.cli.revive_cmd)([apply, include_held_elsewhere, ...])  | Report — and optionally reconnect — panes whose Remote Control dropped.                                                                          |
-| [`serve_cmd`](_autosummary/xa.cli.html.md#xa.cli.serve_cmd)([host, port, mount, username, ...])     | Run the xa HTTP service (requires the `xa[service]` extra).                                                                                      |
-| [`spawn_cmd`](_autosummary/xa.cli.html.md#xa.cli.spawn_cmd)(cwd[, name, timeout, ...])              | Spawn a detached claude-in-tmux session and print its remote URL.                                                                                |
-| [`sync_cmd`](_autosummary/xa.cli.html.md#xa.cli.sync_cmd)([host, force])                           | Refresh remote-host caches (SSH hosts; HTTP is always fresh).                                                                                    |
+| [`archive_forensics_cmd`](_autosummary/xa.cli.html.md#xa.cli.archive_forensics_cmd)(archive_id)                | Print rich forensics for an archived session as JSON.                                                                                            |
+|---------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`archive_list_cmd`](_autosummary/xa.cli.html.md#xa.cli.archive_list_cmd)([limit, json_out])              | List archived sessions (`created` events, newest first).                                                                                         |
+| [`archive_log_cmd`](_autosummary/xa.cli.html.md#xa.cli.archive_log_cmd)(archive_id[, tail_kb])           | Print the pane log for an archived session.                                                                                                      |
+| [`gen_secret_cmd`](_autosummary/xa.cli.html.md#xa.cli.gen_secret_cmd)([length])                         | Print a cryptographically strong random hex secret.                                                                                              |
+| [`history_cmd`](_autosummary/xa.cli.html.md#xa.cli.history_cmd)([search, limit, json_out])           | Grep over `~/.claude/history.jsonl`.                                                                                                             |
+| [`info_cmd`](_autosummary/xa.cli.html.md#xa.cli.info_cmd)(session_id[, json_out])                 | Show full metadata + forensics for one session.                                                                                                  |
+| [`kill_cmd`](_autosummary/xa.cli.html.md#xa.cli.kill_cmd)(session_id)                             | Kill the tmux session backing a live Claude Code session.                                                                                        |
+| [`list_cmd`](_autosummary/xa.cli.html.md#xa.cli.list_cmd)([project, limit, include_forks, ...])   | List Claude Code sessions across configured hosts, newest first.                                                                                 |
+| [`main`](_autosummary/xa.cli.html.md#xa.cli.main)()                                           | Entry point referenced by `pyproject.toml`'s `[project.scripts]`.                                                                                |
+| [`mk_parser`](_autosummary/xa.cli.html.md#xa.cli.mk_parser)()                                      | The `xa` parser -- a plain [`argparse.ArgumentParser`](https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser), built, not run. |
+| [`pick_cmd`](_autosummary/xa.cli.html.md#xa.cli.pick_cmd)([project, limit, host])                 | Interactive session picker — pick a row by number, then choose an action.                                                                        |
+| [`resume_cmd`](_autosummary/xa.cli.html.md#xa.cli.resume_cmd)(\*session_ids[, name, cwd, ...])      | Resume past sessions (`claude --resume`) in new tmux panes, as they were launched.                                                               |
+| [`revive_check_cmd`](_autosummary/xa.cli.html.md#xa.cli.revive_check_cmd)([ticks, json_out])              | Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.                                                          |
+| [`revive_cmd`](_autosummary/xa.cli.html.md#xa.cli.revive_cmd)([apply, include_held_elsewhere, ...]) | Report — and optionally reconnect — panes whose Remote Control dropped.                                                                          |
+| [`serve_cmd`](_autosummary/xa.cli.html.md#xa.cli.serve_cmd)([host, port, mount, username, ...])    | Run the xa HTTP service (requires the `xa[service]` extra).                                                                                      |
+| [`spawn_cmd`](_autosummary/xa.cli.html.md#xa.cli.spawn_cmd)(cwd[, name, timeout, ...])             | Spawn a detached claude-in-tmux session and print its remote URL.                                                                                |
+| [`sync_cmd`](_autosummary/xa.cli.html.md#xa.cli.sync_cmd)([host, force])                          | Refresh remote-host caches (SSH hosts; HTTP is always fresh).                                                                                    |
 
 ### xa.cli.archive_forensics_cmd(archive_id)
 
@@ -1239,17 +1563,31 @@ for scripting; use **xa pick** when a human is at the keyboard.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### xa.cli.resume_cmd(session_id, name=None, cwd=None, timeout=120.0, model=None, effort=None)
+### xa.cli.resume_cmd(\*session_ids, name=None, cwd=None, timeout=120.0, model=None, effort=None, home=None, permission_mode=None, since_shutdown=False, apply=False, window=120.0, json_out=False)
 
-Resume a past session (`claude --resume`) in a new tmux pane.
+Resume past sessions (`claude --resume`) in new tmux panes, as they were launched.
+
+Each comes back in its original cwd, under its account, with its model
+(when its family differs from the account default) and permission mode
+(`--dangerously-skip-permissions` included) read from its transcript;
+any of these flags overrides the transcript.
+
+`--since-shutdown` finds the sessions that were alive at the last
+shutdown and lists them (a dry run); add `--apply` to resume them all.
 
 * **Parameters:**
-  * **session_id** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Full UUID or unique prefix.
-  * **name** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Session name — tmux session and claude display name (auto if omitted).
-  * **cwd** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Override cwd (defaults to the original session’s cwd).
-  * **timeout** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – Seconds to wait for the bridge URL.
-  * **model** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --model` (omitted → claude’s default).
-  * **effort** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --effort` (omitted → claude’s default).
+  * **session_ids** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Full UUIDs or unique prefixes (omit with –since-shutdown).
+  * **name** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Session name — tmux session and claude display name (one session only).
+  * **cwd** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Override cwd (defaults to the session’s original cwd).
+  * **timeout** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – Seconds to wait for each bridge URL.
+  * **model** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --model` (omitted → the transcript’s model).
+  * **effort** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --effort` (omitted → the account’s default).
+  * **home** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Claude home (account) to resume from and run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).
+  * **permission_mode** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Override the transcript’s permission mode (`bypass`, `auto`, `default`…).
+  * **since_shutdown** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Select the sessions alive at the last shutdown instead of ids.
+  * **apply** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – With –since-shutdown, actually resume them (default: list only).
+  * **window** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – With –since-shutdown, seconds before the shutdown record a last write may land.
+  * **json_out** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Emit one JSON object per session instead of text.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
@@ -1312,7 +1650,7 @@ behind an mTLS-terminating proxy).
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### xa.cli.spawn_cmd(cwd, name=None, timeout=120.0, no_remote_control=False, model=None, effort=None)
+### xa.cli.spawn_cmd(cwd, name=None, timeout=120.0, no_remote_control=False, model=None, effort=None, home=None, permission_mode=None)
 
 Spawn a detached claude-in-tmux session and print its remote URL.
 
@@ -1323,6 +1661,8 @@ Spawn a detached claude-in-tmux session and print its remote URL.
   * **no_remote_control** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Spawn without passing `--remote-control`.
   * **model** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --model` (omitted → claude’s default).
   * **effort** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --effort` (omitted → claude’s default).
+  * **home** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Claude home (account) to run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).
+  * **permission_mode** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – `claude --permission-mode` (`bypass` → `--dangerously-skip-permissions`).
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
@@ -1649,41 +1989,41 @@ xa — tools for managing remote Claude Code sessions.
 
 ### Functions
 
-| [`encode_project_slug`](_autosummary/xa.html.md#xa.encode_project_slug)(cwd)                           | Encode a cwd into the `~/.claude/projects/` slug form.                     |
-|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| [`history_iter`](_autosummary/xa.html.md#xa.history_iter)(\*[, claude_home])                    | Yield entries from `~/.claude/history.jsonl` in file order (oldest first). |
-| [`iter_ephemeral_sessions`](_autosummary/xa.html.md#xa.iter_ephemeral_sessions)(\*[, claude_home])         | Yield all live ephemeral session dicts.                                    |
-| [`iter_project_slugs`](_autosummary/xa.html.md#xa.iter_project_slugs)(\*[, claude_home])              | Yield slugs (directory names) under `~/.claude/projects/`.                 |
-| [`iter_transcript_events`](_autosummary/xa.html.md#xa.iter_transcript_events)(path)                       | Yield every event from a transcript JSONL.                                 |
-| [`iter_transcript_files`](_autosummary/xa.html.md#xa.iter_transcript_files)(\*[, claude_home, ...])      | Yield transcript JSONL paths, optionally restricted to one project.        |
-| [`parse_project_slug`](_autosummary/xa.html.md#xa.parse_project_slug)(slug)                           | Decode a `~/.claude/projects/` slug back to a cwd.                         |
-| [`read_ephemeral_session`](_autosummary/xa.html.md#xa.read_ephemeral_session)(pid, \*[, claude_home])     | Read the per-process session file for `pid` if present.                    |
-| [`transcript_forensics`](_autosummary/xa.html.md#xa.transcript_forensics)(path)                         | Extract postmortem-relevant facts from the tail of a transcript.           |
-| [`transcript_metadata`](_autosummary/xa.html.md#xa.transcript_metadata)(path)                          | Summarise a transcript without holding it all in memory.                   |
-| [`transcript_path`](_autosummary/xa.html.md#xa.transcript_path)(cwd, session_id, \*[, ...])        | Return the transcript path for `(cwd, session_id)` if it exists.           |
-| [`resolve_bridge_url`](_autosummary/xa.html.md#xa.resolve_bridge_url)(session_name, \*[, ...])        | Return `(url, source)` for a live tmux-hosted claude session.              |
-| [`resume_session`](_autosummary/xa.html.md#xa.resume_session)(claude_session_id, \*, cwd[, ...])  | Launch `claude --resume <id>` in a new detached tmux session.              |
-| [`spawn_session`](_autosummary/xa.html.md#xa.spawn_session)(name, \*, cwd[, claude_bin, ...])    | Create a detached tmux session running `claude` in `cwd`.                  |
-| [`get_session`](_autosummary/xa.html.md#xa.get_session)(session_id, \*[, hosts, claude_home])  | Find one session by full ID or unique prefix.                              |
-| [`iter_local_sessions`](_autosummary/xa.html.md#xa.iter_local_sessions)(\*[, claude_home, ...])        | Legacy local-only iterator.                                                |
-| [`kill_session`](_autosummary/xa.html.md#xa.kill_session)(session, \*[, hosts])                 | Kill a live `Session`, scoped to what actually belongs to it.              |
-| [`list_sessions`](_autosummary/xa.html.md#xa.list_sessions)(\*[, hosts, project, ...])           | Return sessions sorted by recency (live first, then newest-modified).      |
-| [`resume`](_autosummary/xa.html.md#xa.resume)(session, \*[, cwd, name, hosts])            | Resume a transcript / archived session on its originating host.            |
-| [`default_events_store`](_autosummary/xa.html.md#xa.default_events_store)([state_dir])                  | The event log at `<state_dir>/events.jsonl`.                               |
-| [`default_pane_store`](_autosummary/xa.html.md#xa.default_pane_store)([state_dir])                    | Per-session pane logs at `<state_dir>/panes/<id>.log`.                     |
-| `append_created`(events, \*, id, name, cwd, ...)                                                    |                                                                            |
-| `append_gone`(events, \*, id, name, reason[, ...])                                                  |                                                                            |
-| [`append_hidden`](_autosummary/xa.html.md#xa.append_hidden)(events, \*, id, hidden)              | Mark an archived session as hidden (or un-hide it).                        |
-| [`append_label`](_autosummary/xa.html.md#xa.append_label)(events, \*, id, label)                | Set or clear a user-supplied display label for a session.                  |
-| `append_url_acquired`(events, \*, id, name[, ...])                                                  |                                                                            |
-| [`classify_death`](_autosummary/xa.html.md#xa.classify_death)(pane_kind, \*[, replaced, ...])     | Pick the most specific death reason from available signals.                |
-| [`overlays`](_autosummary/xa.html.md#xa.overlays)(events)                                   | Fold `labeled` / `hidden` events into `{id: {label, hidden}}`.             |
-| [`reconcile`](_autosummary/xa.html.md#xa.reconcile)(events, panes, live_sessions, \*[, ...]) | Emit `gone` events for archived sessions missing from `live_sessions`.     |
-| [`records`](_autosummary/xa.html.md#xa.records)(events, panes)                             | Return per-session summaries, newest-first (by creation time).             |
-| [`default_hosts`](_autosummary/xa.html.md#xa.default_hosts)()                                    | The out-of-the-box registry: one local host, nothing else.                 |
-| `default_config_path`()                                                                             |                                                                            |
-| [`load`](_autosummary/xa.html.md#xa.load)([path])                                       | Return `(settings, hosts_registry)` from a config file.                    |
-| [`load_hosts`](_autosummary/xa.html.md#xa.load_hosts)([path])                                 | Shortcut: just the host registry.                                          |
+| [`encode_project_slug`](_autosummary/xa.html.md#xa.encode_project_slug)(cwd)                           | Encode a cwd into the `~/.claude/projects/` slug form.                              |
+|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| [`history_iter`](_autosummary/xa.html.md#xa.history_iter)(\*[, claude_home])                    | Yield entries from `~/.claude/history.jsonl` in file order (oldest first).          |
+| [`iter_ephemeral_sessions`](_autosummary/xa.html.md#xa.iter_ephemeral_sessions)(\*[, claude_home])         | Yield all live ephemeral session dicts.                                             |
+| [`iter_project_slugs`](_autosummary/xa.html.md#xa.iter_project_slugs)(\*[, claude_home])              | Yield slugs (directory names) under `~/.claude/projects/`.                          |
+| [`iter_transcript_events`](_autosummary/xa.html.md#xa.iter_transcript_events)(path)                       | Yield every event from a transcript JSONL.                                          |
+| [`iter_transcript_files`](_autosummary/xa.html.md#xa.iter_transcript_files)(\*[, claude_home, ...])      | Yield transcript JSONL paths, optionally restricted to one project.                 |
+| [`parse_project_slug`](_autosummary/xa.html.md#xa.parse_project_slug)(slug)                           | Decode a `~/.claude/projects/` slug back to a cwd.                                  |
+| [`read_ephemeral_session`](_autosummary/xa.html.md#xa.read_ephemeral_session)(pid, \*[, claude_home])     | Read the per-process session file for `pid` if present.                             |
+| [`transcript_forensics`](_autosummary/xa.html.md#xa.transcript_forensics)(path)                         | Extract postmortem-relevant facts from the tail of a transcript.                    |
+| [`transcript_metadata`](_autosummary/xa.html.md#xa.transcript_metadata)(path)                          | Summarise a transcript without holding it all in memory.                            |
+| [`transcript_path`](_autosummary/xa.html.md#xa.transcript_path)(cwd, session_id, \*[, ...])        | Return the transcript path for `(cwd, session_id)` if it exists.                    |
+| [`resolve_bridge_url`](_autosummary/xa.html.md#xa.resolve_bridge_url)(session_name, \*[, ...])        | Return `(url, source)` for a live tmux-hosted claude session.                       |
+| [`resume_session`](_autosummary/xa.html.md#xa.resume_session)(claude_session_id, \*, cwd[, ...])  | Launch `claude --resume <id>` in a new detached tmux session.                       |
+| [`spawn_session`](_autosummary/xa.html.md#xa.spawn_session)(name, \*, cwd[, claude_bin, ...])    | Create a detached tmux session running `claude` in `cwd`.                           |
+| [`get_session`](_autosummary/xa.html.md#xa.get_session)(session_id, \*[, hosts, claude_home])  | Find one session by full ID or unique prefix.                                       |
+| [`iter_local_sessions`](_autosummary/xa.html.md#xa.iter_local_sessions)(\*[, claude_home, ...])        | Legacy local-only iterator.                                                         |
+| [`kill_session`](_autosummary/xa.html.md#xa.kill_session)(session, \*[, hosts])                 | Kill a live `Session`, scoped to what actually belongs to it.                       |
+| [`list_sessions`](_autosummary/xa.html.md#xa.list_sessions)(\*[, hosts, project, ...])           | Return sessions sorted by recency (live first, then newest-modified).               |
+| [`resume`](_autosummary/xa.html.md#xa.resume)(session, \*[, cwd, name, hosts])            | Resume a transcript / archived session on its originating host, as it was launched. |
+| [`default_events_store`](_autosummary/xa.html.md#xa.default_events_store)([state_dir])                  | The event log at `<state_dir>/events.jsonl`.                                        |
+| [`default_pane_store`](_autosummary/xa.html.md#xa.default_pane_store)([state_dir])                    | Per-session pane logs at `<state_dir>/panes/<id>.log`.                              |
+| `append_created`(events, \*, id, name, cwd, ...)                                                    |                                                                                     |
+| `append_gone`(events, \*, id, name, reason[, ...])                                                  |                                                                                     |
+| [`append_hidden`](_autosummary/xa.html.md#xa.append_hidden)(events, \*, id, hidden)              | Mark an archived session as hidden (or un-hide it).                                 |
+| [`append_label`](_autosummary/xa.html.md#xa.append_label)(events, \*, id, label)                | Set or clear a user-supplied display label for a session.                           |
+| `append_url_acquired`(events, \*, id, name[, ...])                                                  |                                                                                     |
+| [`classify_death`](_autosummary/xa.html.md#xa.classify_death)(pane_kind, \*[, replaced, ...])     | Pick the most specific death reason from available signals.                         |
+| [`overlays`](_autosummary/xa.html.md#xa.overlays)(events)                                   | Fold `labeled` / `hidden` events into `{id: {label, hidden}}`.                      |
+| [`reconcile`](_autosummary/xa.html.md#xa.reconcile)(events, panes, live_sessions, \*[, ...]) | Emit `gone` events for archived sessions missing from `live_sessions`.              |
+| [`records`](_autosummary/xa.html.md#xa.records)(events, panes)                             | Return per-session summaries, newest-first (by creation time).                      |
+| [`default_hosts`](_autosummary/xa.html.md#xa.default_hosts)()                                    | The out-of-the-box registry: one local host, nothing else.                          |
+| `default_config_path`()                                                                             |                                                                                     |
+| [`load`](_autosummary/xa.html.md#xa.load)([path])                                       | Return `(settings, hosts_registry)` from a config file.                             |
+| [`load_hosts`](_autosummary/xa.html.md#xa.load_hosts)([path])                                 | Shortcut: just the host registry.                                                   |
 
 ### Classes
 
@@ -1906,9 +2246,14 @@ Per-session pane logs at `<state_dir>/panes/<id>.log`.
 
 Encode a cwd into the `~/.claude/projects/` slug form.
 
+Claude Code turns every character that is not a letter, digit or `-` into
+`-` (`_` and `.` included), not only `/`.
+
 ```pycon
 >>> encode_project_slug('/root/py/proj/tt/glossa')
 '-root-py-proj-tt-glossa'
+>>> encode_project_slug('/p/i/_zodals/tw_platform.v2')
+'-p-i--zodals-tw-platform-v2'
 >>> encode_project_slug('/')
 '-'
 ```
@@ -2103,12 +2448,23 @@ Fallback: regex-scrape `capture-pane` output for the full URL.
 
 ### xa.resume(session, , cwd=None, name=None, hosts=None, \*\*opts)
 
-Resume a transcript / archived session on its originating host.
+Resume a transcript / archived session on its originating host, as it was launched.
+
+Whatever the caller leaves unset comes from the transcript
+(`launch_opts()`): the cwd it was started in, its model when that differs
+from the account default’s family, and its permission mode, so a session
+started with `--dangerously-skip-permissions` comes back with it.
+`permission_mode=''` asks for claude’s default explicitly. When a launch
+fact had to be dropped (bypass refused to root), the result’s `warning`
+says so.
+
+Only for a local host: a remote one gets exactly what the caller set, and
+its own xa reads its own transcript the same way.
 
 * **Return type:**
   [`SpawnResult`](_autosummary/xa.claude_cli.html.md#xa.claude_cli.SpawnResult)
 
-### xa.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, allow_bypass=False, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Launch `claude --resume <id>` in a new detached tmux session.
 
@@ -2119,7 +2475,7 @@ is tmux-only so a resume never clobbers the session’s existing name.
 * **Return type:**
   [`SpawnResult`](_autosummary/xa.claude_cli.html.md#xa.claude_cli.SpawnResult)
 
-### xa.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Create a detached tmux session running `claude` in `cwd`.
 
@@ -2187,18 +2543,185 @@ True
 
 ### Modules
 
-| [`archive`](_autosummary/xa.archive.html.md#module-xa.archive)       | Postmortem archive of Claude Code sessions spawned by `xa`.              |
-|----------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| [`claude_cli`](_autosummary/xa.claude_cli.html.md#module-xa.claude_cli) | Spawn, resume, and URL-resolve Claude Code sessions.                     |
-| [`claude_fs`](_autosummary/xa.claude_fs.html.md#module-xa.claude_fs)   | Pure filesystem view of `~/.claude/`.                                    |
-| [`cli`](_autosummary/xa.cli.html.md#module-xa.cli)               | Command-line interface for `xa`.                                         |
-| [`config`](_autosummary/xa.config.html.md#module-xa.config)         | TOML config loader for `xa`.                                             |
-| [`hosts`](_autosummary/xa.hosts.html.md#module-xa.hosts)           | Host abstraction — local, SSH, HTTP backends.                            |
-| [`revive`](_autosummary/xa.revive.html.md#module-xa.revive)         | Detect — and reconnect — Claude Code panes whose Remote Control dropped. |
-| [`service`](_autosummary/xa.service.html.md#module-xa.service)       | FastAPI service for `xa`.                                                |
-| [`sessions`](_autosummary/xa.sessions.html.md#module-xa.sessions)     | The unified `Session` domain model and multi-host discovery.             |
-| [`store`](_autosummary/xa.store.html.md#module-xa.store)           | Minimal key-value and append-log storage.                                |
-| [`tmux`](_autosummary/xa.tmux.html.md#module-xa.tmux)             | Pure tmux wrappers.                                                      |
+| [`archive`](_autosummary/xa.archive.html.md#module-xa.archive)       | Postmortem archive of Claude Code sessions spawned by `xa`.                              |
+|----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| [`claude_cli`](_autosummary/xa.claude_cli.html.md#module-xa.claude_cli) | Spawn, resume, and URL-resolve Claude Code sessions.                                     |
+| [`claude_env`](_autosummary/xa.claude_env.html.md#module-xa.claude_env) | The environment and flags a fresh `claude` process starts with: account and permissions. |
+| [`claude_fs`](_autosummary/xa.claude_fs.html.md#module-xa.claude_fs)   | Pure filesystem view of `~/.claude/`.                                                    |
+| [`cli`](_autosummary/xa.cli.html.md#module-xa.cli)               | Command-line interface for `xa`.                                                         |
+| [`config`](_autosummary/xa.config.html.md#module-xa.config)         | TOML config loader for `xa`.                                                             |
+| [`hosts`](_autosummary/xa.hosts.html.md#module-xa.hosts)           | Host abstraction — local, SSH, HTTP backends.                                            |
+| [`recovery`](_autosummary/xa.recovery.html.md#module-xa.recovery)     | Bring back the sessions a shutdown killed, each as it was launched.                      |
+| [`revive`](_autosummary/xa.revive.html.md#module-xa.revive)         | Detect — and reconnect — Claude Code panes whose Remote Control dropped.                 |
+| [`service`](_autosummary/xa.service.html.md#module-xa.service)       | FastAPI service for `xa`.                                                                |
+| [`sessions`](_autosummary/xa.sessions.html.md#module-xa.sessions)     | The unified `Session` domain model and multi-host discovery.                             |
+| [`store`](_autosummary/xa.store.html.md#module-xa.store)           | Minimal key-value and append-log storage.                                                |
+| [`tmux`](_autosummary/xa.tmux.html.md#module-xa.tmux)             | Pure tmux wrappers.                                                                      |
+
+
+# _autosummary/xa.recovery.html.md
+
+# xa.recovery
+
+Bring back the sessions a shutdown killed, each as it was launched.
+
+Two questions, answered from the transcripts alone (the processes are gone):
+
+1. **Which sessions were alive at the last shutdown?** When a machine shuts
+   down, every running claude writes a final `cost-state` entry on its way
+   out, so its transcript’s last write lands within seconds of the shutdown.
+   [`sessions_alive_at_shutdown()`](_autosummary/xa.recovery.html.md#xa.recovery.sessions_alive_at_shutdown) returns the transcripts whose last write
+   > falls in `[shutdown - window, boot)`. The shutdown time comes from
+   > `last` ([`last_shutdown_time()`](_autosummary/xa.recovery.html.md#xa.recovery.last_shutdown_time)), the boot time from the kernel
+   > ([`boot_time()`](_autosummary/xa.recovery.html.md#xa.recovery.boot_time)), and the record counts only when it belongs to this
+   > boot. Sessions resumed since then, running now, or already sitting in a tmux
+   > pane started with `--resume <id>` are never candidates, so applying twice
+   > resumes nothing twice. Headless runs (`claude -p`, the SDK) are skipped.
+2. **How was each one launched?** [`xa.claude_fs.launch_facts()`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.launch_facts) reads one transcript
+   for what `claude --resume` needs in order to come back the same:
+   - the **cwd**: the *first* `cwd` whose slug is the transcript’s project
+     folder. A session that `cd`-ed elsewhere records later cwds too, and
+     resuming in the last one puts it in the wrong folder (thorwhalen/xa#23);
+   - the **permission mode**: the last one recorded, plus whether bypass was
+     ever reached (only a session started with the bypass flag can reach it);
+   - the **model** of the last assistant turn, pinned only when its family
+     differs from the account default’s ([`xa.claude_fs.resume_model()`](_autosummary/xa.claude_fs.html.md#xa.claude_fs.resume_model)).
+
+What a shutdown with no clean exit (a power cut, a kernel panic) leaves is not
+covered: no process wrote anything at the moment it died, so there is nothing
+to time it by.
+
+### Module Attributes
+
+| [`DFLT_WINDOW_SEC`](_autosummary/xa.recovery.html.md#xa.recovery.DFLT_WINDOW_SEC)   | How long before the shutdown record a session's last write may land and still count as "alive at shutdown".   |
+|--------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+
+### Functions
+
+| [`boot_time`](_autosummary/xa.recovery.html.md#xa.recovery.boot_time)(\*[, run])                               | Unix time the machine last booted, or `None` when it cannot be read.        |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| [`last_shutdown_time`](_autosummary/xa.recovery.html.md#xa.recovery.last_shutdown_time)(\*[, before, run])              | Unix time of the shutdown that preceded the current boot, or `None`.        |
+| [`live_session_ids`](_autosummary/xa.recovery.html.md#xa.recovery.live_session_ids)(\*, claude_home[, tmux_bin])      | Session ids running right now: a live claude, or a tmux pane resuming them. |
+| [`parse_last_stamp`](_autosummary/xa.recovery.html.md#xa.recovery.parse_last_stamp)(text, \*, before)                 | The first `Tue Nov 10 09:50`-style stamp in `text`, as unix time.           |
+| [`resume_all`](_autosummary/xa.recovery.html.md#xa.recovery.resume_all)(candidates, \*[, claude_home, ...])     | Resume every candidate in its own tmux session, each as it was launched.    |
+| [`sessions_alive_at_shutdown`](_autosummary/xa.recovery.html.md#xa.recovery.sessions_alive_at_shutdown)(\*[, claude_home, ...]) | The sessions of `claude_home` whose last write fell at the last shutdown.   |
+| [`tmux_name_for`](_autosummary/xa.recovery.html.md#xa.recovery.tmux_name_for)(facts, \*[, taken])                  | A tmux session name for `facts`: its own name, sanitised, made unique.      |
+
+### Classes
+
+| [`Resumed`](_autosummary/xa.recovery.html.md#xa.recovery.Resumed)(facts, result[, skipped, warning])    | One candidate's outcome: a [`SpawnResult`](_autosummary/xa.claude_cli.html.md#xa.claude_cli.SpawnResult), or why not.   |
+|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| [`ShutdownScan`](_autosummary/xa.recovery.html.md#xa.recovery.ShutdownScan)(candidates, shutdown, boot, ...) | The candidates, and the times they were picked by (for the dry run).                                                             |
+
+### xa.recovery.DFLT_WINDOW_SEC *= 120.0*
+
+How long before the shutdown record a session’s last write may land and
+still count as “alive at shutdown”. `last` has minute resolution, so this
+has to cover at least the minute it rounds down.
+
+### *class* xa.recovery.Resumed(facts, result, skipped=None, warning=None)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+One candidate’s outcome: a [`SpawnResult`](_autosummary/xa.claude_cli.html.md#xa.claude_cli.SpawnResult), or why not.
+
+### *class* xa.recovery.ShutdownScan(candidates, shutdown, boot, anchor_source, lo, hi)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+The candidates, and the times they were picked by (for the dry run).
+
+### xa.recovery.boot_time(\*, run=<function \_run>)
+
+Unix time the machine last booted, or `None` when it cannot be read.
+
+`/proc/stat`’s `btime` on Linux, `sysctl kern.boottime` elsewhere.
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+### xa.recovery.last_shutdown_time(\*, before=None, run=<function \_run>)
+
+Unix time of the shutdown that preceded the current boot, or `None`.
+
+Read from `last` (minute resolution), newest record first: the current
+boot’s `reboot` line, then its shutdown. A second `reboot` line before
+any shutdown means this boot followed a crash (no clean shutdown), and an
+older record must not stand in for it. `last -x reboot shutdown` on
+Linux; macOS prints both kinds under `last reboot`.
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+### xa.recovery.live_session_ids(, claude_home, tmux_bin=None)
+
+Session ids running right now: a live claude, or a tmux pane resuming them.
+
+The pane scan covers a resume that has not written anything yet (it is
+still at a trust or login prompt), which the session files cannot show.
+
+* **Return type:**
+  [`set`](https://docs.python.org/3/builtins/stdtypes.html#set)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### xa.recovery.parse_last_stamp(text, , before)
+
+The first `Tue Nov 10 09:50`-style stamp in `text`, as unix time.
+
+`last` prints no year, so the year is the latest one that puts the stamp
+at or before `before` (local time).
+
+```pycon
+>>> import time as t
+>>> before = t.mktime((2026, 11, 10, 10, 0, 0, 0, 0, -1))
+>>> ts = parse_last_stamp('shutdown time   Tue Nov 10 09:50', before=before)
+>>> t.localtime(ts)[:5]
+(2026, 11, 10, 9, 50)
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+### xa.recovery.resume_all(candidates, , claude_home=PosixPath('/home/runner/.claude'), claude_bin=None, tmux_bin=None, url_timeout_sec=120.0, auto_remote_control=True, permission_mode=None, euid=None)
+
+Resume every candidate in its own tmux session, each as it was launched.
+
+All panes are launched first and only then waited on, so the whole batch
+takes about one `url_timeout_sec`, not one per session. A pane that comes
+up without a Remote Control URL gets the [`xa.revive`](_autosummary/xa.revive.html.md#module-xa.revive) verdict for what
+it is showing (`needs_trust` for a folder the account has not trusted,
+`needs_login`, …) in `result.attention`, rather than a hang.
+`permission_mode` overrides every candidate’s recorded mode (`''`:
+claude’s default).
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Resumed`](_autosummary/xa.recovery.html.md#xa.recovery.Resumed)]
+
+### xa.recovery.sessions_alive_at_shutdown(, claude_home=PosixPath('/home/runner/.claude'), window_sec=120.0, shutdown=None, boot=None, live_ids=None, tmux_bin=None)
+
+The sessions of `claude_home` whose last write fell at the last shutdown.
+
+The window is `[shutdown - window_sec, boot)`. With no shutdown record
+for this boot (a crash, or `last` unreadable), the anchor is the latest
+transcript write before boot instead, and the window is
+`[anchor - window_sec, anchor]`: the dry run says which was used.
+`shutdown` / `boot` / `live_ids` default to what this machine reports.
+Sessions in `live_ids` (running now) and headless runs are never candidates.
+
+* **Return type:**
+  [`ShutdownScan`](_autosummary/xa.recovery.html.md#xa.recovery.ShutdownScan)
+
+### xa.recovery.tmux_name_for(facts, , taken=())
+
+A tmux session name for `facts`: its own name, sanitised, made unique.
+
+```pycon
+>>> f = LaunchFacts('0123456789', Path('t'), None, '', False, None, None, 'my session', None, 0.0)
+>>> tmux_name_for(f), tmux_name_for(f, taken={'my-session'})
+('my-session', 'my-session-2')
+```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 
 # _autosummary/xa.revive.html.md
@@ -2968,12 +3491,13 @@ composes them into a host-agnostic API.
 
 ### Functions
 
-| [`get_session`](_autosummary/xa.sessions.html.md#xa.sessions.get_session)(session_id, \*[, hosts, claude_home])   | Find one session by full ID or unique prefix.                         |
-|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| [`iter_local_sessions`](_autosummary/xa.sessions.html.md#xa.sessions.iter_local_sessions)(\*[, claude_home, ...])         | Legacy local-only iterator.                                           |
-| [`kill_session`](_autosummary/xa.sessions.html.md#xa.sessions.kill_session)(session, \*[, hosts])                  | Kill a live `Session`, scoped to what actually belongs to it.         |
-| [`list_sessions`](_autosummary/xa.sessions.html.md#xa.sessions.list_sessions)(\*[, hosts, project, ...])            | Return sessions sorted by recency (live first, then newest-modified). |
-| [`resume`](_autosummary/xa.sessions.html.md#xa.sessions.resume)(session, \*[, cwd, name, hosts])             | Resume a transcript / archived session on its originating host.       |
+| [`get_session`](_autosummary/xa.sessions.html.md#xa.sessions.get_session)(session_id, \*[, hosts, claude_home])   | Find one session by full ID or unique prefix.                                       |
+|------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| [`iter_local_sessions`](_autosummary/xa.sessions.html.md#xa.sessions.iter_local_sessions)(\*[, claude_home, ...])         | Legacy local-only iterator.                                                         |
+| [`kill_session`](_autosummary/xa.sessions.html.md#xa.sessions.kill_session)(session, \*[, hosts])                  | Kill a live `Session`, scoped to what actually belongs to it.                       |
+| [`launch_opts`](_autosummary/xa.sessions.html.md#xa.sessions.launch_opts)(facts, \*[, claude_home])               | `(resume kwargs, warning)` that bring `facts` back as it was launched.              |
+| [`list_sessions`](_autosummary/xa.sessions.html.md#xa.sessions.list_sessions)(\*[, hosts, project, ...])            | Return sessions sorted by recency (live first, then newest-modified).               |
+| [`resume`](_autosummary/xa.sessions.html.md#xa.sessions.resume)(session, \*[, cwd, name, hosts])             | Resume a transcript / archived session on its originating host, as it was launched. |
 
 ### Classes
 
@@ -3025,6 +3549,16 @@ killed (e.g. `"tmux:mysess"` / `"pid:1234"`).
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
+### xa.sessions.launch_opts(facts, , claude_home=PosixPath('/home/runner/.claude'))
+
+`(resume kwargs, warning)` that bring `facts` back as it was launched.
+
+Effort is deliberately not restored: the recorded per-turn value can sit
+below the account’s `effortLevel`, and the issue asked for the model.
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]
+
 ### xa.sessions.list_sessions(, hosts=None, project=None, include_forks=True, include_live=True, state=None, limit=None, claude_home=None, tmux_bin=None)
 
 Return sessions sorted by recency (live first, then newest-modified).
@@ -3045,7 +3579,18 @@ Filters:
 
 ### xa.sessions.resume(session, , cwd=None, name=None, hosts=None, \*\*opts)
 
-Resume a transcript / archived session on its originating host.
+Resume a transcript / archived session on its originating host, as it was launched.
+
+Whatever the caller leaves unset comes from the transcript
+([`launch_opts()`](_autosummary/xa.sessions.html.md#xa.sessions.launch_opts)): the cwd it was started in, its model when that differs
+from the account default’s family, and its permission mode, so a session
+started with `--dangerously-skip-permissions` comes back with it.
+`permission_mode=''` asks for claude’s default explicitly. When a launch
+fact had to be dropped (bypass refused to root), the result’s `warning`
+says so.
+
+Only for a local host: a remote one gets exactly what the caller set, and
+its own xa reads its own transcript the same way.
 
 * **Return type:**
   [`SpawnResult`](_autosummary/xa.claude_cli.html.md#xa.claude_cli.SpawnResult)
@@ -3374,7 +3919,7 @@ Return the canonical target string for a session.
 
 # About this build
 
-This documentation was built on **2026-10-30 13:47 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/86ef896a811451459f45bb6cb6e60277f550236c"><code>86ef896</code></a> on branch <code>main</code>, for **xa 0.1.13** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-10 11:21 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39"><code>28be7ce</code></a> on branch <code>main</code>, for **xa 0.1.14** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -3383,9 +3928,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/xa/commit/86ef896a811451459f45bb6cb6e60277f550236c"><code>86ef896a811451459f45bb6cb6e60277f550236c</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39"><code>28be7cee69d916e2cfb3ddc31428e4ac96737a39</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
-| Tags at this commit | <code>0.1.13</code>                                                                                                                                  |
+| Tags at this commit | <code>0.1.14</code>                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                |
 | Remote              | <code>https://github.com/thorwhalen/xa</code>                                                                                                        |
 
@@ -3394,9 +3939,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/xa</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/xa/actions/runs/41065935673">41065935673</a>        |
+| Run          | <a href="https://github.com/thorwhalen/xa/actions/runs/42806495685">42806495685</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>d9de7e9eebc595b47d16b2d348c4bf21afa148d9</code> (in the history of the built commit) |
+| Event commit | <code>55dc1a0ad5d4b25959d3643c3824a435f0680719</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -3405,7 +3950,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 | epythet  | 0.2.22  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
-| Python   | 3.12.15 |
+| Python   | 3.12.16 |
 
 ## Configuration as resolved
 
@@ -3421,13 +3966,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/xa/0.1.13/">0.1.13</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/xa/0.1.14/">0.1.14</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/xa && cd xa
-git checkout 86ef896a811451459f45bb6cb6e60277f550236c
+git checkout 28be7cee69d916e2cfb3ddc31428e4ac96737a39
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

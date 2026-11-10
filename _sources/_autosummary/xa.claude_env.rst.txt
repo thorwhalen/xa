@@ -1,0 +1,30 @@
+xa.claude\_env
+==============
+
+.. automodule:: xa.claude_env
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      HOME_ENV_VAR
+      ACCOUNT_VARS
+      DROPPED_VARS
+      SESSION_VARS
+      SANDBOX_VAR
+      BYPASS_MODE
+      KNOWN_MODES
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      account_env_tokens
+      bypass_refused
+      canonical_permission_mode
+      child_env
+      env_prefix
+      permission_args
+      resume_permission
+   

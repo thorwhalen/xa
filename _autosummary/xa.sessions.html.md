@@ -8,12 +8,13 @@ composes them into a host-agnostic API.
 
 ### Functions
 
-| [`get_session`](#xa.sessions.get_session)(session_id, \*[, hosts, claude_home])   | Find one session by full ID or unique prefix.                         |
-|------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
-| [`iter_local_sessions`](#xa.sessions.iter_local_sessions)(\*[, claude_home, ...])         | Legacy local-only iterator.                                           |
-| [`kill_session`](#xa.sessions.kill_session)(session, \*[, hosts])                  | Kill a live `Session`, scoped to what actually belongs to it.         |
-| [`list_sessions`](#xa.sessions.list_sessions)(\*[, hosts, project, ...])            | Return sessions sorted by recency (live first, then newest-modified). |
-| [`resume`](#xa.sessions.resume)(session, \*[, cwd, name, hosts])             | Resume a transcript / archived session on its originating host.       |
+| [`get_session`](#xa.sessions.get_session)(session_id, \*[, hosts, claude_home])   | Find one session by full ID or unique prefix.                                       |
+|------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| [`iter_local_sessions`](#xa.sessions.iter_local_sessions)(\*[, claude_home, ...])         | Legacy local-only iterator.                                                         |
+| [`kill_session`](#xa.sessions.kill_session)(session, \*[, hosts])                  | Kill a live `Session`, scoped to what actually belongs to it.                       |
+| [`launch_opts`](#xa.sessions.launch_opts)(facts, \*[, claude_home])               | `(resume kwargs, warning)` that bring `facts` back as it was launched.              |
+| [`list_sessions`](#xa.sessions.list_sessions)(\*[, hosts, project, ...])            | Return sessions sorted by recency (live first, then newest-modified).               |
+| [`resume`](#xa.sessions.resume)(session, \*[, cwd, name, hosts])             | Resume a transcript / archived session on its originating host, as it was launched. |
 
 ### Classes
 
@@ -65,6 +66,16 @@ killed (e.g. `"tmux:mysess"` / `"pid:1234"`).
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
+### xa.sessions.launch_opts(facts, , claude_home=PosixPath('/home/runner/.claude'))
+
+`(resume kwargs, warning)` that bring `facts` back as it was launched.
+
+Effort is deliberately not restored: the recorded per-turn value can sit
+below the account’s `effortLevel`, and the issue asked for the model.
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]
+
 ### xa.sessions.list_sessions(, hosts=None, project=None, include_forks=True, include_live=True, state=None, limit=None, claude_home=None, tmux_bin=None)
 
 Return sessions sorted by recency (live first, then newest-modified).
@@ -85,7 +96,18 @@ Filters:
 
 ### xa.sessions.resume(session, , cwd=None, name=None, hosts=None, \*\*opts)
 
-Resume a transcript / archived session on its originating host.
+Resume a transcript / archived session on its originating host, as it was launched.
+
+Whatever the caller leaves unset comes from the transcript
+([`launch_opts()`](#xa.sessions.launch_opts)): the cwd it was started in, its model when that differs
+from the account default’s family, and its permission mode, so a session
+started with `--dangerously-skip-permissions` comes back with it.
+`permission_mode=''` asks for claude’s default explicitly. When a launch
+fact had to be dropped (bypass refused to root), the result’s `warning`
+says so.
+
+Only for a local host: a remote one gets exactly what the caller set, and
+its own xa reads its own transcript the same way.
 
 * **Return type:**
   [`SpawnResult`](xa.claude_cli.html.md#xa.claude_cli.SpawnResult)

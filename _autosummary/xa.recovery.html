@@ -1,0 +1,574 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link rel="alternate" type="text/markdown" href="xa.recovery.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown">
+<link rel="alternate" type="text/markdown" href="xa.recovery.html.md">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.revive" href="xa.revive.html"><link rel="prev" title="xa.hosts.ssh" href="xa.hosts.ssh.html">
+
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
+        <title>xa.recovery - xa</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f0f0f0;
+  --color-code-foreground: black;
+  --color-brand-primary: #93342a;
+  --color-brand-content: #93342a;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #ff9687;
+  --color-brand-content: #ff9687;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">xa</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">xa</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../api.html">API reference</a><input aria-label="Toggle navigation of API reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="xa.html">xa</a><input aria-label="Toggle navigation of xa" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="xa.archive.html">xa.archive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_env.html">xa.claude_env</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_fs.html">xa.claude_fs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.cli.html">xa.cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.config.html">xa.config</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="xa.hosts.html">xa.hosts</a><input aria-label="Toggle navigation of xa.hosts" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.http.html">xa.hosts.http</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.local.html">xa.hosts.local</a></li>
+<li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">xa.recovery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.revive.html">xa.revive</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.sessions.html">xa.sessions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.store.html">xa.store</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.tmux.html">xa.tmux</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/_autosummary/xa.recovery.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-xa.recovery">
+<span id="xa-recovery"></span><h1>xa.recovery<a class="headerlink" href="#module-xa.recovery" title="Link to this heading">¶</a></h1>
+<p>Bring back the sessions a shutdown killed, each as it was launched.</p>
+<p>Two questions, answered from the transcripts alone (the processes are gone):</p>
+<ol class="arabic">
+<li><p><strong>Which sessions were alive at the last shutdown?</strong> When a machine shuts
+down, every running claude writes a final <code class="docutils literal notranslate"><span class="pre">cost-state</span></code> entry on its way
+out, so its transcript’s last write lands within seconds of the shutdown.
+<a class="reference internal" href="#xa.recovery.sessions_alive_at_shutdown" title="xa.recovery.sessions_alive_at_shutdown"><code class="xref py py-func docutils literal notranslate"><span class="pre">sessions_alive_at_shutdown()</span></code></a> returns the transcripts whose last write</p>
+<blockquote>
+<div><p>falls in <code class="docutils literal notranslate"><span class="pre">[shutdown</span> <span class="pre">-</span> <span class="pre">window,</span> <span class="pre">boot)</span></code>. The shutdown time comes from
+<code class="docutils literal notranslate"><span class="pre">last</span></code> (<a class="reference internal" href="#xa.recovery.last_shutdown_time" title="xa.recovery.last_shutdown_time"><code class="xref py py-func docutils literal notranslate"><span class="pre">last_shutdown_time()</span></code></a>), the boot time from the kernel
+(<a class="reference internal" href="#xa.recovery.boot_time" title="xa.recovery.boot_time"><code class="xref py py-func docutils literal notranslate"><span class="pre">boot_time()</span></code></a>), and the record counts only when it belongs to this
+boot. Sessions resumed since then, running now, or already sitting in a tmux
+pane started with <code class="docutils literal notranslate"><span class="pre">--resume</span> <span class="pre">&lt;id&gt;</span></code> are never candidates, so applying twice
+resumes nothing twice. Headless runs (<code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">-p</span></code>, the SDK) are skipped.</p>
+</div></blockquote>
+</li>
+<li><p><strong>How was each one launched?</strong> <a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.launch_facts" title="xa.claude_fs.launch_facts"><code class="xref py py-func docutils literal notranslate"><span class="pre">xa.claude_fs.launch_facts()</span></code></a> reads one transcript
+for what <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code> needs in order to come back the same:</p>
+<ul class="simple">
+<li><p>the <strong>cwd</strong>: the <em>first</em> <code class="docutils literal notranslate"><span class="pre">cwd</span></code> whose slug is the transcript’s project
+folder. A session that <code class="docutils literal notranslate"><span class="pre">cd</span></code>-ed elsewhere records later cwds too, and
+resuming in the last one puts it in the wrong folder (thorwhalen/xa#23);</p></li>
+<li><p>the <strong>permission mode</strong>: the last one recorded, plus whether bypass was
+ever reached (only a session started with the bypass flag can reach it);</p></li>
+<li><p>the <strong>model</strong> of the last assistant turn, pinned only when its family
+differs from the account default’s (<a class="reference internal" href="xa.claude_fs.html#xa.claude_fs.resume_model" title="xa.claude_fs.resume_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">xa.claude_fs.resume_model()</span></code></a>).</p></li>
+</ul>
+</li>
+</ol>
+<p>What a shutdown with no clean exit (a power cut, a kernel panic) leaves is not
+covered: no process wrote anything at the moment it died, so there is nothing
+to time it by.</p>
+<p class="rubric">Module Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.recovery.DFLT_WINDOW_SEC" title="xa.recovery.DFLT_WINDOW_SEC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_WINDOW_SEC</span></code></a></p></td>
+<td><p>How long before the shutdown record a session's last write may land and still count as &quot;alive at shutdown&quot;.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.recovery.boot_time" title="xa.recovery.boot_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">boot_time</span></code></a>(*[, run])</p></td>
+<td><p>Unix time the machine last booted, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when it cannot be read.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.recovery.last_shutdown_time" title="xa.recovery.last_shutdown_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">last_shutdown_time</span></code></a>(*[, before, run])</p></td>
+<td><p>Unix time of the shutdown that preceded the current boot, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.recovery.live_session_ids" title="xa.recovery.live_session_ids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">live_session_ids</span></code></a>(*, claude_home[, tmux_bin])</p></td>
+<td><p>Session ids running right now: a live claude, or a tmux pane resuming them.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.recovery.parse_last_stamp" title="xa.recovery.parse_last_stamp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_last_stamp</span></code></a>(text, *, before)</p></td>
+<td><p>The first <code class="docutils literal notranslate"><span class="pre">Tue</span> <span class="pre">Nov</span> <span class="pre">10</span> <span class="pre">09:50</span></code>-style stamp in <code class="docutils literal notranslate"><span class="pre">text</span></code>, as unix time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.recovery.resume_all" title="xa.recovery.resume_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume_all</span></code></a>(candidates, *[, claude_home, ...])</p></td>
+<td><p>Resume every candidate in its own tmux session, each as it was launched.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.recovery.sessions_alive_at_shutdown" title="xa.recovery.sessions_alive_at_shutdown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sessions_alive_at_shutdown</span></code></a>(*[, claude_home, ...])</p></td>
+<td><p>The sessions of <code class="docutils literal notranslate"><span class="pre">claude_home</span></code> whose last write fell at the last shutdown.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.recovery.tmux_name_for" title="xa.recovery.tmux_name_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmux_name_for</span></code></a>(facts, *[, taken])</p></td>
+<td><p>A tmux session name for <code class="docutils literal notranslate"><span class="pre">facts</span></code>: its own name, sanitised, made unique.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.recovery.Resumed" title="xa.recovery.Resumed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Resumed</span></code></a>(facts, result[, skipped, warning])</p></td>
+<td><p>One candidate's outcome: a <a class="reference internal" href="xa.claude_cli.html#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a>, or why not.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.recovery.ShutdownScan" title="xa.recovery.ShutdownScan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ShutdownScan</span></code></a>(candidates, shutdown, boot, ...)</p></td>
+<td><p>The candidates, and the times they were picked by (for the dry run).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.recovery.DFLT_WINDOW_SEC">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">DFLT_WINDOW_SEC</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">120.0</span></span><a class="headerlink" href="#xa.recovery.DFLT_WINDOW_SEC" title="Link to this definition">¶</a></dt>
+<dd><p>How long before the shutdown record a session’s last write may land and
+still count as “alive at shutdown”. <code class="docutils literal notranslate"><span class="pre">last</span></code> has minute resolution, so this
+has to cover at least the minute it rounds down.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.recovery.Resumed">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">Resumed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipped</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#Resumed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.Resumed" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>One candidate’s outcome: a <a class="reference internal" href="xa.claude_cli.html#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a>, or why not.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.recovery.ShutdownScan">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">ShutdownScan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#ShutdownScan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.ShutdownScan" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The candidates, and the times they were picked by (for the dry run).</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.recovery.boot_time">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">boot_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_run&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#boot_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.boot_time" title="Link to this definition">¶</a></dt>
+<dd><p>Unix time the machine last booted, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when it cannot be read.</p>
+<p><code class="docutils literal notranslate"><span class="pre">/proc/stat</span></code>’s <code class="docutils literal notranslate"><span class="pre">btime</span></code> on Linux, <code class="docutils literal notranslate"><span class="pre">sysctl</span> <span class="pre">kern.boottime</span></code> elsewhere.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.recovery.last_shutdown_time">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">last_shutdown_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_run&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#last_shutdown_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.last_shutdown_time" title="Link to this definition">¶</a></dt>
+<dd><p>Unix time of the shutdown that preceded the current boot, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>Read from <code class="docutils literal notranslate"><span class="pre">last</span></code> (minute resolution), newest record first: the current
+boot’s <code class="docutils literal notranslate"><span class="pre">reboot</span></code> line, then its shutdown. A second <code class="docutils literal notranslate"><span class="pre">reboot</span></code> line before
+any shutdown means this boot followed a crash (no clean shutdown), and an
+older record must not stand in for it. <code class="docutils literal notranslate"><span class="pre">last</span> <span class="pre">-x</span> <span class="pre">reboot</span> <span class="pre">shutdown</span></code> on
+Linux; macOS prints both kinds under <code class="docutils literal notranslate"><span class="pre">last</span> <span class="pre">reboot</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.recovery.live_session_ids">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">live_session_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#live_session_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.live_session_ids" title="Link to this definition">¶</a></dt>
+<dd><p>Session ids running right now: a live claude, or a tmux pane resuming them.</p>
+<p>The pane scan covers a resume that has not written anything yet (it is
+still at a trust or login prompt), which the session files cannot show.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#set" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">set</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.recovery.parse_last_stamp">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">parse_last_stamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">before</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#parse_last_stamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.parse_last_stamp" title="Link to this definition">¶</a></dt>
+<dd><p>The first <code class="docutils literal notranslate"><span class="pre">Tue</span> <span class="pre">Nov</span> <span class="pre">10</span> <span class="pre">09:50</span></code>-style stamp in <code class="docutils literal notranslate"><span class="pre">text</span></code>, as unix time.</p>
+<p><code class="docutils literal notranslate"><span class="pre">last</span></code> prints no year, so the year is the latest one that puts the stamp
+at or before <code class="docutils literal notranslate"><span class="pre">before</span></code> (local time).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">t</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">before</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">mktime</span><span class="p">((</span><span class="mi">2026</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ts</span> <span class="o">=</span> <span class="n">parse_last_stamp</span><span class="p">(</span><span class="s1">'shutdown time   Tue Nov 10 09:50'</span><span class="p">,</span> <span class="n">before</span><span class="o">=</span><span class="n">before</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">ts</span><span class="p">)[:</span><span class="mi">5</span><span class="p">]</span>
+<span class="go">(2026, 11, 10, 9, 50)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.recovery.resume_all">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">resume_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">candidates</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url_timeout_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_remote_control</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permission_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">euid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#resume_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.resume_all" title="Link to this definition">¶</a></dt>
+<dd><p>Resume every candidate in its own tmux session, each as it was launched.</p>
+<p>All panes are launched first and only then waited on, so the whole batch
+takes about one <code class="docutils literal notranslate"><span class="pre">url_timeout_sec</span></code>, not one per session. A pane that comes
+up without a Remote Control URL gets the <a class="reference internal" href="xa.revive.html#module-xa.revive" title="xa.revive"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xa.revive</span></code></a> verdict for what
+it is showing (<code class="docutils literal notranslate"><span class="pre">needs_trust</span></code> for a folder the account has not trusted,
+<code class="docutils literal notranslate"><span class="pre">needs_login</span></code>, …) in <code class="docutils literal notranslate"><span class="pre">result.attention</span></code>, rather than a hang.
+<code class="docutils literal notranslate"><span class="pre">permission_mode</span></code> overrides every candidate’s recorded mode (<code class="docutils literal notranslate"><span class="pre">''</span></code>:
+claude’s default).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="#xa.recovery.Resumed" title="xa.recovery.Resumed"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resumed</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.recovery.sessions_alive_at_shutdown">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">sessions_alive_at_shutdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_sec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shutdown</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#sessions_alive_at_shutdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.sessions_alive_at_shutdown" title="Link to this definition">¶</a></dt>
+<dd><p>The sessions of <code class="docutils literal notranslate"><span class="pre">claude_home</span></code> whose last write fell at the last shutdown.</p>
+<p>The window is <code class="docutils literal notranslate"><span class="pre">[shutdown</span> <span class="pre">-</span> <span class="pre">window_sec,</span> <span class="pre">boot)</span></code>. With no shutdown record
+for this boot (a crash, or <code class="docutils literal notranslate"><span class="pre">last</span></code> unreadable), the anchor is the latest
+transcript write before boot instead, and the window is
+<code class="docutils literal notranslate"><span class="pre">[anchor</span> <span class="pre">-</span> <span class="pre">window_sec,</span> <span class="pre">anchor]</span></code>: the dry run says which was used.
+<code class="docutils literal notranslate"><span class="pre">shutdown</span></code> / <code class="docutils literal notranslate"><span class="pre">boot</span></code> / <code class="docutils literal notranslate"><span class="pre">live_ids</span></code> default to what this machine reports.
+Sessions in <code class="docutils literal notranslate"><span class="pre">live_ids</span></code> (running now) and headless runs are never candidates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.recovery.ShutdownScan" title="xa.recovery.ShutdownScan"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShutdownScan</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.recovery.tmux_name_for">
+<span class="sig-prename descclassname"><span class="pre">xa.recovery.</span></span><span class="sig-name descname"><span class="pre">tmux_name_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facts</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">taken</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/recovery.html#tmux_name_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.recovery.tmux_name_for" title="Link to this definition">¶</a></dt>
+<dd><p>A tmux session name for <code class="docutils literal notranslate"><span class="pre">facts</span></code>: its own name, sanitised, made unique.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">LaunchFacts</span><span class="p">(</span><span class="s1">'0123456789'</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s1">'t'</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">'my session'</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tmux_name_for</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="n">tmux_name_for</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">taken</span><span class="o">=</span><span class="p">{</span><span class="s1">'my-session'</span><span class="p">})</span>
+<span class="go">('my-session', 'my-session-2')</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="xa.revive.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">xa.revive</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="xa.hosts.ssh.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">xa.hosts.ssh</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">xa.recovery</a><ul>
+<li><a class="reference internal" href="#xa.recovery.DFLT_WINDOW_SEC"><code class="docutils literal notranslate"><span class="pre">DFLT_WINDOW_SEC</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.Resumed"><code class="docutils literal notranslate"><span class="pre">Resumed</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.ShutdownScan"><code class="docutils literal notranslate"><span class="pre">ShutdownScan</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.boot_time"><code class="docutils literal notranslate"><span class="pre">boot_time()</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.last_shutdown_time"><code class="docutils literal notranslate"><span class="pre">last_shutdown_time()</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.live_session_ids"><code class="docutils literal notranslate"><span class="pre">live_session_ids()</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.parse_last_stamp"><code class="docutils literal notranslate"><span class="pre">parse_last_stamp()</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.resume_all"><code class="docutils literal notranslate"><span class="pre">resume_all()</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.sessions_alive_at_shutdown"><code class="docutils literal notranslate"><span class="pre">sessions_alive_at_shutdown()</span></code></a></li>
+<li><a class="reference internal" href="#xa.recovery.tmux_name_for"><code class="docutils literal notranslate"><span class="pre">tmux_name_for()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=f2ffa296"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=fd10adb8"></script>
+    </body>
+</html>

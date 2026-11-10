@@ -207,6 +207,7 @@
 <li class="toctree-l2 current has-children"><a class="reference internal" href="xa.html">xa</a><input aria-label="Toggle navigation of xa" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="xa.archive.html">xa.archive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_env.html">xa.claude_env</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.claude_fs.html">xa.claude_fs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.cli.html">xa.cli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.config.html">xa.config</a></li>
@@ -216,6 +217,7 @@
 <li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">xa.sessions</a></li>
@@ -283,11 +285,14 @@ composes them into a host-agnostic API.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#xa.sessions.kill_session" title="xa.sessions.kill_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kill_session</span></code></a>(session, *[, hosts])</p></td>
 <td><p>Kill a live <code class="docutils literal notranslate"><span class="pre">Session</span></code>, scoped to what actually belongs to it.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#xa.sessions.list_sessions" title="xa.sessions.list_sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_sessions</span></code></a>(*[, hosts, project, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.sessions.launch_opts" title="xa.sessions.launch_opts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">launch_opts</span></code></a>(facts, *[, claude_home])</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(resume</span> <span class="pre">kwargs,</span> <span class="pre">warning)</span></code> that bring <code class="docutils literal notranslate"><span class="pre">facts</span></code> back as it was launched.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.sessions.list_sessions" title="xa.sessions.list_sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_sessions</span></code></a>(*[, hosts, project, ...])</p></td>
 <td><p>Return sessions sorted by recency (live first, then newest-modified).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xa.sessions.resume" title="xa.sessions.resume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume</span></code></a>(session, *[, cwd, name, hosts])</p></td>
-<td><p>Resume a transcript / archived session on its originating host.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.sessions.resume" title="xa.sessions.resume"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume</span></code></a>(session, *[, cwd, name, hosts])</p></td>
+<td><p>Resume a transcript / archived session on its originating host, as it was launched.</p></td>
 </tr>
 </tbody>
 </table>
@@ -359,6 +364,19 @@ killed (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="xa.sessions.launch_opts">
+<span class="sig-prename descclassname"><span class="pre">xa.sessions.</span></span><span class="sig-name descname"><span class="pre">launch_opts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facts</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#launch_opts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.sessions.launch_opts" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">(resume</span> <span class="pre">kwargs,</span> <span class="pre">warning)</span></code> that bring <code class="docutils literal notranslate"><span class="pre">facts</span></code> back as it was launched.</p>
+<p>Effort is deliberately not restored: the recorded per-turn value can sit
+below the account’s <code class="docutils literal notranslate"><span class="pre">effortLevel</span></code>, and the issue asked for the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="xa.sessions.list_sessions">
 <span class="sig-prename descclassname"><span class="pre">xa.sessions.</span></span><span class="sig-name descname"><span class="pre">list_sessions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">hosts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_forks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_live</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmux_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#list_sessions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.sessions.list_sessions" title="Link to this definition">¶</a></dt>
 <dd><p>Return sessions sorted by recency (live first, then newest-modified).</p>
@@ -382,7 +400,16 @@ that default <code class="xref py py-class docutils literal notranslate"><span c
 <dl class="py function">
 <dt class="sig sig-object py" id="xa.sessions.resume">
 <span class="sig-prename descclassname"><span class="pre">xa.sessions.</span></span><span class="sig-name descname"><span class="pre">resume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hosts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">opts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/sessions.html#resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.sessions.resume" title="Link to this definition">¶</a></dt>
-<dd><p>Resume a transcript / archived session on its originating host.</p>
+<dd><p>Resume a transcript / archived session on its originating host, as it was launched.</p>
+<p>Whatever the caller leaves unset comes from the transcript
+(<a class="reference internal" href="#xa.sessions.launch_opts" title="xa.sessions.launch_opts"><code class="xref py py-func docutils literal notranslate"><span class="pre">launch_opts()</span></code></a>): the cwd it was started in, its model when that differs
+from the account default’s family, and its permission mode, so a session
+started with <code class="docutils literal notranslate"><span class="pre">--dangerously-skip-permissions</span></code> comes back with it.
+<code class="docutils literal notranslate"><span class="pre">permission_mode=''</span></code> asks for claude’s default explicitly. When a launch
+fact had to be dropped (bypass refused to root), the result’s <code class="docutils literal notranslate"><span class="pre">warning</span></code>
+says so.</p>
+<p>Only for a local host: a remote one gets exactly what the caller set, and
+its own xa reads its own transcript the same way.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="xa.claude_cli.html#xa.claude_cli.SpawnResult" title="xa.claude_cli.SpawnResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpawnResult</span></code></a></span></p>
@@ -448,6 +475,7 @@ that default <code class="xref py py-class docutils literal notranslate"><span c
 <li><a class="reference internal" href="#xa.sessions.get_session"><code class="docutils literal notranslate"><span class="pre">get_session()</span></code></a></li>
 <li><a class="reference internal" href="#xa.sessions.iter_local_sessions"><code class="docutils literal notranslate"><span class="pre">iter_local_sessions()</span></code></a></li>
 <li><a class="reference internal" href="#xa.sessions.kill_session"><code class="docutils literal notranslate"><span class="pre">kill_session()</span></code></a></li>
+<li><a class="reference internal" href="#xa.sessions.launch_opts"><code class="docutils literal notranslate"><span class="pre">launch_opts()</span></code></a></li>
 <li><a class="reference internal" href="#xa.sessions.list_sessions"><code class="docutils literal notranslate"><span class="pre">list_sessions()</span></code></a></li>
 <li><a class="reference internal" href="#xa.sessions.resume"><code class="docutils literal notranslate"><span class="pre">resume()</span></code></a></li>
 </ul>
@@ -461,7 +489,7 @@ that default <code class="xref py py-class docutils literal notranslate"><span c
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=1adce326"></script>
+</div><script src="../_static/documentation_options.js?v=f2ffa296"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

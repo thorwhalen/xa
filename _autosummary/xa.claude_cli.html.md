@@ -104,7 +104,7 @@ unrelated process. Uses `/proc` where available, `ps` otherwise.
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
-### xa.claude_cli.prepare_spawn(name, , cwd, resume_id=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, claude_name=None, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.claude_cli.prepare_spawn(name, , cwd, resume_id=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, claude_name=None, model=None, effort=None, permission_mode=None, allow_bypass=False, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Launch the tmux session and return without waiting for the URL.
 
@@ -118,6 +118,11 @@ asks for Remote Control now — a documented CLI flag, not a keystroke
 sent at a TUI. On a claude too old to advertise it, the host’s
 `remoteControlAtStartup` setting is the remaining path, so the
 warning says so rather than falling back to typing.
+
+`claude_home` is also the session’s *account*: the pane runs claude
+under it (`account_env_tokens()`), whatever the tmux server’s own
+environment says. `permission_mode` / `allow_bypass` are passed to
+`_claude_argv()`.
 
 * **Return type:**
   [`PendingSpawn`](#xa.claude_cli.PendingSpawn)
@@ -133,7 +138,7 @@ Fallback: regex-scrape `capture-pane` output for the full URL.
 * **Return type:**
   [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'session_file'`, `'pane_capture'`]]]
 
-### xa.claude_cli.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.claude_cli.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, allow_bypass=False, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Launch `claude --resume <id>` in a new detached tmux session.
 
@@ -144,7 +149,7 @@ is tmux-only so a resume never clobbers the session’s existing name.
 * **Return type:**
   [`SpawnResult`](#xa.claude_cli.SpawnResult)
 
-### xa.claude_cli.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.claude_cli.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Create a detached tmux session running `claude` in `cwd`.
 

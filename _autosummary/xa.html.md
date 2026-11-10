@@ -4,41 +4,41 @@ xa — tools for managing remote Claude Code sessions.
 
 ### Functions
 
-| [`encode_project_slug`](#xa.encode_project_slug)(cwd)                           | Encode a cwd into the `~/.claude/projects/` slug form.                     |
-|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| [`history_iter`](#xa.history_iter)(\*[, claude_home])                    | Yield entries from `~/.claude/history.jsonl` in file order (oldest first). |
-| [`iter_ephemeral_sessions`](#xa.iter_ephemeral_sessions)(\*[, claude_home])         | Yield all live ephemeral session dicts.                                    |
-| [`iter_project_slugs`](#xa.iter_project_slugs)(\*[, claude_home])              | Yield slugs (directory names) under `~/.claude/projects/`.                 |
-| [`iter_transcript_events`](#xa.iter_transcript_events)(path)                       | Yield every event from a transcript JSONL.                                 |
-| [`iter_transcript_files`](#xa.iter_transcript_files)(\*[, claude_home, ...])      | Yield transcript JSONL paths, optionally restricted to one project.        |
-| [`parse_project_slug`](#xa.parse_project_slug)(slug)                           | Decode a `~/.claude/projects/` slug back to a cwd.                         |
-| [`read_ephemeral_session`](#xa.read_ephemeral_session)(pid, \*[, claude_home])     | Read the per-process session file for `pid` if present.                    |
-| [`transcript_forensics`](#xa.transcript_forensics)(path)                         | Extract postmortem-relevant facts from the tail of a transcript.           |
-| [`transcript_metadata`](#xa.transcript_metadata)(path)                          | Summarise a transcript without holding it all in memory.                   |
-| [`transcript_path`](#xa.transcript_path)(cwd, session_id, \*[, ...])        | Return the transcript path for `(cwd, session_id)` if it exists.           |
-| [`resolve_bridge_url`](#xa.resolve_bridge_url)(session_name, \*[, ...])        | Return `(url, source)` for a live tmux-hosted claude session.              |
-| [`resume_session`](#xa.resume_session)(claude_session_id, \*, cwd[, ...])  | Launch `claude --resume <id>` in a new detached tmux session.              |
-| [`spawn_session`](#xa.spawn_session)(name, \*, cwd[, claude_bin, ...])    | Create a detached tmux session running `claude` in `cwd`.                  |
-| [`get_session`](#xa.get_session)(session_id, \*[, hosts, claude_home])  | Find one session by full ID or unique prefix.                              |
-| [`iter_local_sessions`](#xa.iter_local_sessions)(\*[, claude_home, ...])        | Legacy local-only iterator.                                                |
-| [`kill_session`](#xa.kill_session)(session, \*[, hosts])                 | Kill a live `Session`, scoped to what actually belongs to it.              |
-| [`list_sessions`](#xa.list_sessions)(\*[, hosts, project, ...])           | Return sessions sorted by recency (live first, then newest-modified).      |
-| [`resume`](#xa.resume)(session, \*[, cwd, name, hosts])            | Resume a transcript / archived session on its originating host.            |
-| [`default_events_store`](#xa.default_events_store)([state_dir])                  | The event log at `<state_dir>/events.jsonl`.                               |
-| [`default_pane_store`](#xa.default_pane_store)([state_dir])                    | Per-session pane logs at `<state_dir>/panes/<id>.log`.                     |
-| `append_created`(events, \*, id, name, cwd, ...)                                                    |                                                                            |
-| `append_gone`(events, \*, id, name, reason[, ...])                                                  |                                                                            |
-| [`append_hidden`](#xa.append_hidden)(events, \*, id, hidden)              | Mark an archived session as hidden (or un-hide it).                        |
-| [`append_label`](#xa.append_label)(events, \*, id, label)                | Set or clear a user-supplied display label for a session.                  |
-| `append_url_acquired`(events, \*, id, name[, ...])                                                  |                                                                            |
-| [`classify_death`](#xa.classify_death)(pane_kind, \*[, replaced, ...])     | Pick the most specific death reason from available signals.                |
-| [`overlays`](#xa.overlays)(events)                                   | Fold `labeled` / `hidden` events into `{id: {label, hidden}}`.             |
-| [`reconcile`](#xa.reconcile)(events, panes, live_sessions, \*[, ...]) | Emit `gone` events for archived sessions missing from `live_sessions`.     |
-| [`records`](#xa.records)(events, panes)                             | Return per-session summaries, newest-first (by creation time).             |
-| [`default_hosts`](#xa.default_hosts)()                                    | The out-of-the-box registry: one local host, nothing else.                 |
-| `default_config_path`()                                                                             |                                                                            |
-| [`load`](#xa.load)([path])                                       | Return `(settings, hosts_registry)` from a config file.                    |
-| [`load_hosts`](#xa.load_hosts)([path])                                 | Shortcut: just the host registry.                                          |
+| [`encode_project_slug`](#xa.encode_project_slug)(cwd)                           | Encode a cwd into the `~/.claude/projects/` slug form.                              |
+|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| [`history_iter`](#xa.history_iter)(\*[, claude_home])                    | Yield entries from `~/.claude/history.jsonl` in file order (oldest first).          |
+| [`iter_ephemeral_sessions`](#xa.iter_ephemeral_sessions)(\*[, claude_home])         | Yield all live ephemeral session dicts.                                             |
+| [`iter_project_slugs`](#xa.iter_project_slugs)(\*[, claude_home])              | Yield slugs (directory names) under `~/.claude/projects/`.                          |
+| [`iter_transcript_events`](#xa.iter_transcript_events)(path)                       | Yield every event from a transcript JSONL.                                          |
+| [`iter_transcript_files`](#xa.iter_transcript_files)(\*[, claude_home, ...])      | Yield transcript JSONL paths, optionally restricted to one project.                 |
+| [`parse_project_slug`](#xa.parse_project_slug)(slug)                           | Decode a `~/.claude/projects/` slug back to a cwd.                                  |
+| [`read_ephemeral_session`](#xa.read_ephemeral_session)(pid, \*[, claude_home])     | Read the per-process session file for `pid` if present.                             |
+| [`transcript_forensics`](#xa.transcript_forensics)(path)                         | Extract postmortem-relevant facts from the tail of a transcript.                    |
+| [`transcript_metadata`](#xa.transcript_metadata)(path)                          | Summarise a transcript without holding it all in memory.                            |
+| [`transcript_path`](#xa.transcript_path)(cwd, session_id, \*[, ...])        | Return the transcript path for `(cwd, session_id)` if it exists.                    |
+| [`resolve_bridge_url`](#xa.resolve_bridge_url)(session_name, \*[, ...])        | Return `(url, source)` for a live tmux-hosted claude session.                       |
+| [`resume_session`](#xa.resume_session)(claude_session_id, \*, cwd[, ...])  | Launch `claude --resume <id>` in a new detached tmux session.                       |
+| [`spawn_session`](#xa.spawn_session)(name, \*, cwd[, claude_bin, ...])    | Create a detached tmux session running `claude` in `cwd`.                           |
+| [`get_session`](#xa.get_session)(session_id, \*[, hosts, claude_home])  | Find one session by full ID or unique prefix.                                       |
+| [`iter_local_sessions`](#xa.iter_local_sessions)(\*[, claude_home, ...])        | Legacy local-only iterator.                                                         |
+| [`kill_session`](#xa.kill_session)(session, \*[, hosts])                 | Kill a live `Session`, scoped to what actually belongs to it.                       |
+| [`list_sessions`](#xa.list_sessions)(\*[, hosts, project, ...])           | Return sessions sorted by recency (live first, then newest-modified).               |
+| [`resume`](#xa.resume)(session, \*[, cwd, name, hosts])            | Resume a transcript / archived session on its originating host, as it was launched. |
+| [`default_events_store`](#xa.default_events_store)([state_dir])                  | The event log at `<state_dir>/events.jsonl`.                                        |
+| [`default_pane_store`](#xa.default_pane_store)([state_dir])                    | Per-session pane logs at `<state_dir>/panes/<id>.log`.                              |
+| `append_created`(events, \*, id, name, cwd, ...)                                                    |                                                                                     |
+| `append_gone`(events, \*, id, name, reason[, ...])                                                  |                                                                                     |
+| [`append_hidden`](#xa.append_hidden)(events, \*, id, hidden)              | Mark an archived session as hidden (or un-hide it).                                 |
+| [`append_label`](#xa.append_label)(events, \*, id, label)                | Set or clear a user-supplied display label for a session.                           |
+| `append_url_acquired`(events, \*, id, name[, ...])                                                  |                                                                                     |
+| [`classify_death`](#xa.classify_death)(pane_kind, \*[, replaced, ...])     | Pick the most specific death reason from available signals.                         |
+| [`overlays`](#xa.overlays)(events)                                   | Fold `labeled` / `hidden` events into `{id: {label, hidden}}`.                      |
+| [`reconcile`](#xa.reconcile)(events, panes, live_sessions, \*[, ...]) | Emit `gone` events for archived sessions missing from `live_sessions`.              |
+| [`records`](#xa.records)(events, panes)                             | Return per-session summaries, newest-first (by creation time).                      |
+| [`default_hosts`](#xa.default_hosts)()                                    | The out-of-the-box registry: one local host, nothing else.                          |
+| `default_config_path`()                                                                             |                                                                                     |
+| [`load`](#xa.load)([path])                                       | Return `(settings, hosts_registry)` from a config file.                             |
+| [`load_hosts`](#xa.load_hosts)([path])                                 | Shortcut: just the host registry.                                                   |
 
 ### Classes
 
@@ -261,9 +261,14 @@ Per-session pane logs at `<state_dir>/panes/<id>.log`.
 
 Encode a cwd into the `~/.claude/projects/` slug form.
 
+Claude Code turns every character that is not a letter, digit or `-` into
+`-` (`_` and `.` included), not only `/`.
+
 ```pycon
 >>> encode_project_slug('/root/py/proj/tt/glossa')
 '-root-py-proj-tt-glossa'
+>>> encode_project_slug('/p/i/_zodals/tw_platform.v2')
+'-p-i--zodals-tw-platform-v2'
 >>> encode_project_slug('/')
 '-'
 ```
@@ -458,12 +463,23 @@ Fallback: regex-scrape `capture-pane` output for the full URL.
 
 ### xa.resume(session, , cwd=None, name=None, hosts=None, \*\*opts)
 
-Resume a transcript / archived session on its originating host.
+Resume a transcript / archived session on its originating host, as it was launched.
+
+Whatever the caller leaves unset comes from the transcript
+(`launch_opts()`): the cwd it was started in, its model when that differs
+from the account default’s family, and its permission mode, so a session
+started with `--dangerously-skip-permissions` comes back with it.
+`permission_mode=''` asks for claude’s default explicitly. When a launch
+fact had to be dropped (bypass refused to root), the result’s `warning`
+says so.
+
+Only for a local host: a remote one gets exactly what the caller set, and
+its own xa reads its own transcript the same way.
 
 * **Return type:**
   [`SpawnResult`](xa.claude_cli.html.md#xa.claude_cli.SpawnResult)
 
-### xa.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.resume_session(claude_session_id, , cwd, name=None, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, allow_bypass=False, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Launch `claude --resume <id>` in a new detached tmux session.
 
@@ -474,7 +490,7 @@ is tmux-only so a resume never clobbers the session’s existing name.
 * **Return type:**
   [`SpawnResult`](xa.claude_cli.html.md#xa.claude_cli.SpawnResult)
 
-### xa.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
+### xa.spawn_session(name, , cwd, claude_bin='claude', claude_home=PosixPath('/home/runner/.claude'), tmux_bin='tmux', url_timeout_sec=120.0, auto_remote_control=True, model=None, effort=None, permission_mode=None, pane_log_path=None, archive_store=None, pane_store=None, archive_id=None)
 
 Create a detached tmux session running `claude` in `cwd`.
 
@@ -542,15 +558,17 @@ True
 
 ### Modules
 
-| [`archive`](xa.archive.html.md#module-xa.archive)       | Postmortem archive of Claude Code sessions spawned by `xa`.              |
-|----------------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| [`claude_cli`](xa.claude_cli.html.md#module-xa.claude_cli) | Spawn, resume, and URL-resolve Claude Code sessions.                     |
-| [`claude_fs`](xa.claude_fs.html.md#module-xa.claude_fs)   | Pure filesystem view of `~/.claude/`.                                    |
-| [`cli`](xa.cli.html.md#module-xa.cli)               | Command-line interface for `xa`.                                         |
-| [`config`](xa.config.html.md#module-xa.config)         | TOML config loader for `xa`.                                             |
-| [`hosts`](xa.hosts.html.md#module-xa.hosts)           | Host abstraction — local, SSH, HTTP backends.                            |
-| [`revive`](xa.revive.html.md#module-xa.revive)         | Detect — and reconnect — Claude Code panes whose Remote Control dropped. |
-| [`service`](xa.service.html.md#module-xa.service)       | FastAPI service for `xa`.                                                |
-| [`sessions`](xa.sessions.html.md#module-xa.sessions)     | The unified `Session` domain model and multi-host discovery.             |
-| [`store`](xa.store.html.md#module-xa.store)           | Minimal key-value and append-log storage.                                |
-| [`tmux`](xa.tmux.html.md#module-xa.tmux)             | Pure tmux wrappers.                                                      |
+| [`archive`](xa.archive.html.md#module-xa.archive)       | Postmortem archive of Claude Code sessions spawned by `xa`.                              |
+|----------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| [`claude_cli`](xa.claude_cli.html.md#module-xa.claude_cli) | Spawn, resume, and URL-resolve Claude Code sessions.                                     |
+| [`claude_env`](xa.claude_env.html.md#module-xa.claude_env) | The environment and flags a fresh `claude` process starts with: account and permissions. |
+| [`claude_fs`](xa.claude_fs.html.md#module-xa.claude_fs)   | Pure filesystem view of `~/.claude/`.                                                    |
+| [`cli`](xa.cli.html.md#module-xa.cli)               | Command-line interface for `xa`.                                                         |
+| [`config`](xa.config.html.md#module-xa.config)         | TOML config loader for `xa`.                                                             |
+| [`hosts`](xa.hosts.html.md#module-xa.hosts)           | Host abstraction — local, SSH, HTTP backends.                                            |
+| [`recovery`](xa.recovery.html.md#module-xa.recovery)     | Bring back the sessions a shutdown killed, each as it was launched.                      |
+| [`revive`](xa.revive.html.md#module-xa.revive)         | Detect — and reconnect — Claude Code panes whose Remote Control dropped.                 |
+| [`service`](xa.service.html.md#module-xa.service)       | FastAPI service for `xa`.                                                                |
+| [`sessions`](xa.sessions.html.md#module-xa.sessions)     | The unified `Session` domain model and multi-host discovery.                             |
+| [`store`](xa.store.html.md#module-xa.store)           | Minimal key-value and append-log storage.                                                |
+| [`tmux`](xa.tmux.html.md#module-xa.tmux)             | Pure tmux wrappers.                                                                      |

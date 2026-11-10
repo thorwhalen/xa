@@ -204,6 +204,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../_autosummary/xa.html">xa</a><input aria-label="Toggle navigation of xa" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.archive.html">xa.archive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_env.html">xa.claude_env</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_fs.html">xa.claude_fs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.cli.html">xa.cli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.config.html">xa.config</a></li>
@@ -213,6 +214,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.service.html">xa.service</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.sessions.html">xa.sessions</a></li>
@@ -275,9 +277,10 @@
 <span class="sd">  line carries ``sessionId`` + ``cwd``.</span>
 <span class="sd">- ``sessions-index.json`` — summary index (not yet consumed here).</span>
 
-<span class="sd">All functions are read-only. All paths default to ``~/.claude/`` but accept</span>
-<span class="sd">a ``claude_home`` override (set ``XA_CLAUDE_HOME`` in the env to point at a</span>
-<span class="sd">fixture tree during testing).</span>
+<span class="sd">All functions are read-only. All paths default to the account's home</span>
+<span class="sd">(:func:`default_claude_home`: ``$XA_CLAUDE_HOME``, else Claude Code's own</span>
+<span class="sd">``$CLAUDE_CONFIG_DIR``, else ``~/.claude/``) and accept a ``claude_home``</span>
+<span class="sd">override. ``XA_CLAUDE_HOME`` is also how tests point xa at a fixture tree.</span>
 <span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -289,9 +292,36 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">xa.claude_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">HOME_ENV_VAR</span>
 
-<span class="n">DEFAULT_CLAUDE_HOME</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"XA_CLAUDE_HOME"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">".claude"</span><span class="p">)</span>
 
+<span class="c1">#: Claude Code's account variable (:mod:`xa.claude_env` owns it).</span>
+<span class="n">CLAUDE_HOME_ENV_VAR</span> <span class="o">=</span> <span class="n">HOME_ENV_VAR</span>
+
+
+<div class="viewcode-block" id="default_claude_home">
+<a class="viewcode-back" href="../../_autosummary/xa.claude_fs.html#xa.default_claude_home">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">default_claude_home</span><span class="p">(</span><span class="n">environ</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The Claude home xa reads (and launches sessions under) by default.</span>
+
+<span class="sd">    ``$XA_CLAUDE_HOME`` first (xa's own override), then ``$CLAUDE_CONFIG_DIR``</span>
+<span class="sd">    (so an xa run from a second account's shell sees that account), then</span>
+<span class="sd">    ``~/.claude``.</span>
+
+<span class="sd">    &gt;&gt;&gt; str(default_claude_home({'CLAUDE_CONFIG_DIR': '/h/second'}))</span>
+<span class="sd">    '/h/second'</span>
+<span class="sd">    &gt;&gt;&gt; str(default_claude_home({'XA_CLAUDE_HOME': '/x', 'CLAUDE_CONFIG_DIR': '/h/second'}))</span>
+<span class="sd">    '/x'</span>
+<span class="sd">    """</span>
+    <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span> <span class="k">if</span> <span class="n">environ</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">environ</span>
+    <span class="n">chosen</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"XA_CLAUDE_HOME"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">env</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">CLAUDE_HOME_ENV_VAR</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">chosen</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">chosen</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">".claude"</span></div>
+
+
+
+<span class="n">DEFAULT_CLAUDE_HOME</span> <span class="o">=</span> <span class="n">default_claude_home</span><span class="p">()</span>
+
+<span class="n">_SLUG_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[^A-Za-z0-9-]"</span><span class="p">)</span>
 <span class="n">_UUID_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^[0-9a-f]</span><span class="si">{8}</span><span class="s2">-[0-9a-f]</span><span class="si">{4}</span><span class="s2">-[0-9a-f]</span><span class="si">{4}</span><span class="s2">-[0-9a-f]</span><span class="si">{4}</span><span class="s2">-[0-9a-f]</span><span class="si">{12}</span><span class="s2">$"</span><span class="p">)</span>
 <span class="n">_PID_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^\d+$"</span><span class="p">)</span>
 <span class="n">_USER_INTERRUPT_MARKER</span> <span class="o">=</span> <span class="s2">"Request interrupted by user for tool use"</span>
@@ -368,12 +398,17 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">encode_project_slug</span><span class="p">(</span><span class="n">cwd</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Encode a cwd into the ``~/.claude/projects/`` slug form.</span>
 
+<span class="sd">    Claude Code turns every character that is not a letter, digit or ``-`` into</span>
+<span class="sd">    ``-`` (``_`` and ``.`` included), not only ``/``.</span>
+
 <span class="sd">    &gt;&gt;&gt; encode_project_slug('/root/py/proj/tt/glossa')</span>
 <span class="sd">    '-root-py-proj-tt-glossa'</span>
+<span class="sd">    &gt;&gt;&gt; encode_project_slug('/p/i/_zodals/tw_platform.v2')</span>
+<span class="sd">    '-p-i--zodals-tw-platform-v2'</span>
 <span class="sd">    &gt;&gt;&gt; encode_project_slug('/')</span>
 <span class="sd">    '-'</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">cwd</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_SLUG_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="n">cwd</span><span class="p">)</span></div>
 
 
 
@@ -839,6 +874,152 @@
 
 
 <span class="c1"># --------------------------------------------------------------------------- #</span>
+<span class="c1"># what one transcript says about its launch (for resuming it as it was)</span>
+<span class="c1"># --------------------------------------------------------------------------- #</span>
+
+
+<div class="viewcode-block" id="LaunchFacts">
+<a class="viewcode-back" href="../../_autosummary/xa.claude_fs.html#xa.LaunchFacts">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LaunchFacts</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""What ``claude --resume`` needs to bring one session back as it was."""</span>
+
+    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">transcript</span><span class="p">:</span> <span class="n">Path</span>
+    <span class="n">cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">permission_mode</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># last recorded, claude's spelling; '' when none</span>
+    <span class="n">bypass_seen</span><span class="p">:</span> <span class="nb">bool</span>  <span class="c1"># bypass was reached, so the session had the flag</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">effort</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># agent name, else custom title</span>
+    <span class="n">last_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># type of the final entry ('cost-state' on exit)</span>
+    <span class="n">last_write</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># transcript mtime</span>
+    <span class="n">entrypoint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># 'cli' interactive; 'sdk-cli' headless (-p, SDK)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">headless</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""A ``claude -p`` / SDK run: nothing to resume into a pane."""</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">entrypoint</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">entrypoint</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"sdk"</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="launch_facts">
+<a class="viewcode-back" href="../../_autosummary/xa.claude_fs.html#xa.launch_facts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">launch_facts</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LaunchFacts</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Read one transcript for the cwd, mode, model and name it was launched with.</span>
+
+<span class="sd">    One forward pass; malformed lines are skipped like everywhere else in xa.</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">first_cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">home_cwd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">bypass_seen</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">effort</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">session_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">last_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">entrypoint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">iter_transcript_events</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="n">last_type</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">last_type</span>
+        <span class="n">session_id</span> <span class="o">=</span> <span class="n">session_id</span> <span class="ow">or</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sessionId"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">entrypoint</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"entrypoint"</span><span class="p">),</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">entrypoint</span> <span class="o">=</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"entrypoint"</span><span class="p">]</span>
+        <span class="n">cwd</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cwd"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cwd</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">cwd</span><span class="p">:</span>
+            <span class="n">first_cwd</span> <span class="o">=</span> <span class="n">first_cwd</span> <span class="ow">or</span> <span class="n">cwd</span>
+            <span class="k">if</span> <span class="n">home_cwd</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">encode_project_slug</span><span class="p">(</span><span class="n">cwd</span><span class="p">)</span> <span class="o">==</span> <span class="n">slug</span><span class="p">:</span>
+                <span class="n">home_cwd</span> <span class="o">=</span> <span class="n">cwd</span>
+        <span class="n">pm</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"permissionMode"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pm</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">pm</span><span class="p">:</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">pm</span>
+            <span class="n">bypass_seen</span> <span class="o">=</span> <span class="n">bypass_seen</span> <span class="ow">or</span> <span class="n">pm</span> <span class="o">==</span> <span class="s2">"bypassPermissions"</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"effort"</span><span class="p">),</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"effort"</span><span class="p">]:</span>
+            <span class="n">effort</span> <span class="o">=</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"effort"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"agentName"</span><span class="p">),</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"agentName"</span><span class="p">]:</span>
+            <span class="n">agent_name</span> <span class="o">=</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"agentName"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"customTitle"</span><span class="p">),</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"customTitle"</span><span class="p">]:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">ev</span><span class="p">[</span><span class="s2">"customTitle"</span><span class="p">]</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"message"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"assistant"</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"model"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">m</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">m</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">):</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">m</span>  <span class="c1"># '&lt;synthetic&gt;' marks a turn no model produced</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mtime</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mtime</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="n">mtime</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">return</span> <span class="n">LaunchFacts</span><span class="p">(</span>
+        <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">,</span>
+        <span class="n">transcript</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">home_cwd</span> <span class="ow">or</span> <span class="n">first_cwd</span><span class="p">,</span>
+        <span class="n">permission_mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+        <span class="n">bypass_seen</span><span class="o">=</span><span class="n">bypass_seen</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+        <span class="n">effort</span><span class="o">=</span><span class="n">effort</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">agent_name</span> <span class="ow">or</span> <span class="n">title</span><span class="p">,</span>
+        <span class="n">last_type</span><span class="o">=</span><span class="n">last_type</span><span class="p">,</span>
+        <span class="n">last_write</span><span class="o">=</span><span class="n">mtime</span><span class="p">,</span>
+        <span class="n">entrypoint</span><span class="o">=</span><span class="n">entrypoint</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="n">_MODEL_FAMILIES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"opus"</span><span class="p">,</span> <span class="s2">"sonnet"</span><span class="p">,</span> <span class="s2">"haiku"</span><span class="p">,</span> <span class="s2">"fable"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_model_family</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">low</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">next</span><span class="p">((</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">_MODEL_FAMILIES</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">low</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="account_default_model">
+<a class="viewcode-back" href="../../_autosummary/xa.claude_fs.html#xa.account_default_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">account_default_model</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The ``model`` the account's ``settings.json`` sets, or ``None``."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">((</span><span class="n">Path</span><span class="p">(</span><span class="n">claude_home</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"settings.json"</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">"model"</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="resume_model">
+<a class="viewcode-back" href="../../_autosummary/xa.claude_fs.html#xa.resume_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">resume_model</span><span class="p">(</span>
+    <span class="n">facts</span><span class="p">:</span> <span class="s2">"LaunchFacts"</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">DEFAULT_CLAUDE_HOME</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The ``--model`` that brings ``facts`` back on its own model, or ``None`` for none.</span>
+
+<span class="sd">    ``None`` when the transcript's model is in the same family as the account's</span>
+<span class="sd">    default: the default may carry what the transcript does not record (an</span>
+<span class="sd">    ``opus[1m]`` default runs a 1M-token window, its turns record only</span>
+<span class="sd">    ``claude-opus-5-5``), so pinning the bare id would shrink the context of a</span>
+<span class="sd">    session that may already be past 200k. A different family (a sonnet session</span>
+<span class="sd">    on an opus account) is pinned, which is the case the flag exists for.</span>
+
+<span class="sd">    &gt;&gt;&gt; f = LaunchFacts('s', Path('t'), None, '', False, 'claude-sonnet-5-5', None, None, None, 0.0)</span>
+<span class="sd">    &gt;&gt;&gt; resume_model(f, claude_home=Path('/no/such/home'))</span>
+<span class="sd">    'claude-sonnet-5-5'</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">facts</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">default</span> <span class="o">=</span> <span class="n">account_default_model</span><span class="p">(</span><span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">default</span> <span class="ow">and</span> <span class="n">_model_family</span><span class="p">(</span><span class="n">default</span><span class="p">)</span> <span class="o">==</span> <span class="n">_model_family</span><span class="p">(</span><span class="n">facts</span><span class="o">.</span><span class="n">model</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">facts</span><span class="o">.</span><span class="n">model</span></div>
+
+
+
+<span class="c1"># --------------------------------------------------------------------------- #</span>
 <span class="c1"># history.jsonl</span>
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
@@ -922,7 +1103,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1adce326"></script>
+</div><script src="../../_static/documentation_options.js?v=f2ffa296"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

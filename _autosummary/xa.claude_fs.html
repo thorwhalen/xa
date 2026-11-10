@@ -7,7 +7,7 @@
 <link rel="alternate" type="text/markdown" href="xa.claude_fs.html.md">
 <link rel="describedby" href="../llms.txt" type="text/markdown">
 <link rel="alternate" type="text/markdown" href="xa.claude_fs.html.md">
-<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.cli" href="xa.cli.html"><link rel="prev" title="xa.claude_cli" href="xa.claude_cli.html">
+<link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="xa.cli" href="xa.cli.html"><link rel="prev" title="xa.claude_env" href="xa.claude_env.html">
 
     <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>xa.claude_fs - xa</title>
@@ -207,6 +207,7 @@
 <li class="toctree-l2 current has-children"><a class="reference internal" href="xa.html">xa</a><input aria-label="Toggle navigation of xa" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="xa.archive.html">xa.archive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xa.claude_env.html">xa.claude_env</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">xa.claude_fs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.cli.html">xa.cli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.config.html">xa.config</a></li>
@@ -216,6 +217,7 @@
 <li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.sessions.html">xa.sessions</a></li>
@@ -283,13 +285,30 @@ the process exits.</p></li>
 line carries <code class="docutils literal notranslate"><span class="pre">sessionId</span></code> + <code class="docutils literal notranslate"><span class="pre">cwd</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">sessions-index.json</span></code> — summary index (not yet consumed here).</p></li>
 </ul>
-<p>All functions are read-only. All paths default to <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code> but accept
-a <code class="docutils literal notranslate"><span class="pre">claude_home</span></code> override (set <code class="docutils literal notranslate"><span class="pre">XA_CLAUDE_HOME</span></code> in the env to point at a
-fixture tree during testing).</p>
+<p>All functions are read-only. All paths default to the account’s home
+(<a class="reference internal" href="#xa.claude_fs.default_claude_home" title="xa.claude_fs.default_claude_home"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_claude_home()</span></code></a>: <code class="docutils literal notranslate"><span class="pre">$XA_CLAUDE_HOME</span></code>, else Claude Code’s own
+<code class="docutils literal notranslate"><span class="pre">$CLAUDE_CONFIG_DIR</span></code>, else <code class="docutils literal notranslate"><span class="pre">~/.claude/</span></code>) and accept a <code class="docutils literal notranslate"><span class="pre">claude_home</span></code>
+override. <code class="docutils literal notranslate"><span class="pre">XA_CLAUDE_HOME</span></code> is also how tests point xa at a fixture tree.</p>
+<p class="rubric">Module Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.CLAUDE_HOME_ENV_VAR" title="xa.claude_fs.CLAUDE_HOME_ENV_VAR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CLAUDE_HOME_ENV_VAR</span></code></a></p></td>
+<td><p>Claude Code's account variable (<a class="reference internal" href="xa.claude_env.html#module-xa.claude_env" title="xa.claude_env"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xa.claude_env</span></code></a> owns it).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.account_default_model" title="xa.claude_fs.account_default_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">account_default_model</span></code></a>(*[, claude_home])</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">model</span></code> the account's <code class="docutils literal notranslate"><span class="pre">settings.json</span></code> sets, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.default_claude_home" title="xa.claude_fs.default_claude_home"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_claude_home</span></code></a>([environ])</p></td>
+<td><p>The Claude home xa reads (and launches sessions under) by default.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.encode_project_slug" title="xa.claude_fs.encode_project_slug"><code class="xref py py-obj docutils literal notranslate"><span class="pre">encode_project_slug</span></code></a>(cwd)</p></td>
 <td><p>Encode a cwd into the <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug form.</p></td>
 </tr>
@@ -311,14 +330,20 @@ fixture tree during testing).</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.iter_transcript_files" title="xa.claude_fs.iter_transcript_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_transcript_files</span></code></a>(*[, claude_home, ...])</p></td>
 <td><p>Yield transcript JSONL paths, optionally restricted to one project.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.parse_project_slug" title="xa.claude_fs.parse_project_slug"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_project_slug</span></code></a>(slug)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.launch_facts" title="xa.claude_fs.launch_facts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">launch_facts</span></code></a>(path)</p></td>
+<td><p>Read one transcript for the cwd, mode, model and name it was launched with.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.parse_project_slug" title="xa.claude_fs.parse_project_slug"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_project_slug</span></code></a>(slug)</p></td>
 <td><p>Decode a <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug back to a cwd.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.read_ephemeral_session" title="xa.claude_fs.read_ephemeral_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_ephemeral_session</span></code></a>(pid, *[, claude_home])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.read_ephemeral_session" title="xa.claude_fs.read_ephemeral_session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_ephemeral_session</span></code></a>(pid, *[, claude_home])</p></td>
 <td><p>Read the per-process session file for <code class="docutils literal notranslate"><span class="pre">pid</span></code> if present.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.remote_control_at_startup" title="xa.claude_fs.remote_control_at_startup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remote_control_at_startup</span></code></a>(*[, claude_home])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.remote_control_at_startup" title="xa.claude_fs.remote_control_at_startup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remote_control_at_startup</span></code></a>(*[, claude_home])</p></td>
 <td><p>Is this host set to auto-connect Remote Control for every session?</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.resume_model" title="xa.claude_fs.resume_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume_model</span></code></a>(facts, *[, claude_home])</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">--model</span></code> that brings <code class="docutils literal notranslate"><span class="pre">facts</span></code> back on its own model, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for none.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.transcript_forensics" title="xa.claude_fs.transcript_forensics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transcript_forensics</span></code></a>(path)</p></td>
 <td><p>Extract postmortem-relevant facts from the tail of a transcript.</p></td>
@@ -339,15 +364,24 @@ fixture tree during testing).</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.HistoryEntry" title="xa.claude_fs.HistoryEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a>(cwd, project, display, ...)</p></td>
 <td><p>One line from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.TranscriptForensics" title="xa.claude_fs.TranscriptForensics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a>(transcript_path, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.LaunchFacts" title="xa.claude_fs.LaunchFacts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LaunchFacts</span></code></a>(session_id, transcript, cwd, ...)</p></td>
+<td><p>What <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code> needs to bring one session back as it was.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.TranscriptForensics" title="xa.claude_fs.TranscriptForensics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a>(transcript_path, ...)</p></td>
 <td><p>Postmortem facts extracted by walking a transcript from the end.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xa.claude_fs.TranscriptMeta" title="xa.claude_fs.TranscriptMeta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a>(path, session_id, cwd, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.claude_fs.TranscriptMeta" title="xa.claude_fs.TranscriptMeta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a>(path, session_id, cwd, ...)</p></td>
 <td><p>Summary of a transcript JSONL, cheap enough to compute for listings.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<dl class="py data">
+<dt class="sig sig-object py" id="xa.claude_fs.CLAUDE_HOME_ENV_VAR">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">CLAUDE_HOME_ENV_VAR</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CLAUDE_CONFIG_DIR'</span></span><a class="headerlink" href="#xa.claude_fs.CLAUDE_HOME_ENV_VAR" title="Link to this definition">¶</a></dt>
+<dd><p>Claude Code’s account variable (<a class="reference internal" href="xa.claude_env.html#module-xa.claude_env" title="xa.claude_env"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xa.claude_env</span></code></a> owns it).</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="xa.claude_fs.HistoryEntry">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">HistoryEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pasted_contents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#HistoryEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.HistoryEntry" title="Link to this definition">¶</a></dt>
@@ -355,6 +389,26 @@ fixture tree during testing).</p>
 <p>One line from <code class="docutils literal notranslate"><span class="pre">~/.claude/history.jsonl</span></code>.</p>
 <dl class="field-list simple">
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xa.claude_fs.LaunchFacts">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">LaunchFacts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">session_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transcript</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permission_mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bypass_seen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">effort</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">last_write</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entrypoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#LaunchFacts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.LaunchFacts" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>What <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code> needs to bring one session back as it was.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="xa.claude_fs.LaunchFacts.headless">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">headless</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#xa.claude_fs.LaunchFacts.headless" title="Link to this definition">¶</a></dt>
+<dd><p>nothing to resume into a pane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">-p</span></code> / SDK run</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -379,11 +433,46 @@ from it alone. Callers should corroborate against pane-log tails.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.account_default_model">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">account_default_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#account_default_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.account_default_model" title="Link to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">model</span></code> the account’s <code class="docutils literal notranslate"><span class="pre">settings.json</span></code> sets, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.default_claude_home">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">default_claude_home</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">environ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#default_claude_home"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.default_claude_home" title="Link to this definition">¶</a></dt>
+<dd><p>The Claude home xa reads (and launches sessions under) by default.</p>
+<p><code class="docutils literal notranslate"><span class="pre">$XA_CLAUDE_HOME</span></code> first (xa’s own override), then <code class="docutils literal notranslate"><span class="pre">$CLAUDE_CONFIG_DIR</span></code>
+(so an xa run from a second account’s shell sees that account), then
+<code class="docutils literal notranslate"><span class="pre">~/.claude</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">default_claude_home</span><span class="p">({</span><span class="s1">'CLAUDE_CONFIG_DIR'</span><span class="p">:</span> <span class="s1">'/h/second'</span><span class="p">}))</span>
+<span class="go">'/h/second'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">default_claude_home</span><span class="p">({</span><span class="s1">'XA_CLAUDE_HOME'</span><span class="p">:</span> <span class="s1">'/x'</span><span class="p">,</span> <span class="s1">'CLAUDE_CONFIG_DIR'</span><span class="p">:</span> <span class="s1">'/h/second'</span><span class="p">}))</span>
+<span class="go">'/x'</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="xa.claude_fs.encode_project_slug">
 <span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">encode_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cwd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#encode_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.encode_project_slug" title="Link to this definition">¶</a></dt>
 <dd><p>Encode a cwd into the <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug form.</p>
+<p>Claude Code turns every character that is not a letter, digit or <code class="docutils literal notranslate"><span class="pre">-</span></code> into
+<code class="docutils literal notranslate"><span class="pre">-</span></code> (<code class="docutils literal notranslate"><span class="pre">_</span></code> and <code class="docutils literal notranslate"><span class="pre">.</span></code> included), not only <code class="docutils literal notranslate"><span class="pre">/</span></code>.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/root/py/proj/tt/glossa'</span><span class="p">)</span>
 <span class="go">'-root-py-proj-tt-glossa'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/p/i/_zodals/tw_platform.v2'</span><span class="p">)</span>
+<span class="go">'-p-i--zodals-tw-platform-v2'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">encode_project_slug</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
 <span class="go">'-'</span>
 </pre></div>
@@ -490,6 +579,18 @@ stores alongside transcripts.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.launch_facts">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">launch_facts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#launch_facts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.launch_facts" title="Link to this definition">¶</a></dt>
+<dd><p>Read one transcript for the cwd, mode, model and name it was launched with.</p>
+<p>One forward pass; malformed lines are skipped like everywhere else in xa.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#xa.claude_fs.LaunchFacts" title="xa.claude_fs.LaunchFacts"><code class="xref py py-class docutils literal notranslate"><span class="pre">LaunchFacts</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="xa.claude_fs.parse_project_slug">
 <span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">parse_project_slug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slug</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#parse_project_slug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.parse_project_slug" title="Link to this definition">¶</a></dt>
 <dd><p>Decode a <code class="docutils literal notranslate"><span class="pre">~/.claude/projects/</span></code> slug back to a cwd.</p>
@@ -536,6 +637,28 @@ xa uses it to explain a missing URL, never to decide behavior.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.claude_fs.resume_model">
+<span class="sig-prename descclassname"><span class="pre">xa.claude_fs.</span></span><span class="sig-name descname"><span class="pre">resume_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">facts</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">claude_home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">PosixPath('/home/runner/.claude')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/claude_fs.html#resume_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.claude_fs.resume_model" title="Link to this definition">¶</a></dt>
+<dd><p>The <code class="docutils literal notranslate"><span class="pre">--model</span></code> that brings <code class="docutils literal notranslate"><span class="pre">facts</span></code> back on its own model, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for none.</p>
+<p><code class="docutils literal notranslate"><span class="pre">None</span></code> when the transcript’s model is in the same family as the account’s
+default: the default may carry what the transcript does not record (an
+<code class="docutils literal notranslate"><span class="pre">opus[1m]</span></code> default runs a 1M-token window, its turns record only
+<code class="docutils literal notranslate"><span class="pre">claude-opus-5-5</span></code>), so pinning the bare id would shrink the context of a
+session that may already be past 200k. A different family (a sonnet session
+on an opus account) is pinned, which is the case the flag exists for.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">LaunchFacts</span><span class="p">(</span><span class="s1">'s'</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s1">'t'</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'claude-sonnet-5-5'</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">resume_model</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s1">'/no/such/home'</span><span class="p">))</span>
+<span class="go">'claude-sonnet-5-5'</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -609,14 +732,14 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="xa.claude_cli.html">
+          <a class="prev-page" href="xa.claude_env.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">xa.claude_cli</div>
+                <div class="title">xa.claude_env</div>
                 
               </div>
             </a>
@@ -647,9 +770,16 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">xa.claude_fs</a><ul>
+<li><a class="reference internal" href="#xa.claude_fs.CLAUDE_HOME_ENV_VAR"><code class="docutils literal notranslate"><span class="pre">CLAUDE_HOME_ENV_VAR</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.HistoryEntry"><code class="docutils literal notranslate"><span class="pre">HistoryEntry</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_fs.LaunchFacts"><code class="docutils literal notranslate"><span class="pre">LaunchFacts</span></code></a><ul>
+<li><a class="reference internal" href="#xa.claude_fs.LaunchFacts.headless"><code class="docutils literal notranslate"><span class="pre">LaunchFacts.headless</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#xa.claude_fs.TranscriptForensics"><code class="docutils literal notranslate"><span class="pre">TranscriptForensics</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.TranscriptMeta"><code class="docutils literal notranslate"><span class="pre">TranscriptMeta</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_fs.account_default_model"><code class="docutils literal notranslate"><span class="pre">account_default_model()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_fs.default_claude_home"><code class="docutils literal notranslate"><span class="pre">default_claude_home()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.encode_project_slug"><code class="docutils literal notranslate"><span class="pre">encode_project_slug()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.ephemeral_session_alive"><code class="docutils literal notranslate"><span class="pre">ephemeral_session_alive()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.history_iter"><code class="docutils literal notranslate"><span class="pre">history_iter()</span></code></a></li>
@@ -657,9 +787,11 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
 <li><a class="reference internal" href="#xa.claude_fs.iter_project_slugs"><code class="docutils literal notranslate"><span class="pre">iter_project_slugs()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.iter_transcript_events"><code class="docutils literal notranslate"><span class="pre">iter_transcript_events()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.iter_transcript_files"><code class="docutils literal notranslate"><span class="pre">iter_transcript_files()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_fs.launch_facts"><code class="docutils literal notranslate"><span class="pre">launch_facts()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.parse_project_slug"><code class="docutils literal notranslate"><span class="pre">parse_project_slug()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.read_ephemeral_session"><code class="docutils literal notranslate"><span class="pre">read_ephemeral_session()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.remote_control_at_startup"><code class="docutils literal notranslate"><span class="pre">remote_control_at_startup()</span></code></a></li>
+<li><a class="reference internal" href="#xa.claude_fs.resume_model"><code class="docutils literal notranslate"><span class="pre">resume_model()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.transcript_forensics"><code class="docutils literal notranslate"><span class="pre">transcript_forensics()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.transcript_metadata"><code class="docutils literal notranslate"><span class="pre">transcript_metadata()</span></code></a></li>
 <li><a class="reference internal" href="#xa.claude_fs.transcript_path"><code class="docutils literal notranslate"><span class="pre">transcript_path()</span></code></a></li>
@@ -674,7 +806,7 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=1adce326"></script>
+</div><script src="../_static/documentation_options.js?v=f2ffa296"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -204,6 +204,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../_autosummary/xa.html">xa</a><input aria-label="Toggle navigation of xa" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.archive.html">xa.archive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_cli.html">xa.claude_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_env.html">xa.claude_env</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.claude_fs.html">xa.claude_fs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.cli.html">xa.cli</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.config.html">xa.config</a></li>
@@ -213,6 +214,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.service.html">xa.service</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.sessions.html">xa.sessions</a></li>
@@ -551,6 +553,32 @@
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_home_path</span><span class="p">(</span><span class="n">home</span><span class="p">:</span> <span class="s2">"Optional[str]"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The Claude home a command works on: ``--home``, else xa's default."""</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">home</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span> <span class="k">if</span> <span class="n">home</span> <span class="k">else</span> <span class="n">cfs</span><span class="o">.</span><span class="n">DEFAULT_CLAUDE_HOME</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_explicit_permission_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">:</span> <span class="s2">"Optional[str]"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Optional[str]"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``--permission-mode`` in claude's spelling, refused early where claude would refuse it."""</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_env</span> <span class="k">as</span> <span class="n">cenv</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">picked</span> <span class="o">=</span> <span class="n">cenv</span><span class="o">.</span><span class="n">canonical_permission_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">picked</span> <span class="o">==</span> <span class="n">cenv</span><span class="o">.</span><span class="n">BYPASS_MODE</span> <span class="ow">and</span> <span class="n">cenv</span><span class="o">.</span><span class="n">bypass_refused</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"error: Claude Code refuses </span><span class="si">{</span><span class="n">cenv</span><span class="o">.</span><span class="n">BYPASS_FLAG</span><span class="si">}</span><span class="s2"> to root; set "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cenv</span><span class="o">.</span><span class="n">SANDBOX_VAR</span><span class="si">}</span><span class="s2">=1 where the session starts, or pick another mode."</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">picked</span>
+
+
 <div class="viewcode-block" id="spawn_cmd">
 <a class="viewcode-back" href="../../_autosummary/xa.cli.html#xa.cli.spawn_cmd">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">spawn_cmd</span><span class="p">(</span>
@@ -560,6 +588,8 @@
     <span class="n">no_remote_control</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">model</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">effort</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">home</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">permission_mode</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Spawn a detached claude-in-tmux session and print its remote URL.</span>
 
@@ -569,11 +599,14 @@
 <span class="sd">    :param no_remote_control: Spawn without passing ``--remote-control``.</span>
 <span class="sd">    :param model: Per-session ``claude --model`` (omitted → claude's default).</span>
 <span class="sd">    :param effort: Per-session ``claude --effort`` (omitted → claude's default).</span>
+<span class="sd">    :param home: Claude home (account) to run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).</span>
+<span class="sd">    :param permission_mode: ``claude --permission-mode`` (``bypass`` → ``--dangerously-skip-permissions``).</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">claude_cli</span> <span class="k">as</span> <span class="n">ccli</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmux</span> <span class="k">as</span> <span class="n">tm</span>
 
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">_explicit_permission_mode</span><span class="p">(</span><span class="n">permission_mode</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">tm</span><span class="o">.</span><span class="n">list_sessions</span><span class="p">()}</span>
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
@@ -589,10 +622,12 @@
         <span class="n">result</span> <span class="o">=</span> <span class="n">ccli</span><span class="o">.</span><span class="n">spawn_session</span><span class="p">(</span>
             <span class="n">name</span><span class="p">,</span>
             <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span>
+            <span class="n">claude_home</span><span class="o">=</span><span class="n">_home_path</span><span class="p">(</span><span class="n">home</span><span class="p">),</span>
             <span class="n">url_timeout_sec</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
             <span class="n">auto_remote_control</span><span class="o">=</span><span class="ow">not</span> <span class="n">no_remote_control</span><span class="p">,</span>
             <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
             <span class="n">effort</span><span class="o">=</span><span class="n">effort</span><span class="p">,</span>
+            <span class="n">permission_mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
@@ -615,47 +650,244 @@
 <div class="viewcode-block" id="resume_cmd">
 <a class="viewcode-back" href="../../_autosummary/xa.cli.html#xa.cli.resume_cmd">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resume_cmd</span><span class="p">(</span>
-    <span class="n">session_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">session_ids</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cwd</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">120.0</span><span class="p">,</span>
     <span class="n">model</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">effort</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">home</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">permission_mode</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">since_shutdown</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">apply</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">window</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">120.0</span><span class="p">,</span>
+    <span class="n">json_out</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Resume a past session (``claude --resume``) in a new tmux pane.</span>
+<span class="w">    </span><span class="sd">"""Resume past sessions (``claude --resume``) in new tmux panes, as they were launched.</span>
 
-<span class="sd">    :param session_id: Full UUID or unique prefix.</span>
-<span class="sd">    :param name: Session name — tmux session and claude display name (auto if omitted).</span>
-<span class="sd">    :param cwd: Override cwd (defaults to the original session's cwd).</span>
-<span class="sd">    :param timeout: Seconds to wait for the bridge URL.</span>
-<span class="sd">    :param model: Per-session ``claude --model`` (omitted → claude's default).</span>
-<span class="sd">    :param effort: Per-session ``claude --effort`` (omitted → claude's default).</span>
+<span class="sd">    Each comes back in its original cwd, under its account, with its model</span>
+<span class="sd">    (when its family differs from the account default) and permission mode</span>
+<span class="sd">    (``--dangerously-skip-permissions`` included) read from its transcript;</span>
+<span class="sd">    any of these flags overrides the transcript.</span>
+
+<span class="sd">    ``--since-shutdown`` finds the sessions that were alive at the last</span>
+<span class="sd">    shutdown and lists them (a dry run); add ``--apply`` to resume them all.</span>
+
+<span class="sd">    :param session_ids: Full UUIDs or unique prefixes (omit with --since-shutdown).</span>
+<span class="sd">    :param name: Session name — tmux session and claude display name (one session only).</span>
+<span class="sd">    :param cwd: Override cwd (defaults to the session's original cwd).</span>
+<span class="sd">    :param timeout: Seconds to wait for each bridge URL.</span>
+<span class="sd">    :param model: Per-session ``claude --model`` (omitted → the transcript's model).</span>
+<span class="sd">    :param effort: Per-session ``claude --effort`` (omitted → the account's default).</span>
+<span class="sd">    :param home: Claude home (account) to resume from and run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).</span>
+<span class="sd">    :param permission_mode: Override the transcript's permission mode (``bypass``, ``auto``, ``default``...).</span>
+<span class="sd">    :param since_shutdown: Select the sessions alive at the last shutdown instead of ids.</span>
+<span class="sd">    :param apply: With --since-shutdown, actually resume them (default: list only).</span>
+<span class="sd">    :param window: With --since-shutdown, seconds before the shutdown record a last write may land.</span>
+<span class="sd">    :param json_out: Emit one JSON object per session instead of text.</span>
 <span class="sd">    """</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: no session matching '</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span>
-            <span class="n">s</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">url_timeout_sec</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">effort</span><span class="o">=</span><span class="n">effort</span>
+    <span class="n">claude_home</span> <span class="o">=</span> <span class="n">_home_path</span><span class="p">(</span><span class="n">home</span><span class="p">)</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">_explicit_permission_mode</span><span class="p">(</span><span class="n">permission_mode</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">since_shutdown</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">session_ids</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">"error: give session ids or --since-shutdown, not both"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+            <span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">per_session</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"--name"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">"--cwd"</span><span class="p">:</span> <span class="n">cwd</span><span class="p">,</span>
+            <span class="s2">"--model"</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
+            <span class="s2">"--effort"</span><span class="p">:</span> <span class="n">effort</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">given</span> <span class="o">=</span> <span class="p">[</span><span class="n">flag</span> <span class="k">for</span> <span class="n">flag</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">per_session</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">given</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"error: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">given</span><span class="p">)</span><span class="si">}</span><span class="s2"> name one session; with --since-shutdown "</span>
+                <span class="s2">"each session comes back as its transcript says (only "</span>
+                <span class="s2">"--permission-mode applies to all)"</span><span class="p">,</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">_resume_since_shutdown</span><span class="p">(</span>
+            <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+            <span class="n">apply</span><span class="o">=</span><span class="n">apply</span><span class="p">,</span>
+            <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+            <span class="n">json_out</span><span class="o">=</span><span class="n">json_out</span><span class="p">,</span>
+            <span class="n">permission_mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">session_ids</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"error: give a session id, or --since-shutdown"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">session_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"error: --name applies to one session only"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"name:            </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cwd:             </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">cwd</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"session_id:      </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"url:             </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"warning:         </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+    <span class="n">hosts</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">home</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts</span><span class="w"> </span><span class="kn">import</span> <span class="n">LocalHost</span>
 
+        <span class="n">hosts</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"local"</span><span class="p">:</span> <span class="n">LocalHost</span><span class="p">(</span><span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)}</span>
+    <span class="n">failed</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">session_id</span> <span class="ow">in</span> <span class="n">session_ids</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">get_session</span><span class="p">(</span>
+                <span class="n">session_id</span><span class="p">,</span> <span class="n">hosts</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="n">hosts</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">hosts</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">LookupError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: no session matching '</span><span class="si">{</span><span class="n">session_id</span><span class="si">}</span><span class="s2">'"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">continue</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"model"</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span> <span class="s2">"effort"</span><span class="p">:</span> <span class="n">effort</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">opts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">permission_mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">allow_bypass</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">resume</span><span class="p">(</span>
+                <span class="n">s</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">hosts</span><span class="o">=</span><span class="n">hosts</span><span class="p">,</span> <span class="n">url_timeout_sec</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="o">**</span><span class="n">opts</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">json_out</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"name:            </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cwd:             </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">cwd</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"session_id:      </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">claude_session_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"url:             </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">attention</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"attention:       </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">attention</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"warning:         </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">warning</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">failed</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fmt_clock</span><span class="p">(</span><span class="n">ts</span><span class="p">:</span> <span class="s2">"Optional[float]"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S"</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span> <span class="k">if</span> <span class="n">ts</span> <span class="k">else</span> <span class="s2">"?"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resume_since_shutdown</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">claude_home</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">apply</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">window</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">json_out</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">permission_mode</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The ``--since-shutdown`` half of :func:`resume_cmd`: list, or resume with ``apply``."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa</span><span class="w"> </span><span class="kn">import</span> <span class="n">recovery</span>
+
+    <span class="n">local</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">h</span>
+            <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">_configured_hosts</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="s2">"kind"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"local"</span>
+        <span class="p">),</span>
+        <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">claude_bin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">"claude_bin"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">tmux_bin</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">local</span><span class="p">,</span> <span class="s2">"tmux_bin"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">scan</span> <span class="o">=</span> <span class="n">recovery</span><span class="o">.</span><span class="n">sessions_alive_at_shutdown</span><span class="p">(</span>
+        <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span> <span class="n">window_sec</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">json_out</span><span class="p">:</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"last"</span><span class="p">:</span> <span class="s2">"shutdown record (`last`)"</span><span class="p">,</span>
+            <span class="s2">"latest-write"</span><span class="p">:</span> <span class="s2">"latest transcript write before boot (no shutdown record for this boot: check the list before --apply)"</span><span class="p">,</span>
+            <span class="s2">"none"</span><span class="p">:</span> <span class="s2">"nothing to anchor on"</span><span class="p">,</span>
+        <span class="p">}[</span><span class="n">scan</span><span class="o">.</span><span class="n">anchor_source</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"home:      </span><span class="si">{</span><span class="n">claude_home</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"shutdown:  </span><span class="si">{</span><span class="n">_fmt_clock</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">shutdown</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"boot:      </span><span class="si">{</span><span class="n">_fmt_clock</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">boot</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"anchor:    </span><span class="si">{</span><span class="n">anchor</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"window:    </span><span class="si">{</span><span class="n">_fmt_clock</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">lo</span><span class="p">)</span><span class="si">}</span><span class="s2"> .. </span><span class="si">{</span><span class="n">_fmt_clock</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">hi</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sessions:  </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scan</span><span class="o">.</span><span class="n">candidates</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa.claude_env</span><span class="w"> </span><span class="kn">import</span> <span class="n">resume_permission</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_mode</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">permission_mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">permission_mode</span> <span class="ow">or</span> <span class="s2">"-"</span>
+        <span class="n">mode</span><span class="p">,</span> <span class="n">allow</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">resume_permission</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">permission_mode</span><span class="p">,</span> <span class="n">bypass_seen</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">bypass_seen</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">mode</span> <span class="ow">or</span> <span class="s2">"-"</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="s2">"+allow-bypass"</span> <span class="k">if</span> <span class="n">allow</span> <span class="k">else</span> <span class="s2">""</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_model</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">recovery</span><span class="o">.</span><span class="n">cfs</span><span class="o">.</span><span class="n">resume_model</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"(account default)"</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">apply</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">json_out</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">scan</span><span class="o">.</span><span class="n">candidates</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">asdict</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s2">"resume_mode"</span><span class="p">:</span> <span class="n">_mode</span><span class="p">(</span><span class="n">f</span><span class="p">),</span> <span class="s2">"resume_model"</span><span class="p">:</span> <span class="n">_model</span><span class="p">(</span><span class="n">f</span><span class="p">)}</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
+            <span class="k">return</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span>
+                <span class="n">_short_id</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span>
+                <span class="n">_truncate</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span>
+                <span class="n">_model</span><span class="p">(</span><span class="n">f</span><span class="p">),</span>
+                <span class="n">_mode</span><span class="p">(</span><span class="n">f</span><span class="p">),</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">last_type</span> <span class="ow">or</span> <span class="s2">"?"</span><span class="p">,</span>
+                <span class="n">_truncate</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">cwd</span> <span class="ow">or</span> <span class="s2">"?"</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
+            <span class="p">]</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">scan</span><span class="o">.</span><span class="n">candidates</span>
+        <span class="p">]</span>
+        <span class="n">_render_table</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="p">[</span><span class="s2">"ID"</span><span class="p">,</span> <span class="s2">"NAME"</span><span class="p">,</span> <span class="s2">"MODEL"</span><span class="p">,</span> <span class="s2">"MODE"</span><span class="p">,</span> <span class="s2">"LAST"</span><span class="p">,</span> <span class="s2">"CWD"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">scan</span><span class="o">.</span><span class="n">candidates</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">dry run: nothing was started. Add --apply to resume these."</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">done</span> <span class="o">=</span> <span class="n">recovery</span><span class="o">.</span><span class="n">resume_all</span><span class="p">(</span>
+        <span class="n">scan</span><span class="o">.</span><span class="n">candidates</span><span class="p">,</span>
+        <span class="n">claude_home</span><span class="o">=</span><span class="n">claude_home</span><span class="p">,</span>
+        <span class="n">claude_bin</span><span class="o">=</span><span class="n">claude_bin</span><span class="p">,</span>
+        <span class="n">tmux_bin</span><span class="o">=</span><span class="n">tmux_bin</span><span class="p">,</span>
+        <span class="n">url_timeout_sec</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+        <span class="n">permission_mode</span><span class="o">=</span><span class="n">permission_mode</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">done</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">result</span>
+        <span class="k">if</span> <span class="n">json_out</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">"session_id"</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">facts</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span>
+                        <span class="s2">"skipped"</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">skipped</span><span class="p">,</span>
+                        <span class="s2">"warning"</span><span class="p">:</span> <span class="n">r</span><span class="o">.</span><span class="n">warning</span><span class="p">,</span>
+                        <span class="s2">"result"</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="p">},</span>
+                    <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">verdict</span><span class="p">,</span> <span class="n">detail</span> <span class="o">=</span> <span class="s2">"skipped"</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">skipped</span> <span class="ow">or</span> <span class="s2">""</span>
+        <span class="k">elif</span> <span class="n">res</span><span class="o">.</span><span class="n">url</span><span class="p">:</span>
+            <span class="n">verdict</span><span class="p">,</span> <span class="n">detail</span> <span class="o">=</span> <span class="s2">"connected"</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">url</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">verdict</span><span class="p">,</span> <span class="n">detail</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">attention</span> <span class="ow">or</span> <span class="s2">"no_url"</span><span class="p">,</span> <span class="n">res</span><span class="o">.</span><span class="n">warning</span> <span class="ow">or</span> <span class="s2">""</span>
+        <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">_short_id</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">facts</span><span class="o">.</span><span class="n">session_id</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">),</span> <span class="n">verdict</span><span class="p">,</span> <span class="n">detail</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">json_out</span><span class="p">:</span>
+        <span class="n">_render_table</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="p">[</span><span class="s2">"ID"</span><span class="p">,</span> <span class="s2">"TMUX"</span><span class="p">,</span> <span class="s2">"VERDICT"</span><span class="p">,</span> <span class="s2">"URL / HINT"</span><span class="p">])</span>
+        <span class="n">warned</span> <span class="o">=</span> <span class="p">{</span><span class="n">r</span><span class="o">.</span><span class="n">warning</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">done</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">warning</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">warned</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"warning: </span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="kill_cmd">
@@ -1270,7 +1502,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1adce326"></script>
+</div><script src="../../_static/documentation_options.js?v=f2ffa296"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

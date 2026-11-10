@@ -10,24 +10,24 @@ Entry point: `xa` (see `[project.scripts]` in `pyproject.toml`).
 
 ### Functions
 
-| [`archive_forensics_cmd`](#xa.cli.archive_forensics_cmd)(archive_id)                 | Print rich forensics for an archived session as JSON.                                                                                            |
-|----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`archive_list_cmd`](#xa.cli.archive_list_cmd)([limit, json_out])               | List archived sessions (`created` events, newest first).                                                                                         |
-| [`archive_log_cmd`](#xa.cli.archive_log_cmd)(archive_id[, tail_kb])            | Print the pane log for an archived session.                                                                                                      |
-| [`gen_secret_cmd`](#xa.cli.gen_secret_cmd)([length])                          | Print a cryptographically strong random hex secret.                                                                                              |
-| [`history_cmd`](#xa.cli.history_cmd)([search, limit, json_out])            | Grep over `~/.claude/history.jsonl`.                                                                                                             |
-| [`info_cmd`](#xa.cli.info_cmd)(session_id[, json_out])                  | Show full metadata + forensics for one session.                                                                                                  |
-| [`kill_cmd`](#xa.cli.kill_cmd)(session_id)                              | Kill the tmux session backing a live Claude Code session.                                                                                        |
-| [`list_cmd`](#xa.cli.list_cmd)([project, limit, include_forks, ...])    | List Claude Code sessions across configured hosts, newest first.                                                                                 |
-| [`main`](#xa.cli.main)()                                            | Entry point referenced by `pyproject.toml`'s `[project.scripts]`.                                                                                |
-| [`mk_parser`](#xa.cli.mk_parser)()                                       | The `xa` parser -- a plain [`argparse.ArgumentParser`](https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser), built, not run. |
-| [`pick_cmd`](#xa.cli.pick_cmd)([project, limit, host])                  | Interactive session picker — pick a row by number, then choose an action.                                                                        |
-| [`resume_cmd`](#xa.cli.resume_cmd)(session_id[, name, cwd, timeout, ...]) | Resume a past session (`claude --resume`) in a new tmux pane.                                                                                    |
-| [`revive_check_cmd`](#xa.cli.revive_check_cmd)([ticks, json_out])               | Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.                                                          |
-| [`revive_cmd`](#xa.cli.revive_cmd)([apply, include_held_elsewhere, ...])  | Report — and optionally reconnect — panes whose Remote Control dropped.                                                                          |
-| [`serve_cmd`](#xa.cli.serve_cmd)([host, port, mount, username, ...])     | Run the xa HTTP service (requires the `xa[service]` extra).                                                                                      |
-| [`spawn_cmd`](#xa.cli.spawn_cmd)(cwd[, name, timeout, ...])              | Spawn a detached claude-in-tmux session and print its remote URL.                                                                                |
-| [`sync_cmd`](#xa.cli.sync_cmd)([host, force])                           | Refresh remote-host caches (SSH hosts; HTTP is always fresh).                                                                                    |
+| [`archive_forensics_cmd`](#xa.cli.archive_forensics_cmd)(archive_id)                | Print rich forensics for an archived session as JSON.                                                                                            |
+|---------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`archive_list_cmd`](#xa.cli.archive_list_cmd)([limit, json_out])              | List archived sessions (`created` events, newest first).                                                                                         |
+| [`archive_log_cmd`](#xa.cli.archive_log_cmd)(archive_id[, tail_kb])           | Print the pane log for an archived session.                                                                                                      |
+| [`gen_secret_cmd`](#xa.cli.gen_secret_cmd)([length])                         | Print a cryptographically strong random hex secret.                                                                                              |
+| [`history_cmd`](#xa.cli.history_cmd)([search, limit, json_out])           | Grep over `~/.claude/history.jsonl`.                                                                                                             |
+| [`info_cmd`](#xa.cli.info_cmd)(session_id[, json_out])                 | Show full metadata + forensics for one session.                                                                                                  |
+| [`kill_cmd`](#xa.cli.kill_cmd)(session_id)                             | Kill the tmux session backing a live Claude Code session.                                                                                        |
+| [`list_cmd`](#xa.cli.list_cmd)([project, limit, include_forks, ...])   | List Claude Code sessions across configured hosts, newest first.                                                                                 |
+| [`main`](#xa.cli.main)()                                           | Entry point referenced by `pyproject.toml`'s `[project.scripts]`.                                                                                |
+| [`mk_parser`](#xa.cli.mk_parser)()                                      | The `xa` parser -- a plain [`argparse.ArgumentParser`](https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser), built, not run. |
+| [`pick_cmd`](#xa.cli.pick_cmd)([project, limit, host])                 | Interactive session picker — pick a row by number, then choose an action.                                                                        |
+| [`resume_cmd`](#xa.cli.resume_cmd)(\*session_ids[, name, cwd, ...])      | Resume past sessions (`claude --resume`) in new tmux panes, as they were launched.                                                               |
+| [`revive_check_cmd`](#xa.cli.revive_check_cmd)([ticks, json_out])              | Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.                                                          |
+| [`revive_cmd`](#xa.cli.revive_cmd)([apply, include_held_elsewhere, ...]) | Report — and optionally reconnect — panes whose Remote Control dropped.                                                                          |
+| [`serve_cmd`](#xa.cli.serve_cmd)([host, port, mount, username, ...])    | Run the xa HTTP service (requires the `xa[service]` extra).                                                                                      |
+| [`spawn_cmd`](#xa.cli.spawn_cmd)(cwd[, name, timeout, ...])             | Spawn a detached claude-in-tmux session and print its remote URL.                                                                                |
+| [`sync_cmd`](#xa.cli.sync_cmd)([host, force])                          | Refresh remote-host caches (SSH hosts; HTTP is always fresh).                                                                                    |
 
 ### xa.cli.archive_forensics_cmd(archive_id)
 
@@ -143,17 +143,31 @@ for scripting; use **xa pick** when a human is at the keyboard.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### xa.cli.resume_cmd(session_id, name=None, cwd=None, timeout=120.0, model=None, effort=None)
+### xa.cli.resume_cmd(\*session_ids, name=None, cwd=None, timeout=120.0, model=None, effort=None, home=None, permission_mode=None, since_shutdown=False, apply=False, window=120.0, json_out=False)
 
-Resume a past session (`claude --resume`) in a new tmux pane.
+Resume past sessions (`claude --resume`) in new tmux panes, as they were launched.
+
+Each comes back in its original cwd, under its account, with its model
+(when its family differs from the account default) and permission mode
+(`--dangerously-skip-permissions` included) read from its transcript;
+any of these flags overrides the transcript.
+
+`--since-shutdown` finds the sessions that were alive at the last
+shutdown and lists them (a dry run); add `--apply` to resume them all.
 
 * **Parameters:**
-  * **session_id** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Full UUID or unique prefix.
-  * **name** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Session name — tmux session and claude display name (auto if omitted).
-  * **cwd** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Override cwd (defaults to the original session’s cwd).
-  * **timeout** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – Seconds to wait for the bridge URL.
-  * **model** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --model` (omitted → claude’s default).
-  * **effort** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --effort` (omitted → claude’s default).
+  * **session_ids** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Full UUIDs or unique prefixes (omit with –since-shutdown).
+  * **name** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Session name — tmux session and claude display name (one session only).
+  * **cwd** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Override cwd (defaults to the session’s original cwd).
+  * **timeout** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – Seconds to wait for each bridge URL.
+  * **model** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --model` (omitted → the transcript’s model).
+  * **effort** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --effort` (omitted → the account’s default).
+  * **home** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Claude home (account) to resume from and run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).
+  * **permission_mode** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Override the transcript’s permission mode (`bypass`, `auto`, `default`…).
+  * **since_shutdown** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Select the sessions alive at the last shutdown instead of ids.
+  * **apply** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – With –since-shutdown, actually resume them (default: list only).
+  * **window** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – With –since-shutdown, seconds before the shutdown record a last write may land.
+  * **json_out** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Emit one JSON object per session instead of text.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
@@ -216,7 +230,7 @@ behind an mTLS-terminating proxy).
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### xa.cli.spawn_cmd(cwd, name=None, timeout=120.0, no_remote_control=False, model=None, effort=None)
+### xa.cli.spawn_cmd(cwd, name=None, timeout=120.0, no_remote_control=False, model=None, effort=None, home=None, permission_mode=None)
 
 Spawn a detached claude-in-tmux session and print its remote URL.
 
@@ -227,6 +241,8 @@ Spawn a detached claude-in-tmux session and print its remote URL.
   * **no_remote_control** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Spawn without passing `--remote-control`.
   * **model** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --model` (omitted → claude’s default).
   * **effort** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Per-session `claude --effort` (omitted → claude’s default).
+  * **home** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Claude home (account) to run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).
+  * **permission_mode** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – `claude --permission-mode` (`bypass` → `--dangerously-skip-permissions`).
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 

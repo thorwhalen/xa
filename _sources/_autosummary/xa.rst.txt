@@ -69,10 +69,12 @@
 
    archive
    claude_cli
+   claude_env
    claude_fs
    cli
    config
    hosts
+   recovery
    revive
    service
    sessions

@@ -19,39 +19,67 @@ What lives under `~/.claude/` (as of Claude Code 2.x):
   line carries `sessionId` + `cwd`.
 - `sessions-index.json` — summary index (not yet consumed here).
 
-All functions are read-only. All paths default to `~/.claude/` but accept
-a `claude_home` override (set `XA_CLAUDE_HOME` in the env to point at a
-fixture tree during testing).
+All functions are read-only. All paths default to the account’s home
+([`default_claude_home()`](#xa.claude_fs.default_claude_home): `$XA_CLAUDE_HOME`, else Claude Code’s own
+`$CLAUDE_CONFIG_DIR`, else `~/.claude/`) and accept a `claude_home`
+override. `XA_CLAUDE_HOME` is also how tests point xa at a fixture tree.
+
+### Module Attributes
+
+| [`CLAUDE_HOME_ENV_VAR`](#xa.claude_fs.CLAUDE_HOME_ENV_VAR)   | Claude Code's account variable ([`xa.claude_env`](xa.claude_env.html.md#module-xa.claude_env) owns it).   |
+|------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
 
 ### Functions
 
-| [`encode_project_slug`](#xa.claude_fs.encode_project_slug)(cwd)                       | Encode a cwd into the `~/.claude/projects/` slug form.                     |
-|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|
-| [`ephemeral_session_alive`](#xa.claude_fs.ephemeral_session_alive)(eph, \*[, proc_root])  | Is the process behind an ephemeral session dict actually alive?            |
-| [`history_iter`](#xa.claude_fs.history_iter)(\*[, claude_home])                | Yield entries from `~/.claude/history.jsonl` in file order (oldest first). |
-| [`iter_ephemeral_sessions`](#xa.claude_fs.iter_ephemeral_sessions)(\*[, claude_home])     | Yield all live ephemeral session dicts.                                    |
-| [`iter_project_slugs`](#xa.claude_fs.iter_project_slugs)(\*[, claude_home])          | Yield slugs (directory names) under `~/.claude/projects/`.                 |
-| [`iter_transcript_events`](#xa.claude_fs.iter_transcript_events)(path)                   | Yield every event from a transcript JSONL.                                 |
-| [`iter_transcript_files`](#xa.claude_fs.iter_transcript_files)(\*[, claude_home, ...])  | Yield transcript JSONL paths, optionally restricted to one project.        |
-| [`parse_project_slug`](#xa.claude_fs.parse_project_slug)(slug)                       | Decode a `~/.claude/projects/` slug back to a cwd.                         |
-| [`read_ephemeral_session`](#xa.claude_fs.read_ephemeral_session)(pid, \*[, claude_home]) | Read the per-process session file for `pid` if present.                    |
-| [`remote_control_at_startup`](#xa.claude_fs.remote_control_at_startup)(\*[, claude_home])   | Is this host set to auto-connect Remote Control for every session?         |
-| [`transcript_forensics`](#xa.claude_fs.transcript_forensics)(path)                     | Extract postmortem-relevant facts from the tail of a transcript.           |
-| [`transcript_metadata`](#xa.claude_fs.transcript_metadata)(path)                      | Summarise a transcript without holding it all in memory.                   |
-| [`transcript_path`](#xa.claude_fs.transcript_path)(cwd, session_id, \*[, ...])    | Return the transcript path for `(cwd, session_id)` if it exists.           |
+| [`account_default_model`](#xa.claude_fs.account_default_model)(\*[, claude_home])       | The `model` the account's `settings.json` sets, or `None`.                   |
+|-------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`default_claude_home`](#xa.claude_fs.default_claude_home)([environ])                 | The Claude home xa reads (and launches sessions under) by default.           |
+| [`encode_project_slug`](#xa.claude_fs.encode_project_slug)(cwd)                       | Encode a cwd into the `~/.claude/projects/` slug form.                       |
+| [`ephemeral_session_alive`](#xa.claude_fs.ephemeral_session_alive)(eph, \*[, proc_root])  | Is the process behind an ephemeral session dict actually alive?              |
+| [`history_iter`](#xa.claude_fs.history_iter)(\*[, claude_home])                | Yield entries from `~/.claude/history.jsonl` in file order (oldest first).   |
+| [`iter_ephemeral_sessions`](#xa.claude_fs.iter_ephemeral_sessions)(\*[, claude_home])     | Yield all live ephemeral session dicts.                                      |
+| [`iter_project_slugs`](#xa.claude_fs.iter_project_slugs)(\*[, claude_home])          | Yield slugs (directory names) under `~/.claude/projects/`.                   |
+| [`iter_transcript_events`](#xa.claude_fs.iter_transcript_events)(path)                   | Yield every event from a transcript JSONL.                                   |
+| [`iter_transcript_files`](#xa.claude_fs.iter_transcript_files)(\*[, claude_home, ...])  | Yield transcript JSONL paths, optionally restricted to one project.          |
+| [`launch_facts`](#xa.claude_fs.launch_facts)(path)                             | Read one transcript for the cwd, mode, model and name it was launched with.  |
+| [`parse_project_slug`](#xa.claude_fs.parse_project_slug)(slug)                       | Decode a `~/.claude/projects/` slug back to a cwd.                           |
+| [`read_ephemeral_session`](#xa.claude_fs.read_ephemeral_session)(pid, \*[, claude_home]) | Read the per-process session file for `pid` if present.                      |
+| [`remote_control_at_startup`](#xa.claude_fs.remote_control_at_startup)(\*[, claude_home])   | Is this host set to auto-connect Remote Control for every session?           |
+| [`resume_model`](#xa.claude_fs.resume_model)(facts, \*[, claude_home])         | The `--model` that brings `facts` back on its own model, or `None` for none. |
+| [`transcript_forensics`](#xa.claude_fs.transcript_forensics)(path)                     | Extract postmortem-relevant facts from the tail of a transcript.             |
+| [`transcript_metadata`](#xa.claude_fs.transcript_metadata)(path)                      | Summarise a transcript without holding it all in memory.                     |
+| [`transcript_path`](#xa.claude_fs.transcript_path)(cwd, session_id, \*[, ...])    | Return the transcript path for `(cwd, session_id)` if it exists.             |
 
 ### Classes
 
-| [`HistoryEntry`](#xa.claude_fs.HistoryEntry)(cwd, project, display, ...)   | One line from `~/.claude/history.jsonl`.                             |
-|---------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| [`TranscriptForensics`](#xa.claude_fs.TranscriptForensics)(transcript_path, ...)  | Postmortem facts extracted by walking a transcript from the end.     |
-| [`TranscriptMeta`](#xa.claude_fs.TranscriptMeta)(path, session_id, cwd, ...) | Summary of a transcript JSONL, cheap enough to compute for listings. |
+| [`HistoryEntry`](#xa.claude_fs.HistoryEntry)(cwd, project, display, ...)      | One line from `~/.claude/history.jsonl`.                             |
+|------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| [`LaunchFacts`](#xa.claude_fs.LaunchFacts)(session_id, transcript, cwd, ...) | What `claude --resume` needs to bring one session back as it was.    |
+| [`TranscriptForensics`](#xa.claude_fs.TranscriptForensics)(transcript_path, ...)     | Postmortem facts extracted by walking a transcript from the end.     |
+| [`TranscriptMeta`](#xa.claude_fs.TranscriptMeta)(path, session_id, cwd, ...)    | Summary of a transcript JSONL, cheap enough to compute for listings. |
+
+### xa.claude_fs.CLAUDE_HOME_ENV_VAR *= 'CLAUDE_CONFIG_DIR'*
+
+Claude Code’s account variable ([`xa.claude_env`](xa.claude_env.html.md#module-xa.claude_env) owns it).
 
 ### *class* xa.claude_fs.HistoryEntry(cwd, project, display, pasted_contents)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One line from `~/.claude/history.jsonl`.
+
+### *class* xa.claude_fs.LaunchFacts(session_id, transcript, cwd, permission_mode, bypass_seen, model, effort, name, last_type, last_write, entrypoint=None)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+What `claude --resume` needs to bring one session back as it was.
+
+#### *property* headless *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+nothing to resume into a pane.
+
+* **Type:**
+  A `claude -p` / SDK run
 
 ### *class* xa.claude_fs.TranscriptForensics(transcript_path, line_count, last_tool_name, last_tool_command, last_tool_exit_code, last_tool_result_tail, final_assistant_text, user_interrupted)
 
@@ -69,13 +97,43 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Summary of a transcript JSONL, cheap enough to compute for listings.
 
+### xa.claude_fs.account_default_model(, claude_home=PosixPath('/home/runner/.claude'))
+
+The `model` the account’s `settings.json` sets, or `None`.
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### xa.claude_fs.default_claude_home(environ=None)
+
+The Claude home xa reads (and launches sessions under) by default.
+
+`$XA_CLAUDE_HOME` first (xa’s own override), then `$CLAUDE_CONFIG_DIR`
+(so an xa run from a second account’s shell sees that account), then
+`~/.claude`.
+
+```pycon
+>>> str(default_claude_home({'CLAUDE_CONFIG_DIR': '/h/second'}))
+'/h/second'
+>>> str(default_claude_home({'XA_CLAUDE_HOME': '/x', 'CLAUDE_CONFIG_DIR': '/h/second'}))
+'/x'
+```
+
+* **Return type:**
+  [`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)
+
 ### xa.claude_fs.encode_project_slug(cwd)
 
 Encode a cwd into the `~/.claude/projects/` slug form.
 
+Claude Code turns every character that is not a letter, digit or `-` into
+`-` (`_` and `.` included), not only `/`.
+
 ```pycon
 >>> encode_project_slug('/root/py/proj/tt/glossa')
 '-root-py-proj-tt-glossa'
+>>> encode_project_slug('/p/i/_zodals/tw_platform.v2')
+'-p-i--zodals-tw-platform-v2'
 >>> encode_project_slug('/')
 '-'
 ```
@@ -158,6 +216,15 @@ stores alongside transcripts.
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path)]
 
+### xa.claude_fs.launch_facts(path)
+
+Read one transcript for the cwd, mode, model and name it was launched with.
+
+One forward pass; malformed lines are skipped like everywhere else in xa.
+
+* **Return type:**
+  [`LaunchFacts`](#xa.claude_fs.LaunchFacts)
+
 ### xa.claude_fs.parse_project_slug(slug)
 
 Decode a `~/.claude/projects/` slug back to a cwd.
@@ -200,6 +267,26 @@ xa uses it to explain a missing URL, never to decide behavior.
 
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
+
+### xa.claude_fs.resume_model(facts, , claude_home=PosixPath('/home/runner/.claude'))
+
+The `--model` that brings `facts` back on its own model, or `None` for none.
+
+`None` when the transcript’s model is in the same family as the account’s
+default: the default may carry what the transcript does not record (an
+`opus[1m]` default runs a 1M-token window, its turns record only
+`claude-opus-5-5`), so pinning the bare id would shrink the context of a
+session that may already be past 200k. A different family (a sonnet session
+on an opus account) is pinned, which is the case the flag exists for.
+
+```pycon
+>>> f = LaunchFacts('s', Path('t'), None, '', False, 'claude-sonnet-5-5', None, None, None, 0.0)
+>>> resume_model(f, claude_home=Path('/no/such/home'))
+'claude-sonnet-5-5'
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ### xa.claude_fs.transcript_forensics(path)
 
