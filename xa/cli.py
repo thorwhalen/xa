@@ -284,6 +284,32 @@ def history_cmd(
 # --------------------------------------------------------------------------- #
 
 
+def _home_path(home: "Optional[str]") -> Path:
+    """The Claude home a command works on: ``--home``, else xa's default."""
+    return Path(home).expanduser() if home else cfs.DEFAULT_CLAUDE_HOME
+
+
+def _explicit_permission_mode(mode: "Optional[str]") -> "Optional[str]":
+    """``--permission-mode`` in claude's spelling, refused early where claude would refuse it."""
+    if mode is None:
+        return None
+    from xa import claude_env as cenv
+
+    try:
+        picked = cenv.canonical_permission_mode(mode)
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        sys.exit(2)
+    if picked == cenv.BYPASS_MODE and cenv.bypass_refused():
+        print(
+            f"error: Claude Code refuses {cenv.BYPASS_FLAG} to root; set "
+            f"{cenv.SANDBOX_VAR}=1 where the session starts, or pick another mode.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    return picked
+
+
 def spawn_cmd(
     cwd: str,
     name: "Optional[str]" = None,
@@ -291,6 +317,8 @@ def spawn_cmd(
     no_remote_control: bool = False,
     model: "Optional[str]" = None,
     effort: "Optional[str]" = None,
+    home: "Optional[str]" = None,
+    permission_mode: "Optional[str]" = None,
 ) -> None:
     """Spawn a detached claude-in-tmux session and print its remote URL.
 
@@ -300,11 +328,14 @@ def spawn_cmd(
     :param no_remote_control: Spawn without passing ``--remote-control``.
     :param model: Per-session ``claude --model`` (omitted → claude's default).
     :param effort: Per-session ``claude --effort`` (omitted → claude's default).
+    :param home: Claude home (account) to run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).
+    :param permission_mode: ``claude --permission-mode`` (``bypass`` → ``--dangerously-skip-permissions``).
     """
     import secrets
     from xa import claude_cli as ccli
     from xa import tmux as tm
 
+    mode = _explicit_permission_mode(permission_mode)
     if name is None:
         existing = {s.name for s in tm.list_sessions()}
         for _ in range(50):
@@ -320,10 +351,12 @@ def spawn_cmd(
         result = ccli.spawn_session(
             name,
             cwd=cwd,
+            claude_home=_home_path(home),
             url_timeout_sec=timeout,
             auto_remote_control=not no_remote_control,
             model=model,
             effort=effort,
+            permission_mode=mode,
         )
     except (FileNotFoundError, RuntimeError) as e:
         print(f"error: {e}", file=sys.stderr)
@@ -343,46 +376,228 @@ def spawn_cmd(
 
 
 def resume_cmd(
-    session_id: str,
+    *session_ids: str,
     name: "Optional[str]" = None,
     cwd: "Optional[str]" = None,
     timeout: float = 120.0,
     model: "Optional[str]" = None,
     effort: "Optional[str]" = None,
+    home: "Optional[str]" = None,
+    permission_mode: "Optional[str]" = None,
+    since_shutdown: bool = False,
+    apply: bool = False,
+    window: float = 120.0,
+    json_out: bool = False,
 ) -> None:
-    """Resume a past session (``claude --resume``) in a new tmux pane.
+    """Resume past sessions (``claude --resume``) in new tmux panes, as they were launched.
 
-    :param session_id: Full UUID or unique prefix.
-    :param name: Session name — tmux session and claude display name (auto if omitted).
-    :param cwd: Override cwd (defaults to the original session's cwd).
-    :param timeout: Seconds to wait for the bridge URL.
-    :param model: Per-session ``claude --model`` (omitted → claude's default).
-    :param effort: Per-session ``claude --effort`` (omitted → claude's default).
+    Each comes back in its original cwd, under its account, with its model
+    (when its family differs from the account default) and permission mode
+    (``--dangerously-skip-permissions`` included) read from its transcript;
+    any of these flags overrides the transcript.
+
+    ``--since-shutdown`` finds the sessions that were alive at the last
+    shutdown and lists them (a dry run); add ``--apply`` to resume them all.
+
+    :param session_ids: Full UUIDs or unique prefixes (omit with --since-shutdown).
+    :param name: Session name — tmux session and claude display name (one session only).
+    :param cwd: Override cwd (defaults to the session's original cwd).
+    :param timeout: Seconds to wait for each bridge URL.
+    :param model: Per-session ``claude --model`` (omitted → the transcript's model).
+    :param effort: Per-session ``claude --effort`` (omitted → the account's default).
+    :param home: Claude home (account) to resume from and run under (default: $XA_CLAUDE_HOME, $CLAUDE_CONFIG_DIR, ~/.claude).
+    :param permission_mode: Override the transcript's permission mode (``bypass``, ``auto``, ``default``...).
+    :param since_shutdown: Select the sessions alive at the last shutdown instead of ids.
+    :param apply: With --since-shutdown, actually resume them (default: list only).
+    :param window: With --since-shutdown, seconds before the shutdown record a last write may land.
+    :param json_out: Emit one JSON object per session instead of text.
     """
-    try:
-        s = sess.get_session(session_id)
-    except LookupError as e:
-        print(f"error: {e}", file=sys.stderr)
-        sys.exit(2)
-    if s is None:
-        print(f"error: no session matching '{session_id}'", file=sys.stderr)
-        sys.exit(1)
-    try:
-        result = sess.resume(
-            s, cwd=cwd, name=name, url_timeout_sec=timeout, model=model, effort=effort
+    claude_home = _home_path(home)
+    mode = _explicit_permission_mode(permission_mode)
+    if since_shutdown:
+        if session_ids:
+            print("error: give session ids or --since-shutdown, not both", file=sys.stderr)
+            sys.exit(2)
+        per_session = {"--name": name, "--cwd": cwd, "--model": model, "--effort": effort}
+        given = [flag for flag, v in per_session.items() if v is not None]
+        if given:
+            print(
+                f"error: {', '.join(given)} name one session; with --since-shutdown "
+                "each session comes back as its transcript says (only "
+                "--permission-mode applies to all)",
+                file=sys.stderr,
+            )
+            sys.exit(2)
+        _resume_since_shutdown(
+            claude_home=claude_home,
+            apply=apply,
+            window=window,
+            timeout=timeout,
+            json_out=json_out,
+            permission_mode=mode,
         )
-    except (ValueError, FileNotFoundError, RuntimeError) as e:
-        print(f"error: {e}", file=sys.stderr)
+        return
+    if not session_ids:
+        print("error: give a session id, or --since-shutdown", file=sys.stderr)
+        sys.exit(2)
+    if name is not None and len(session_ids) > 1:
+        print("error: --name applies to one session only", file=sys.stderr)
+        sys.exit(2)
+
+    hosts = None
+    if home:
+        from xa.hosts import LocalHost
+
+        hosts = {"local": LocalHost(claude_home=claude_home)}
+    failed = False
+    for session_id in session_ids:
+        try:
+            s = sess.get_session(session_id, hosts=None if hosts is None else hosts.values())
+        except LookupError as e:
+            print(f"error: {e}", file=sys.stderr)
+            sys.exit(2)
+        if s is None:
+            print(f"error: no session matching '{session_id}'", file=sys.stderr)
+            failed = True
+            continue
+        opts = {"model": model, "effort": effort}
+        if mode is not None:
+            opts.update(permission_mode=mode, allow_bypass=False)
+        try:
+            result = sess.resume(
+                s, cwd=cwd, name=name, hosts=hosts, url_timeout_sec=timeout, **opts
+            )
+        except (ValueError, FileNotFoundError, RuntimeError) as e:
+            print(f"error: {e}", file=sys.stderr)
+            failed = True
+            continue
+        if json_out:
+            print(json.dumps(asdict(result), default=str))
+            continue
+        print(f"name:            {result.name}")
+        print(f"cwd:             {result.cwd}")
+        if result.claude_session_id:
+            print(f"session_id:      {result.claude_session_id}")
+        if result.url:
+            print(f"url:             {result.url}")
+        if result.attention:
+            print(f"attention:       {result.attention}")
+        if result.warning:
+            print(f"warning:         {result.warning}")
+    if failed:
         sys.exit(1)
 
-    print(f"name:            {result.name}")
-    print(f"cwd:             {result.cwd}")
-    if result.claude_session_id:
-        print(f"session_id:      {result.claude_session_id}")
-    if result.url:
-        print(f"url:             {result.url}")
-    if result.warning:
-        print(f"warning:         {result.warning}")
+
+def _fmt_clock(ts: "Optional[float]") -> str:
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts)) if ts else "?"
+
+
+def _resume_since_shutdown(
+    *,
+    claude_home: Path,
+    apply: bool,
+    window: float,
+    timeout: float,
+    json_out: bool,
+    permission_mode: "Optional[str]" = None,
+) -> None:
+    """The ``--since-shutdown`` half of :func:`resume_cmd`: list, or resume with ``apply``."""
+    from xa import recovery
+
+    local = next(
+        (h for h in _configured_hosts().values() if getattr(h, "kind", None) == "local"),
+        None,
+    )
+    claude_bin = getattr(local, "claude_bin", None)
+    tmux_bin = getattr(local, "tmux_bin", None)
+    scan = recovery.sessions_alive_at_shutdown(
+        claude_home=claude_home, window_sec=window, tmux_bin=tmux_bin
+    )
+    if not json_out:
+        anchor = {
+            "last": "shutdown record (`last`)",
+            "latest-write": "latest transcript write before boot (no shutdown record for this boot: check the list before --apply)",
+            "none": "nothing to anchor on",
+        }[scan.anchor_source]
+        print(f"home:      {claude_home}")
+        print(f"shutdown:  {_fmt_clock(scan.shutdown)}")
+        print(f"boot:      {_fmt_clock(scan.boot)}")
+        print(f"anchor:    {anchor}")
+        print(f"window:    {_fmt_clock(scan.lo)} .. {_fmt_clock(scan.hi)}")
+        print(f"sessions:  {len(scan.candidates)}")
+        print()
+
+    from xa.claude_env import resume_permission
+
+    def _mode(f) -> str:
+        if permission_mode is not None:
+            return permission_mode or "-"
+        mode, allow, _ = resume_permission(f.permission_mode, bypass_seen=f.bypass_seen)
+        return (mode or "-") + ("+allow-bypass" if allow else "")
+
+    def _model(f) -> str:
+        return recovery.cfs.resume_model(f, claude_home=claude_home) or "(account default)"
+
+    if not apply:
+        if json_out:
+            for f in scan.candidates:
+                row = {**asdict(f), "resume_mode": _mode(f), "resume_model": _model(f)}
+                print(json.dumps(row, default=str))
+            return
+        rows = [
+            [
+                _short_id(f.session_id),
+                _truncate(f.name or "", 24),
+                _model(f),
+                _mode(f),
+                f.last_type or "?",
+                _truncate(f.cwd or "?", 60),
+            ]
+            for f in scan.candidates
+        ]
+        _render_table(rows, ["ID", "NAME", "MODEL", "MODE", "LAST", "CWD"])
+        if scan.candidates:
+            print("\ndry run: nothing was started. Add --apply to resume these.")
+        return
+
+    done = recovery.resume_all(
+        scan.candidates,
+        claude_home=claude_home,
+        claude_bin=claude_bin,
+        tmux_bin=tmux_bin,
+        url_timeout_sec=timeout,
+        permission_mode=permission_mode,
+    )
+    rows = []
+    for r in done:
+        res = r.result
+        if json_out:
+            print(
+                json.dumps(
+                    {
+                        "session_id": r.facts.session_id,
+                        "skipped": r.skipped,
+                        "warning": r.warning,
+                        "result": asdict(res) if res is not None else None,
+                    },
+                    default=str,
+                )
+            )
+            continue
+        if res is None:
+            verdict, detail = "skipped", r.skipped or ""
+        elif res.url:
+            verdict, detail = "connected", res.url
+        else:
+            verdict, detail = res.attention or "no_url", res.warning or ""
+        rows.append(
+            [_short_id(r.facts.session_id), getattr(res, "name", "-"), verdict, detail]
+        )
+    if not json_out:
+        _render_table(rows, ["ID", "TMUX", "VERDICT", "URL / HINT"])
+        warned = {r.warning for r in done if r.warning}
+        for w in sorted(warned):
+            print(f"warning: {w}")
 
 
 def kill_cmd(session_id: str) -> None:

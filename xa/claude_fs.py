@@ -17,9 +17,10 @@ What lives under ``~/.claude/`` (as of Claude Code 2.x):
   line carries ``sessionId`` + ``cwd``.
 - ``sessions-index.json`` — summary index (not yet consumed here).
 
-All functions are read-only. All paths default to ``~/.claude/`` but accept
-a ``claude_home`` override (set ``XA_CLAUDE_HOME`` in the env to point at a
-fixture tree during testing).
+All functions are read-only. All paths default to the account's home
+(:func:`default_claude_home`: ``$XA_CLAUDE_HOME``, else Claude Code's own
+``$CLAUDE_CONFIG_DIR``, else ``~/.claude/``) and accept a ``claude_home``
+override. ``XA_CLAUDE_HOME`` is also how tests point xa at a fixture tree.
 """
 
 from __future__ import annotations
@@ -31,9 +32,33 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
+from xa.claude_env import HOME_ENV_VAR
 
-DEFAULT_CLAUDE_HOME = Path(os.environ.get("XA_CLAUDE_HOME") or Path.home() / ".claude")
 
+#: Claude Code's account variable (:mod:`xa.claude_env` owns it).
+CLAUDE_HOME_ENV_VAR = HOME_ENV_VAR
+
+
+def default_claude_home(environ: Optional[dict] = None) -> Path:
+    """The Claude home xa reads (and launches sessions under) by default.
+
+    ``$XA_CLAUDE_HOME`` first (xa's own override), then ``$CLAUDE_CONFIG_DIR``
+    (so an xa run from a second account's shell sees that account), then
+    ``~/.claude``.
+
+    >>> str(default_claude_home({'CLAUDE_CONFIG_DIR': '/h/second'}))
+    '/h/second'
+    >>> str(default_claude_home({'XA_CLAUDE_HOME': '/x', 'CLAUDE_CONFIG_DIR': '/h/second'}))
+    '/x'
+    """
+    env = os.environ if environ is None else environ
+    chosen = env.get("XA_CLAUDE_HOME") or env.get(CLAUDE_HOME_ENV_VAR)
+    return Path(chosen).expanduser() if chosen else Path.home() / ".claude"
+
+
+DEFAULT_CLAUDE_HOME = default_claude_home()
+
+_SLUG_RE = re.compile(r"[^A-Za-z0-9-]")
 _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 _PID_RE = re.compile(r"^\d+$")
 _USER_INTERRUPT_MARKER = "Request interrupted by user for tool use"
@@ -99,12 +124,17 @@ class HistoryEntry:
 def encode_project_slug(cwd: str) -> str:
     """Encode a cwd into the ``~/.claude/projects/`` slug form.
 
+    Claude Code turns every character that is not a letter, digit or ``-`` into
+    ``-`` (``_`` and ``.`` included), not only ``/``.
+
     >>> encode_project_slug('/root/py/proj/tt/glossa')
     '-root-py-proj-tt-glossa'
+    >>> encode_project_slug('/p/i/_zodals/tw_platform.v2')
+    '-p-i--zodals-tw-platform-v2'
     >>> encode_project_slug('/')
     '-'
     """
-    return cwd.replace("/", "-")
+    return _SLUG_RE.sub("-", cwd)
 
 
 def parse_project_slug(slug: str) -> str:
@@ -536,6 +566,136 @@ def transcript_forensics(path: Path) -> TranscriptForensics:
         final_assistant_text=last_assistant_text,
         user_interrupted=interrupted,
     )
+
+
+# --------------------------------------------------------------------------- #
+# what one transcript says about its launch (for resuming it as it was)
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class LaunchFacts:
+    """What ``claude --resume`` needs to bring one session back as it was."""
+
+    session_id: str
+    transcript: Path
+    cwd: Optional[str]
+    permission_mode: str  # last recorded, claude's spelling; '' when none
+    bypass_seen: bool  # bypass was reached, so the session had the flag
+    model: Optional[str]
+    effort: Optional[str]
+    name: Optional[str]  # agent name, else custom title
+    last_type: Optional[str]  # type of the final entry ('cost-state' on exit)
+    last_write: float  # transcript mtime
+    entrypoint: Optional[str] = None  # 'cli' interactive; 'sdk-cli' headless (-p, SDK)
+
+    @property
+    def headless(self) -> bool:
+        """A ``claude -p`` / SDK run: nothing to resume into a pane."""
+        return bool(self.entrypoint) and self.entrypoint.startswith("sdk")
+
+
+def launch_facts(path: Path) -> LaunchFacts:
+    """Read one transcript for the cwd, mode, model and name it was launched with.
+
+    One forward pass; malformed lines are skipped like everywhere else in xa.
+    """
+    path = Path(path)
+    slug = path.parent.name
+    first_cwd: Optional[str] = None
+    home_cwd: Optional[str] = None
+    mode = ""
+    bypass_seen = False
+    model: Optional[str] = None
+    effort: Optional[str] = None
+    agent_name: Optional[str] = None
+    title: Optional[str] = None
+    session_id: Optional[str] = None
+    last_type: Optional[str] = None
+    entrypoint: Optional[str] = None
+
+    for ev in iter_transcript_events(path):
+        last_type = ev.get("type") or last_type
+        session_id = session_id or ev.get("sessionId")
+        if entrypoint is None and isinstance(ev.get("entrypoint"), str):
+            entrypoint = ev["entrypoint"]
+        cwd = ev.get("cwd")
+        if isinstance(cwd, str) and cwd:
+            first_cwd = first_cwd or cwd
+            if home_cwd is None and encode_project_slug(cwd) == slug:
+                home_cwd = cwd
+        pm = ev.get("permissionMode")
+        if isinstance(pm, str) and pm:
+            mode = pm
+            bypass_seen = bypass_seen or pm == "bypassPermissions"
+        if isinstance(ev.get("effort"), str) and ev["effort"]:
+            effort = ev["effort"]
+        if isinstance(ev.get("agentName"), str) and ev["agentName"]:
+            agent_name = ev["agentName"]
+        if isinstance(ev.get("customTitle"), str) and ev["customTitle"]:
+            title = ev["customTitle"]
+        msg = ev.get("message")
+        if ev.get("type") == "assistant" and isinstance(msg, dict):
+            m = msg.get("model")
+            if isinstance(m, str) and m and not m.startswith("<"):
+                model = m  # '<synthetic>' marks a turn no model produced
+
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        mtime = 0.0
+    return LaunchFacts(
+        session_id=session_id or path.stem,
+        transcript=path,
+        cwd=home_cwd or first_cwd,
+        permission_mode=mode,
+        bypass_seen=bypass_seen,
+        model=model,
+        effort=effort,
+        name=agent_name or title,
+        last_type=last_type,
+        last_write=mtime,
+        entrypoint=entrypoint,
+    )
+
+
+_MODEL_FAMILIES = ("opus", "sonnet", "haiku", "fable")
+
+
+def _model_family(model: Optional[str]) -> Optional[str]:
+    low = (model or "").lower()
+    return next((f for f in _MODEL_FAMILIES if f in low), None)
+
+
+def account_default_model(*, claude_home: Path = DEFAULT_CLAUDE_HOME) -> Optional[str]:
+    """The ``model`` the account's ``settings.json`` sets, or ``None``."""
+    try:
+        value = json.loads((Path(claude_home) / "settings.json").read_text()).get("model")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return value if isinstance(value, str) and value else None
+
+
+def resume_model(facts: "LaunchFacts", *, claude_home: Path = DEFAULT_CLAUDE_HOME) -> Optional[str]:
+    """The ``--model`` that brings ``facts`` back on its own model, or ``None`` for none.
+
+    ``None`` when the transcript's model is in the same family as the account's
+    default: the default may carry what the transcript does not record (an
+    ``opus[1m]`` default runs a 1M-token window, its turns record only
+    ``claude-opus-5-5``), so pinning the bare id would shrink the context of a
+    session that may already be past 200k. A different family (a sonnet session
+    on an opus account) is pinned, which is the case the flag exists for.
+
+    >>> f = LaunchFacts('s', Path('t'), None, '', False, 'claude-sonnet-5-5', None, None, None, 0.0)
+    >>> resume_model(f, claude_home=Path('/no/such/home'))
+    'claude-sonnet-5-5'
+    """
+    if not facts.model:
+        return None
+    default = account_default_model(claude_home=claude_home)
+    if default and _model_family(default) == _model_family(facts.model):
+        return None
+    return facts.model
 
 
 # --------------------------------------------------------------------------- #

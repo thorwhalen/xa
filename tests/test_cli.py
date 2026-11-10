@@ -39,7 +39,13 @@ _needs_service = pytest.mark.skipif(
 
 
 def _run(args: list[str], *, env_home: Path) -> subprocess.CompletedProcess:
-    env = {**os.environ, "XA_CLAUDE_HOME": str(env_home)}
+    # XA_CONFIG too: without it the run reads this machine's real config,
+    # whose remote hosts (a synced server mirror) leak into the listing.
+    env = {
+        **os.environ,
+        "XA_CLAUDE_HOME": str(env_home),
+        "XA_CONFIG": str(env_home / "_no_config.toml"),
+    }
     return subprocess.run(
         [sys.executable, "-m", "xa", *args],
         env=env,

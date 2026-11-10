@@ -21,8 +21,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, Optional
 
+from xa import claude_env as cenv
 from xa import claude_fs as cfs
 from xa import tmux as tm
+from xa.claude_env import account_env_tokens  # noqa: F401  (re-export)
 
 
 DEFAULT_CLAUDE_BIN = "claude"
@@ -101,6 +103,8 @@ def _claude_argv(
     claude_name: Optional[str] = None,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
+    allow_bypass: bool = False,
     remote_control: bool = False,
 ) -> tuple[list[str], list[str]]:
     """Compose the claude invocation from what the binary supports.
@@ -108,11 +112,28 @@ def _claude_argv(
     Returns ``(argv, skipped)`` where ``skipped`` lists requested flags the
     binary does not advertise. ``--remote-control`` goes last and bare so
     its optional value can never swallow a following argument.
+
+    ``permission_mode`` / ``allow_bypass`` become
+    :func:`xa.claude_env.permission_args` (``'bypassPermissions'`` is
+    ``--dangerously-skip-permissions``; ``None``/``''`` adds nothing).
+
+    >>> _claude_argv('claude', supported=frozenset({'--dangerously-skip-permissions'}),
+    ...              resume_id='abc', permission_mode='bypassPermissions')[0]
+    ['claude', '--resume', 'abc', '--dangerously-skip-permissions']
     """
     argv = [claude_bin]
     skipped: list[str] = []
     if resume_id:
         argv += ["--resume", resume_id]
+    perm = cenv.permission_args(permission_mode, allow_bypass=allow_bypass)
+    for i, tok in enumerate(perm):
+        if not tok.startswith("--"):
+            continue  # the mode value, kept or dropped with its flag
+        takes_value = i + 1 < len(perm) and not perm[i + 1].startswith("--")
+        if tok in supported:
+            argv += perm[i : i + 2] if takes_value else [tok]
+        else:
+            skipped.append(tok)
     for flag, value in (
         ("--name", claude_name),
         ("--model", model),
@@ -328,6 +349,8 @@ def prepare_spawn(
     claude_name: Optional[str] = None,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
+    allow_bypass: bool = False,
     pane_log_path: Optional[Path] = None,
     archive_store=None,
     pane_store=None,
@@ -345,6 +368,11 @@ def prepare_spawn(
     sent at a TUI. On a claude too old to advertise it, the host's
     ``remoteControlAtStartup`` setting is the remaining path, so the
     warning says so rather than falling back to typing.
+
+    ``claude_home`` is also the session's *account*: the pane runs claude
+    under it (:func:`account_env_tokens`), whatever the tmux server's own
+    environment says. ``permission_mode`` / ``allow_bypass`` are passed to
+    :func:`_claude_argv`.
     """
     if not Path(cwd).is_dir():
         raise FileNotFoundError(f"cwd does not exist: {cwd}")
@@ -356,8 +384,11 @@ def prepare_spawn(
         claude_name=claude_name,
         model=model,
         effort=effort,
+        permission_mode=permission_mode,
+        allow_bypass=allow_bypass,
         remote_control=auto_remote_control,
     )
+    argv = cenv.account_env_tokens(Path(claude_home)) + argv
     shell_cmd = f"cd {shlex.quote(cwd)} && exec " + " ".join(
         shlex.quote(a) for a in argv
     )
@@ -374,7 +405,12 @@ def prepare_spawn(
         ctx.emit_created(name=name, cwd=cwd, pane_log=pane_log, tmux_bin=tmux_bin)
 
     warnings = []
-    hard_skips = [f for f in skipped if f in ("--model", "--effort")]
+    hard_skips = [
+        f
+        for f in skipped
+        if f
+        in ("--model", "--effort", cenv.BYPASS_FLAG, cenv.ALLOW_BYPASS_FLAG, cenv.MODE_FLAG)
+    ]
     if hard_skips:
         warnings.append(
             "Installed claude does not support "
@@ -533,6 +569,7 @@ def spawn_session(
     auto_remote_control: bool = True,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
     pane_log_path: Optional[Path] = None,
     archive_store=None,
     pane_store=None,
@@ -566,6 +603,7 @@ def spawn_session(
         claude_name=name,
         model=model,
         effort=effort,
+        permission_mode=permission_mode,
         pane_log_path=pane_log_path,
         archive_store=archive_store,
         pane_store=pane_store,
@@ -586,6 +624,8 @@ def resume_session(
     auto_remote_control: bool = True,
     model: Optional[str] = None,
     effort: Optional[str] = None,
+    permission_mode: Optional[str] = None,
+    allow_bypass: bool = False,
     pane_log_path: Optional[Path] = None,
     archive_store=None,
     pane_store=None,
@@ -619,6 +659,8 @@ def resume_session(
         claude_name=claude_name,
         model=model,
         effort=effort,
+        permission_mode=permission_mode,
+        allow_bypass=allow_bypass,
         pane_log_path=pane_log_path,
         archive_store=archive_store,
         pane_store=pane_store,

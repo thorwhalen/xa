@@ -319,7 +319,8 @@ xa pick
 | `xa history [--search X]` | Grep `~/.claude/history.jsonl` |
 | `xa pick` | Interactive list → number → action |
 | `xa spawn <cwd>` | Start `claude` in tmux, print phone URL |
-| `xa resume <id>` | `claude --resume` in a new tmux pane |
+| `xa resume <id>…` | `claude --resume` in a new tmux pane, in the original cwd, model and permission mode |
+| `xa resume --since-shutdown [--apply]` | List the sessions alive at the last shutdown; `--apply` resumes them all |
 | `xa kill <id>` | End a live session |
 | `xa archive list` | Postmortem of every session `xa` spawned |
 | `xa archive log <id>` | Raw pane log |
@@ -329,6 +330,10 @@ xa pick
 | `xa gen-secret` | Cryptographically strong random hex string |
 
 Every command supports `--help`; every listing supports `--json-out`.
+
+**Accounts.** `spawn` and `resume` take `--home <dir>` for a second Claude Code account (a non-default `CLAUDE_CONFIG_DIR`); without it xa uses `$XA_CLAUDE_HOME`, then `$CLAUDE_CONFIG_DIR`, then `~/.claude`. The pane runs claude under that account whatever the tmux server's own environment holds: the command unsets every inherited session marker and either states `CLAUDE_CONFIG_DIR` or unsets it for the default home.
+
+**After a reboot.** `xa resume --since-shutdown` is a dry run: it lists the transcripts whose last write landed at the last shutdown (from `last`), with the model and permission mode each will come back in. `--apply` starts them, all at once, and reports a verdict per session (`connected`, `needs_trust` for a folder the account has not trusted, `needs_login`, ...). Sessions already running, or resumed since boot, are never listed, so running it twice starts nothing twice.
 
 ## Configuration
 

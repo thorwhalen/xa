@@ -277,14 +277,65 @@ def resume(
     hosts: Optional[Mapping[str, object]] = None,
     **opts,
 ) -> ccli.SpawnResult:
-    """Resume a transcript / archived session on its originating host."""
+    """Resume a transcript / archived session on its originating host, as it was launched.
+
+    Whatever the caller leaves unset comes from the transcript
+    (:func:`launch_opts`): the cwd it was started in, its model when that differs
+    from the account default's family, and its permission mode, so a session
+    started with ``--dangerously-skip-permissions`` comes back with it.
+    ``permission_mode=''`` asks for claude's default explicitly. When a launch
+    fact had to be dropped (bypass refused to root), the result's ``warning``
+    says so.
+
+    Only for a local host: a remote one gets exactly what the caller set, and
+    its own xa reads its own transcript the same way.
+    """
     if not session.claude_session_id:
         raise ValueError("session has no claude_session_id — cannot resume")
-    target_cwd = cwd or session.cwd
+    h = _host_for(session, hosts)
+    facts = None
+    notes: list[str] = []
+    if (
+        getattr(h, "kind", None) == "local"
+        and session.transcript_path is not None
+        and Path(session.transcript_path).is_file()
+    ):
+        facts = cfs.launch_facts(Path(session.transcript_path))
+        derived, note = launch_opts(
+            facts, claude_home=getattr(h, "claude_home", cfs.DEFAULT_CLAUDE_HOME)
+        )
+        given = {k: v for k, v in opts.items() if v is not None}
+        opts = {**derived, **given}
+        if note and "permission_mode" not in given:
+            notes.append(note)
+    target_cwd = cwd or (facts.cwd if facts else None) or session.cwd
     if not target_cwd:
         raise ValueError("cannot infer cwd — pass cwd=...")
-    h = _host_for(session, hosts)
-    return h.resume(session.claude_session_id, cwd=target_cwd, name=name, **opts)
+    result = h.resume(session.claude_session_id, cwd=target_cwd, name=name, **opts)
+    if notes and isinstance(result, ccli.SpawnResult):
+        import dataclasses
+
+        warning = "; ".join([*notes, *([result.warning] if result.warning else [])])
+        result = dataclasses.replace(result, warning=warning)
+    return result
+
+
+def launch_opts(facts, *, claude_home: Path = cfs.DEFAULT_CLAUDE_HOME) -> tuple[dict, Optional[str]]:
+    """``(resume kwargs, warning)`` that bring ``facts`` back as it was launched.
+
+    Effort is deliberately not restored: the recorded per-turn value can sit
+    below the account's ``effortLevel``, and the issue asked for the model.
+    """
+    from xa.claude_env import resume_permission
+
+    mode, allow, warning = resume_permission(
+        facts.permission_mode, bypass_seen=facts.bypass_seen
+    )
+    return {
+        "model": cfs.resume_model(facts, claude_home=claude_home),
+        "permission_mode": mode,
+        "allow_bypass": allow,
+    }, warning
 
 
 def _host_for(session: Session, hosts: Optional[Mapping[str, object]]) -> object:
