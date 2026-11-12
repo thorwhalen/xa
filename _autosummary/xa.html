@@ -217,6 +217,7 @@
 <li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="xa.push.html">xa.push</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
@@ -1096,22 +1097,25 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
 <tr class="row-odd"><td><p><a class="reference internal" href="xa.hosts.html#module-xa.hosts" title="xa.hosts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hosts</span></code></a></p></td>
 <td><p>Host abstraction — local, SSH, HTTP backends.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="xa.recovery.html#module-xa.recovery" title="xa.recovery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recovery</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.push.html#module-xa.push" title="xa.push"><code class="xref py py-obj docutils literal notranslate"><span class="pre">push</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">xa</span> <span class="pre">push</span></code>: mirror this machine's live sessions into another host's xa cache.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.recovery.html#module-xa.recovery" title="xa.recovery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recovery</span></code></a></p></td>
 <td><p>Bring back the sessions a shutdown killed, each as it was launched.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="xa.revive.html#module-xa.revive" title="xa.revive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.revive.html#module-xa.revive" title="xa.revive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive</span></code></a></p></td>
 <td><p>Detect — and reconnect — Claude Code panes whose Remote Control dropped.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="xa.service.html#module-xa.service" title="xa.service"><code class="xref py py-obj docutils literal notranslate"><span class="pre">service</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.service.html#module-xa.service" title="xa.service"><code class="xref py py-obj docutils literal notranslate"><span class="pre">service</span></code></a></p></td>
 <td><p>FastAPI service for <code class="docutils literal notranslate"><span class="pre">xa</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="xa.sessions.html#module-xa.sessions" title="xa.sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sessions</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.sessions.html#module-xa.sessions" title="xa.sessions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sessions</span></code></a></p></td>
 <td><p>The unified <code class="docutils literal notranslate"><span class="pre">Session</span></code> domain model and multi-host discovery.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="xa.store.html#module-xa.store" title="xa.store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="xa.store.html#module-xa.store" title="xa.store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store</span></code></a></p></td>
 <td><p>Minimal key-value and append-log storage.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="xa.tmux.html#module-xa.tmux" title="xa.tmux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmux</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="xa.tmux.html#module-xa.tmux" title="xa.tmux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tmux</span></code></a></p></td>
 <td><p>Pure tmux wrappers.</p></td>
 </tr>
 </tbody>
@@ -1238,7 +1242,7 @@ should use <code class="docutils literal notranslate"><span class="pre">iter_tra
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=f2ffa296"></script>
+</div><script src="../_static/documentation_options.js?v=5bbfd6f0"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

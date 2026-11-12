@@ -16,6 +16,7 @@
 - [xa.hosts.http](xa.hosts.http.html.md): HTTP host — a remote &#96;xa serve&#96; instance.
 - [xa.hosts.local](xa.hosts.local.html.md): Local in-process host.
 - [xa.hosts.ssh](xa.hosts.ssh.html.md): SSH-backed host.
+- [xa.push](xa.push.html.md): &#96;xa push&#96;: mirror this machine’s live sessions into another host’s xa cache.
 - [xa.recovery](xa.recovery.html.md): Bring back the sessions a shutdown killed, each as it was launched.
 - [xa.revive](xa.revive.html.md): Detect — and reconnect — Claude Code panes whose Remote Control dropped.
 - [xa.service](xa.service.html.md): FastAPI service for &#96;xa&#96;.

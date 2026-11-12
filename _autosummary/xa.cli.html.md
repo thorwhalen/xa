@@ -22,6 +22,7 @@ Entry point: `xa` (see `[project.scripts]` in `pyproject.toml`).
 | [`main`](#xa.cli.main)()                                           | Entry point referenced by `pyproject.toml`'s `[project.scripts]`.                                                                                |
 | [`mk_parser`](#xa.cli.mk_parser)()                                      | The `xa` parser -- a plain [`argparse.ArgumentParser`](https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser), built, not run. |
 | [`pick_cmd`](#xa.cli.pick_cmd)([project, limit, host])                 | Interactive session picker — pick a row by number, then choose an action.                                                                        |
+| [`push_cmd`](#xa.cli.push_cmd)(host[, as_name, home, keep_days])       | Mirror this machine's live sessions into `host`'s xa cache (the reverse of sync).                                                                |
 | [`resume_cmd`](#xa.cli.resume_cmd)(\*session_ids[, name, cwd, ...])      | Resume past sessions (`claude --resume`) in new tmux panes, as they were launched.                                                               |
 | [`revive_check_cmd`](#xa.cli.revive_check_cmd)([ticks, json_out])              | Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.                                                          |
 | [`revive_cmd`](#xa.cli.revive_cmd)([apply, include_held_elsewhere, ...]) | Report — and optionally reconnect — panes whose Remote Control dropped.                                                                          |
@@ -140,6 +141,21 @@ Interactive session picker — pick a row by number, then choose an action.
 A pragmatic v1 picker without a TUI framework. Use **xa list**
 for scripting; use **xa pick** when a human is at the keyboard.
 
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### xa.cli.push_cmd(host, as_name=None, home='~/.claude', keep_days=7)
+
+Mirror this machine’s live sessions into `host`’s xa cache (the reverse of sync).
+
+For a machine the hub cannot reach (a laptop behind NAT): the hub reads the mirror as a
+crowsnest home with `liveness = "mirror"`. Run it every minute from a scheduler.
+
+* **Parameters:**
+  * **host** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – A configured SSH host, or any ssh target (`~/.ssh/config` alias, `user@host`).
+  * **as_name** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The name this machine has on the hub (default: this host’s short name).
+  * **home** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The Claude home to mirror.
+  * **keep_days** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Prune ended sessions’ transcripts on the hub after this many days.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 

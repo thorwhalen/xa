@@ -213,6 +213,7 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.push.html">xa.push</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.service.html">xa.service</a></li>
@@ -402,6 +403,8 @@
         <li><a href="_autosummary/xa.revive.html#xa.revive.DFLT_CHECK_TICKS">DFLT_CHECK_TICKS (in module xa.revive)</a>
 </li>
         <li><a href="_autosummary/xa.revive.html#xa.revive.DFLT_MIN_INTERVAL_SEC">DFLT_MIN_INTERVAL_SEC (in module xa.revive)</a>
+</li>
+        <li><a href="_autosummary/xa.push.html#xa.push.DFLT_REMOTE_CACHE">DFLT_REMOTE_CACHE (in module xa.push)</a>
 </li>
         <li><a href="_autosummary/xa.recovery.html#xa.recovery.DFLT_WINDOW_SEC">DFLT_WINDOW_SEC (in module xa.recovery)</a>
 </li>
@@ -623,9 +626,13 @@
           <li><a href="_autosummary/xa.tmux.html#xa.tmux.list_sessions">(in module xa.tmux)</a>
 </li>
         </ul></li>
+        <li><a href="_autosummary/xa.push.html#xa.push.live_records">live_records() (in module xa.push)</a>
+</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="_autosummary/xa.recovery.html#xa.recovery.live_session_ids">live_session_ids() (in module xa.recovery)</a>
+</li>
+        <li><a href="_autosummary/xa.push.html#xa.push.LiveRecord">LiveRecord (class in xa.push)</a>
 </li>
         <li><a href="_autosummary/xa.html#xa.load">load() (in module xa)</a>
 
@@ -663,6 +670,8 @@
 </li>
         <li><a href="_autosummary/xa.revive.html#xa.revive.MARKERS">MARKERS (in module xa.revive)</a>
 </li>
+        <li><a href="_autosummary/xa.push.html#xa.push.MIRROR_STAMP">MIRROR_STAMP (in module xa.push)</a>
+</li>
         <li><a href="_autosummary/xa.cli.html#xa.cli.mk_parser">mk_parser() (in module xa.cli)</a>
 </li>
         <li>
@@ -690,6 +699,8 @@
           <li><a href="_autosummary/xa.hosts.local.html#module-xa.hosts.local">xa.hosts.local</a>
 </li>
           <li><a href="_autosummary/xa.hosts.ssh.html#module-xa.hosts.ssh">xa.hosts.ssh</a>
+</li>
+          <li><a href="_autosummary/xa.push.html#module-xa.push">xa.push</a>
 </li>
           <li><a href="_autosummary/xa.recovery.html#module-xa.recovery">xa.recovery</a>
 </li>
@@ -772,14 +783,14 @@
           <li><a href="_autosummary/xa.claude_fs.html#xa.claude_fs.parse_project_slug">(in module xa.claude_fs)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="_autosummary/xa.html#xa.FileStore.path_for">path_for() (xa.FileStore method)</a>
 
         <ul>
           <li><a href="_autosummary/xa.store.html#xa.store.FileStore.path_for">(xa.store.FileStore method)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="_autosummary/xa.claude_cli.html#xa.claude_cli.PendingSpawn">PendingSpawn (class in xa.claude_cli)</a>
 </li>
         <li><a href="_autosummary/xa.claude_env.html#xa.claude_env.permission_args">permission_args() (in module xa.claude_env)</a>
@@ -799,6 +810,12 @@
         <li><a href="_autosummary/xa.revive.html#xa.revive.prompt_is_clear">prompt_is_clear() (in module xa.revive)</a>
 </li>
         <li><a href="_autosummary/xa.revive.html#xa.revive.PROMPT_LINE">PROMPT_LINE (in module xa.revive)</a>
+</li>
+        <li><a href="_autosummary/xa.push.html#xa.push.push">push() (in module xa.push)</a>
+</li>
+        <li><a href="_autosummary/xa.cli.html#xa.cli.push_cmd">push_cmd() (in module xa.cli)</a>
+</li>
+        <li><a href="_autosummary/xa.push.html#xa.push.push_commands">push_commands() (in module xa.push)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -1162,6 +1179,13 @@
 </li>
         </ul></li>
         <li>
+    xa.push
+
+        <ul>
+          <li><a href="_autosummary/xa.push.html#module-xa.push">module</a>
+</li>
+        </ul></li>
+        <li>
     xa.recovery
 
         <ul>
@@ -1235,7 +1259,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=f2ffa296"></script>
+</div><script src="_static/documentation_options.js?v=5bbfd6f0"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

@@ -18,6 +18,7 @@
 - [xa.hosts.http](_autosummary/xa.hosts.http.html.md): HTTP host — a remote &#96;xa serve&#96; instance.
 - [xa.hosts.local](_autosummary/xa.hosts.local.html.md): Local in-process host.
 - [xa.hosts.ssh](_autosummary/xa.hosts.ssh.html.md): SSH-backed host.
+- [xa.push](_autosummary/xa.push.html.md): &#96;xa push&#96;: mirror this machine’s live sessions into another host’s xa cache.
 - [xa.recovery](_autosummary/xa.recovery.html.md): Bring back the sessions a shutdown killed, each as it was launched.
 - [xa.revive](_autosummary/xa.revive.html.md): Detect — and reconnect — Claude Code panes whose Remote Control dropped.
 - [xa.service](_autosummary/xa.service.html.md): FastAPI service for &#96;xa&#96;.
@@ -25,7 +26,7 @@
 - [xa.store](_autosummary/xa.store.html.md): Minimal key-value and append-log storage.
 - [xa.tmux](_autosummary/xa.tmux.html.md): Pure tmux wrappers.
 - [For AI agents](ai-agents.html.md): &#96;xa&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-11-10 11:21 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-11-12 12:41 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
 
 ## Optional
 

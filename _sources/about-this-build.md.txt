@@ -5,7 +5,7 @@ orphan: true
 
 # About this build
 
-This documentation was built on **2026-11-10 11:21 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39"><code>28be7ce</code></a> on branch <code>main</code>, for **xa 0.1.14** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-12 12:41 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/94cb86f4697b8cc70a63ed52161158438b779df3"><code>94cb86f</code></a> on branch <code>main</code>, for **xa 0.1.15** (from <code>pyproject.toml</code>).
 
 :::{note}
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -15,9 +15,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 | | |
 |---|---|
-| Commit | <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39"><code>28be7cee69d916e2cfb3ddc31428e4ac96737a39</code></a> |
+| Commit | <a href="https://github.com/thorwhalen/xa/commit/94cb86f4697b8cc70a63ed52161158438b779df3"><code>94cb86f4697b8cc70a63ed52161158438b779df3</code></a> |
 | Branch | <code>main</code> |
-| Tags at this commit | <code>0.1.14</code> |
+| Tags at this commit | <code>0.1.15</code> |
 | Working tree | clean |
 | Remote | <code>https://github.com/thorwhalen/xa</code> |
 
@@ -26,9 +26,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 | | |
 |---|---|
 | Repository | <code>thorwhalen/xa</code> |
-| Run | <a href="https://github.com/thorwhalen/xa/actions/runs/42806495685">42806495685</a> |
+| Run | <a href="https://github.com/thorwhalen/xa/actions/runs/43219958277">43219958277</a> |
 | Ref | <code>refs/heads/main</code> |
-| Event commit | <code>55dc1a0ad5d4b25959d3643c3824a435f0680719</code> (in the history of the built commit) |
+| Event commit | <code>9c49c2e4e6c0a8b5ab59e46a582c4e3e5972cc6c</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -53,13 +53,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/xa/0.1.14/">0.1.14</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/xa/0.1.15/">0.1.15</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/xa && cd xa
-git checkout 28be7cee69d916e2cfb3ddc31428e4ac96737a39
+git checkout 94cb86f4697b8cc70a63ed52161158438b779df3
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

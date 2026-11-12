@@ -214,6 +214,7 @@
 <li class="toctree-l4"><a class="reference internal" href="../../_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.push.html">xa.push</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/xa.service.html">xa.service</a></li>
@@ -1042,6 +1043,50 @@
 
 
 
+<div class="viewcode-block" id="push_cmd">
+<a class="viewcode-back" href="../../_autosummary/xa.cli.html#xa.cli.push_cmd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">push_cmd</span><span class="p">(</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">as_name</span><span class="p">:</span> <span class="s2">"Optional[str]"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">home</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"~/.claude"</span><span class="p">,</span>
+    <span class="n">keep_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Mirror this machine's live sessions into ``host``'s xa cache (the reverse of sync).</span>
+
+<span class="sd">    For a machine the hub cannot reach (a laptop behind NAT): the hub reads the mirror as a</span>
+<span class="sd">    crowsnest home with ``liveness = "mirror"``. Run it every minute from a scheduler.</span>
+
+<span class="sd">    :param host: A configured SSH host, or any ssh target (``~/.ssh/config`` alias, ``user@host``).</span>
+<span class="sd">    :param as_name: The name this machine has on the hub (default: this host's short name).</span>
+<span class="sd">    :param home: The Claude home to mirror.</span>
+<span class="sd">    :param keep_days: Prune ended sessions' transcripts on the hub after this many days.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa.push</span><span class="w"> </span><span class="kn">import</span> <span class="n">push</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">xa.hosts.ssh</span><span class="w"> </span><span class="kn">import</span> <span class="n">SSHHost</span>
+
+    <span class="n">hosts</span> <span class="o">=</span> <span class="n">_configured_hosts</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">hosts</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">hosts</span><span class="p">[</span><span class="n">host</span><span class="p">],</span> <span class="s2">"kind"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"ssh"</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"error: '</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">' is a </span><span class="si">{</span><span class="n">hosts</span><span class="p">[</span><span class="n">host</span><span class="p">]</span><span class="o">.</span><span class="n">kind</span><span class="si">}</span><span class="s2"> host; push needs ssh"</span><span class="p">,</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># A configured host, else a plain ssh target (an alias in ~/.ssh/config, user@host):</span>
+    <span class="c1"># pushing should not need a host entry that `xa list` would then start querying.</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">hosts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="ow">or</span> <span class="n">SSHHost</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">as_name</span> <span class="ow">or</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">push</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">as_name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">home</span><span class="o">=</span><span class="n">home</span><span class="p">,</span> <span class="n">keep_days</span><span class="o">=</span><span class="n">keep_days</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error: push to </span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2"> failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"pushed </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> live session(s) to </span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="pick_cmd">
 <a class="viewcode-back" href="../../_autosummary/xa.cli.html#xa.cli.pick_cmd">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">pick_cmd</span><span class="p">(</span>
@@ -1421,6 +1466,7 @@
     <span class="s2">"kill"</span><span class="p">:</span> <span class="n">kill_cmd</span><span class="p">,</span>
     <span class="s2">"serve"</span><span class="p">:</span> <span class="n">serve_cmd</span><span class="p">,</span>
     <span class="s2">"sync"</span><span class="p">:</span> <span class="n">sync_cmd</span><span class="p">,</span>
+    <span class="s2">"push"</span><span class="p">:</span> <span class="n">push_cmd</span><span class="p">,</span>
     <span class="s2">"pick"</span><span class="p">:</span> <span class="n">pick_cmd</span><span class="p">,</span>
     <span class="s2">"gen-secret"</span><span class="p">:</span> <span class="n">gen_secret_cmd</span><span class="p">,</span>
     <span class="s2">"revive"</span><span class="p">:</span> <span class="n">revive_cmd</span><span class="p">,</span>
@@ -1502,7 +1548,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=f2ffa296"></script>
+</div><script src="../../_static/documentation_options.js?v=5bbfd6f0"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

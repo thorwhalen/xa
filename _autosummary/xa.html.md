@@ -566,6 +566,7 @@ True
 | [`cli`](xa.cli.html.md#module-xa.cli)               | Command-line interface for `xa`.                                                         |
 | [`config`](xa.config.html.md#module-xa.config)         | TOML config loader for `xa`.                                                             |
 | [`hosts`](xa.hosts.html.md#module-xa.hosts)           | Host abstraction — local, SSH, HTTP backends.                                            |
+| [`push`](xa.push.html.md#module-xa.push)             | `xa push`: mirror this machine's live sessions into another host's xa cache.             |
 | [`recovery`](xa.recovery.html.md#module-xa.recovery)     | Bring back the sessions a shutdown killed, each as it was launched.                      |
 | [`revive`](xa.revive.html.md#module-xa.revive)         | Detect — and reconnect — Claude Code panes whose Remote Control dropped.                 |
 | [`service`](xa.service.html.md#module-xa.service)       | FastAPI service for `xa`.                                                                |

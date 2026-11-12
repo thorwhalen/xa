@@ -19,6 +19,7 @@ xa.cli
       main
       mk_parser
       pick_cmd
+      push_cmd
       resume_cmd
       revive_check_cmd
       revive_cmd

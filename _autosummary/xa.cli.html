@@ -217,6 +217,7 @@
 <li class="toctree-l4"><a class="reference internal" href="xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="xa.push.html">xa.push</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xa.service.html">xa.service</a></li>
@@ -310,22 +311,25 @@ and the <code class="docutils literal notranslate"><span class="pre">archive</sp
 <tr class="row-odd"><td><p><a class="reference internal" href="#xa.cli.pick_cmd" title="xa.cli.pick_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pick_cmd</span></code></a>([project, limit, host])</p></td>
 <td><p>Interactive session picker — pick a row by number, then choose an action.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#xa.cli.resume_cmd" title="xa.cli.resume_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume_cmd</span></code></a>(*session_ids[, name, cwd, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.cli.push_cmd" title="xa.cli.push_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">push_cmd</span></code></a>(host[, as_name, home, keep_days])</p></td>
+<td><p>Mirror this machine's live sessions into <code class="docutils literal notranslate"><span class="pre">host</span></code>'s xa cache (the reverse of sync).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.cli.resume_cmd" title="xa.cli.resume_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resume_cmd</span></code></a>(*session_ids[, name, cwd, ...])</p></td>
 <td><p>Resume past sessions (<code class="docutils literal notranslate"><span class="pre">claude</span> <span class="pre">--resume</span></code>) in new tmux panes, as they were launched.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xa.cli.revive_check_cmd" title="xa.cli.revive_check_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive_check_cmd</span></code></a>([ticks, json_out])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.cli.revive_check_cmd" title="xa.cli.revive_check_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive_check_cmd</span></code></a>([ticks, json_out])</p></td>
 <td><p>Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#xa.cli.revive_cmd" title="xa.cli.revive_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive_cmd</span></code></a>([apply, include_held_elsewhere, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.cli.revive_cmd" title="xa.cli.revive_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">revive_cmd</span></code></a>([apply, include_held_elsewhere, ...])</p></td>
 <td><p>Report — and optionally reconnect — panes whose Remote Control dropped.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xa.cli.serve_cmd" title="xa.cli.serve_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serve_cmd</span></code></a>([host, port, mount, username, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.cli.serve_cmd" title="xa.cli.serve_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">serve_cmd</span></code></a>([host, port, mount, username, ...])</p></td>
 <td><p>Run the xa HTTP service (requires the <code class="docutils literal notranslate"><span class="pre">xa[service]</span></code> extra).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#xa.cli.spawn_cmd" title="xa.cli.spawn_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spawn_cmd</span></code></a>(cwd[, name, timeout, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xa.cli.spawn_cmd" title="xa.cli.spawn_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spawn_cmd</span></code></a>(cwd[, name, timeout, ...])</p></td>
 <td><p>Spawn a detached claude-in-tmux session and print its remote URL.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xa.cli.sync_cmd" title="xa.cli.sync_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sync_cmd</span></code></a>([host, force])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#xa.cli.sync_cmd" title="xa.cli.sync_cmd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sync_cmd</span></code></a>([host, force])</p></td>
 <td><p>Refresh remote-host caches (SSH hosts; HTTP is always fresh).</p></td>
 </tr>
 </tbody>
@@ -500,6 +504,27 @@ for scripting; use <strong class="command">xa pick</strong> when a human is at t
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xa.cli.push_cmd">
+<span class="sig-prename descclassname"><span class="pre">xa.cli.</span></span><span class="sig-name descname"><span class="pre">push_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">home</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'~/.claude'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_days</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/xa/cli.html#push_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#xa.cli.push_cmd" title="Link to this definition">¶</a></dt>
+<dd><p>Mirror this machine’s live sessions into <code class="docutils literal notranslate"><span class="pre">host</span></code>’s xa cache (the reverse of sync).</p>
+<p>For a machine the hub cannot reach (a laptop behind NAT): the hub reads the mirror as a
+crowsnest home with <code class="docutils literal notranslate"><span class="pre">liveness</span> <span class="pre">=</span> <span class="pre">&quot;mirror&quot;</span></code>. Run it every minute from a scheduler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – A configured SSH host, or any ssh target (<code class="docutils literal notranslate"><span class="pre">~/.ssh/config</span></code> alias, <code class="docutils literal notranslate"><span class="pre">user&#64;host</span></code>).</p></li>
+<li><p><strong>as_name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – The name this machine has on the hub (default: this host’s short name).</p></li>
+<li><p><strong>home</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The Claude home to mirror.</p></li>
+<li><p><strong>keep_days</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Prune ended sessions’ transcripts on the hub after this many days.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -719,6 +744,7 @@ to <code class="docutils literal notranslate"><span class="pre">$XA_DEFAULT_FOLD
 <li><a class="reference internal" href="#xa.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
 <li><a class="reference internal" href="#xa.cli.mk_parser"><code class="docutils literal notranslate"><span class="pre">mk_parser()</span></code></a></li>
 <li><a class="reference internal" href="#xa.cli.pick_cmd"><code class="docutils literal notranslate"><span class="pre">pick_cmd()</span></code></a></li>
+<li><a class="reference internal" href="#xa.cli.push_cmd"><code class="docutils literal notranslate"><span class="pre">push_cmd()</span></code></a></li>
 <li><a class="reference internal" href="#xa.cli.resume_cmd"><code class="docutils literal notranslate"><span class="pre">resume_cmd()</span></code></a></li>
 <li><a class="reference internal" href="#xa.cli.revive_check_cmd"><code class="docutils literal notranslate"><span class="pre">revive_check_cmd()</span></code></a></li>
 <li><a class="reference internal" href="#xa.cli.revive_cmd"><code class="docutils literal notranslate"><span class="pre">revive_cmd()</span></code></a></li>
@@ -736,7 +762,7 @@ to <code class="docutils literal notranslate"><span class="pre">$XA_DEFAULT_FOLD
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=f2ffa296"></script>
+</div><script src="../_static/documentation_options.js?v=5bbfd6f0"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

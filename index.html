@@ -217,6 +217,7 @@
 <li class="toctree-l4"><a class="reference internal" href="_autosummary/xa.hosts.ssh.html">xa.hosts.ssh</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.push.html">xa.push</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.recovery.html">xa.recovery</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.revive.html">xa.revive</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/xa.service.html">xa.service</a></li>
@@ -304,7 +305,7 @@ unreachable. <code class="docutils literal notranslate"><span class="pre">xa</sp
 </section>
 <hr class="docutils" />
 <section id="easiest-path-let-claude-code-set-it-up">
-<h2>Easiest path — let Claude Code set it up<a class="headerlink" href="#easiest-path-let-claude-code-set-it-up" title="Link to this heading">¶</a></h2>
+<span id="easiest-path--let-claude-code-set-it-up"></span><h2>Easiest path — let Claude Code set it up<a class="headerlink" href="#easiest-path-let-claude-code-set-it-up" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">xa</span></code> ships with an <strong>agent skill</strong> that teaches any Claude Code instance how to
 install, configure, and secure-by-default-set-up the package on your machine.
 After <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">xa</span></code>, a Claude Code session running on that machine can
@@ -340,7 +341,7 @@ web UI) on your phone, and you can list / spawn / resume / kill Claude Code
 sessions from anywhere. Each session exposes a <code class="docutils literal notranslate"><span class="pre">claude.ai/code/…</span></code> URL that
 resumes the agent right in your phone’s browser.</p>
 <section id="security-first-this-is-a-code-execution-endpoint">
-<h3>⚠️ Security first — this is a code-execution endpoint<a class="headerlink" href="#security-first-this-is-a-code-execution-endpoint" title="Link to this heading">¶</a></h3>
+<span id="-security-first--this-is-a-code-execution-endpoint"></span><h3>⚠️ Security first — this is a code-execution endpoint<a class="headerlink" href="#security-first-this-is-a-code-execution-endpoint" title="Link to this heading">¶</a></h3>
 <p>A live <code class="docutils literal notranslate"><span class="pre">xa</span></code> session runs <code class="docutils literal notranslate"><span class="pre">claude</span></code>, which can invoke arbitrary shell
 commands via its <code class="docutils literal notranslate"><span class="pre">Bash</span></code> tool. Anyone who reaches your <code class="docutils literal notranslate"><span class="pre">xa</span></code> server with
 valid credentials can execute code as the server user. Treat the server
@@ -377,7 +378,7 @@ password in plaintext on every request.</p>
 </div>
 </section>
 <section id="defense-in-depth-things-to-add">
-<h3>Defense in depth — things to add<a class="headerlink" href="#defense-in-depth-things-to-add" title="Link to this heading">¶</a></h3>
+<span id="defense-in-depth--things-to-add"></span><h3>Defense in depth — things to add<a class="headerlink" href="#defense-in-depth-things-to-add" title="Link to this heading">¶</a></h3>
 <ol class="arabic">
 <li><p><strong>mTLS client certs.</strong> Issue one per device (phone, laptop). Caddy’s
 <code class="docutils literal notranslate"><span class="pre">client_auth</span> <span class="pre">{</span> <span class="pre">mode</span> <span class="pre">require_and_verify</span> <span class="pre">}</span></code> rejects any connection without
@@ -868,7 +869,7 @@ testing conventions, known pitfalls).</p>
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-10 11:21 UTC from <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39">28be7ce</a> (main) · xa 0.1.14 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-12 12:41 UTC from <a href="https://github.com/thorwhalen/xa/commit/94cb86f4697b8cc70a63ed52161158438b779df3">94cb86f</a> (main) · xa 0.1.15 · <a href="about-this-build.html">about this build</a></p>
         </article>
       </div>
       <footer>
@@ -947,7 +948,7 @@ testing conventions, known pitfalls).</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=f2ffa296"></script>
+</div><script src="_static/documentation_options.js?v=5bbfd6f0"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

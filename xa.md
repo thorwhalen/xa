@@ -1,4 +1,4 @@
-> built 2026-11-10 11:21 UTC from 28be7ce (main) · xa 0.1.14. Details: build_info.json
+> built 2026-11-12 12:41 UTC from 94cb86f (main) · xa 0.1.15. Details: build_info.json
 
 # index.html.md
 
@@ -1442,6 +1442,7 @@ Entry point: `xa` (see `[project.scripts]` in `pyproject.toml`).
 | [`main`](_autosummary/xa.cli.html.md#xa.cli.main)()                                           | Entry point referenced by `pyproject.toml`'s `[project.scripts]`.                                                                                |
 | [`mk_parser`](_autosummary/xa.cli.html.md#xa.cli.mk_parser)()                                      | The `xa` parser -- a plain [`argparse.ArgumentParser`](https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser), built, not run. |
 | [`pick_cmd`](_autosummary/xa.cli.html.md#xa.cli.pick_cmd)([project, limit, host])                 | Interactive session picker — pick a row by number, then choose an action.                                                                        |
+| [`push_cmd`](_autosummary/xa.cli.html.md#xa.cli.push_cmd)(host[, as_name, home, keep_days])       | Mirror this machine's live sessions into `host`'s xa cache (the reverse of sync).                                                                |
 | [`resume_cmd`](_autosummary/xa.cli.html.md#xa.cli.resume_cmd)(\*session_ids[, name, cwd, ...])      | Resume past sessions (`claude --resume`) in new tmux panes, as they were launched.                                                               |
 | [`revive_check_cmd`](_autosummary/xa.cli.html.md#xa.cli.revive_check_cmd)([ticks, json_out])              | Report-only revive check for a timer: silent when quiet, exit 1 when a pane needs eyes.                                                          |
 | [`revive_cmd`](_autosummary/xa.cli.html.md#xa.cli.revive_cmd)([apply, include_held_elsewhere, ...]) | Report — and optionally reconnect — panes whose Remote Control dropped.                                                                          |
@@ -1560,6 +1561,21 @@ Interactive session picker — pick a row by number, then choose an action.
 A pragmatic v1 picker without a TUI framework. Use **xa list**
 for scripting; use **xa pick** when a human is at the keyboard.
 
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### xa.cli.push_cmd(host, as_name=None, home='~/.claude', keep_days=7)
+
+Mirror this machine’s live sessions into `host`’s xa cache (the reverse of sync).
+
+For a machine the hub cannot reach (a laptop behind NAT): the hub reads the mirror as a
+crowsnest home with `liveness = "mirror"`. Run it every minute from a scheduler.
+
+* **Parameters:**
+  * **host** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – A configured SSH host, or any ssh target (`~/.ssh/config` alias, `user@host`).
+  * **as_name** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The name this machine has on the hub (default: this host’s short name).
+  * **home** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The Claude home to mirror.
+  * **keep_days** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Prune ended sessions’ transcripts on the hub after this many days.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
@@ -2551,12 +2567,98 @@ True
 | [`cli`](_autosummary/xa.cli.html.md#module-xa.cli)               | Command-line interface for `xa`.                                                         |
 | [`config`](_autosummary/xa.config.html.md#module-xa.config)         | TOML config loader for `xa`.                                                             |
 | [`hosts`](_autosummary/xa.hosts.html.md#module-xa.hosts)           | Host abstraction — local, SSH, HTTP backends.                                            |
+| [`push`](_autosummary/xa.push.html.md#module-xa.push)             | `xa push`: mirror this machine's live sessions into another host's xa cache.             |
 | [`recovery`](_autosummary/xa.recovery.html.md#module-xa.recovery)     | Bring back the sessions a shutdown killed, each as it was launched.                      |
 | [`revive`](_autosummary/xa.revive.html.md#module-xa.revive)         | Detect — and reconnect — Claude Code panes whose Remote Control dropped.                 |
 | [`service`](_autosummary/xa.service.html.md#module-xa.service)       | FastAPI service for `xa`.                                                                |
 | [`sessions`](_autosummary/xa.sessions.html.md#module-xa.sessions)     | The unified `Session` domain model and multi-host discovery.                             |
 | [`store`](_autosummary/xa.store.html.md#module-xa.store)           | Minimal key-value and append-log storage.                                                |
 | [`tmux`](_autosummary/xa.tmux.html.md#module-xa.tmux)             | Pure tmux wrappers.                                                                      |
+
+
+# _autosummary/xa.push.html.md
+
+# xa.push
+
+`xa push`: mirror this machine’s live sessions into another host’s xa cache.
+
+`xa sync` pulls a remote home down, which needs this machine to reach the other one. A
+laptop behind NAT can reach a server but not the reverse, so the server cannot pull it.
+`push` is the other direction: it writes a *mirror* of the local home into
+`<host>:<cache_dir>/<as_name>/`, the same place the server’s own `xa sync` would put it:
+
+- `sessions/`: the registry records whose process is alive here, and nothing else
+  (`--delete`, so a session that ended disappears from the mirror);
+- `projects/<slug>/<session-id>.jsonl`: the transcript of each of those sessions;
+- `.mirrored-at`: a stamp, written last, whose mtime says when the mirror was complete.
+
+A reader on the hub (crowsnest, a home with `liveness = "mirror"`) counts every record in
+it as live while the stamp is fresh, so an idle session still shows and a machine that
+stops pushing drops out. Transcripts of ended sessions are pruned on the hub after
+`keep_days`.
+
+### Module Attributes
+
+| [`MIRROR_STAMP`](_autosummary/xa.push.html.md#xa.push.MIRROR_STAMP)      | The stamp's name.                                                                           |
+|--------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| [`DFLT_REMOTE_CACHE`](_autosummary/xa.push.html.md#xa.push.DFLT_REMOTE_CACHE) | ssh and rsync both start there, and a quoted `~` would not be expanded by the remote shell. |
+
+### Functions
+
+| [`live_records`](_autosummary/xa.push.html.md#xa.push.live_records)(home, \*[, is_alive])                 | The registry records under `home` whose pid is alive, with their transcripts.                                               |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| [`push`](_autosummary/xa.push.html.md#xa.push.push)(host, \*, as_name[, home, remote_cache, ...]) | Mirror `home`'s live sessions to `host` (an [`SSHHost`](_autosummary/xa.hosts.ssh.html.md#xa.hosts.ssh.SSHHost)). |
+| [`push_commands`](_autosummary/xa.push.html.md#xa.push.push_commands)(records, \*, home, target, ...)      | The commands one push runs, in order.                                                                                       |
+
+### Classes
+
+| [`LiveRecord`](_autosummary/xa.push.html.md#xa.push.LiveRecord)(record, transcript)   | One registry record whose process is alive here, and its transcript (if found).   |
+|-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+
+### xa.push.DFLT_REMOTE_CACHE *= '.cache/xa/remotes'*
+
+ssh and rsync both start there, and a quoted `~` would
+not be expanded by the remote shell.
+
+* **Type:**
+  Relative to the remote home
+
+### *class* xa.push.LiveRecord(record, transcript)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+One registry record whose process is alive here, and its transcript (if found).
+
+### xa.push.MIRROR_STAMP *= '.mirrored-at'*
+
+The stamp’s name. crowsnest reads the same name (crowsnest.registry.MIRROR_STAMP).
+
+### xa.push.live_records(home, \*, is_alive=<function \_pid_alive>)
+
+The registry records under `home` whose pid is alive, with their transcripts.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`LiveRecord`](_autosummary/xa.push.html.md#xa.push.LiveRecord)]
+
+### xa.push.push(host, \*, as_name, home='~/.claude', remote_cache='.cache/xa/remotes', keep_days=7, run=<function run>, timeout=300.0)
+
+Mirror `home`’s live sessions to `host` (an [`SSHHost`](_autosummary/xa.hosts.ssh.html.md#xa.hosts.ssh.SSHHost)).
+
+Returns how many live sessions were pushed. Raises `RuntimeError` naming the step
+that failed.
+
+* **Return type:**
+  [`int`](https://docs.python.org/3/builtins/functions.html#int)
+
+### xa.push.push_commands(records, , home, target, dest, staging, keep_days=7, rsync_bin='rsync', ssh_bin='ssh')
+
+The commands one push runs, in order. Pure apart from writing into `staging`.
+
+Transcripts go first and the registry plus stamp last, so a fresh stamp always comes
+with the transcripts its records name.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]
 
 
 # _autosummary/xa.recovery.html.md
@@ -3919,7 +4021,7 @@ Return the canonical target string for a session.
 
 # About this build
 
-This documentation was built on **2026-11-10 11:21 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39"><code>28be7ce</code></a> on branch <code>main</code>, for **xa 0.1.14** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-12 12:41 UTC** from commit <a href="https://github.com/thorwhalen/xa/commit/94cb86f4697b8cc70a63ed52161158438b779df3"><code>94cb86f</code></a> on branch <code>main</code>, for **xa 0.1.15** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -3928,9 +4030,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                      |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/xa/commit/28be7cee69d916e2cfb3ddc31428e4ac96737a39"><code>28be7cee69d916e2cfb3ddc31428e4ac96737a39</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/xa/commit/94cb86f4697b8cc70a63ed52161158438b779df3"><code>94cb86f4697b8cc70a63ed52161158438b779df3</code></a> |
 | Branch              | <code>main</code>                                                                                                                                    |
-| Tags at this commit | <code>0.1.14</code>                                                                                                                                  |
+| Tags at this commit | <code>0.1.15</code>                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                |
 | Remote              | <code>https://github.com/thorwhalen/xa</code>                                                                                                        |
 
@@ -3939,9 +4041,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/xa</code>                                                                 |
-| Run          | <a href="https://github.com/thorwhalen/xa/actions/runs/42806495685">42806495685</a>        |
+| Run          | <a href="https://github.com/thorwhalen/xa/actions/runs/43219958277">43219958277</a>        |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>55dc1a0ad5d4b25959d3643c3824a435f0680719</code> (in the history of the built commit) |
+| Event commit | <code>9c49c2e4e6c0a8b5ab59e46a582c4e3e5972cc6c</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -3966,13 +4068,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/xa/0.1.14/">0.1.14</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/xa/0.1.15/">0.1.15</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/xa && cd xa
-git checkout 28be7cee69d916e2cfb3ddc31428e4ac96737a39
+git checkout 94cb86f4697b8cc70a63ed52161158438b779df3
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
