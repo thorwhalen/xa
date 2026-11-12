@@ -779,7 +779,10 @@ def push_cmd(
 
     hosts = _configured_hosts()
     if host in hosts and getattr(hosts[host], "kind", None) != "ssh":
-        print(f"error: '{host}' is a {hosts[host].kind} host; push needs ssh", file=sys.stderr)
+        print(
+            f"error: '{host}' is a {hosts[host].kind} host; push needs ssh",
+            file=sys.stderr,
+        )
         sys.exit(1)
     # A configured host, else a plain ssh target (an alias in ~/.ssh/config, user@host):
     # pushing should not need a host entry that `xa list` would then start querying.

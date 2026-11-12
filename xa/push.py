@@ -97,7 +97,9 @@ def push_commands(
         (staging / "sessions" / r.record.name).write_bytes(r.record.read_bytes())
     (staging / MIRROR_STAMP).touch()
     files = staging.parent / f"{staging.name}.files"
-    files.write_text("".join(f"{r.transcript.relative_to(home)}\n" for r in records if r.transcript))
+    files.write_text(
+        "".join(f"{r.transcript.relative_to(home)}\n" for r in records if r.transcript)
+    )
     q = shlex.quote
     return [
         [ssh_bin, target, f"mkdir -p {q(dest)}/sessions {q(dest)}/projects"],
@@ -138,5 +140,7 @@ def push(
             done = run(argv, capture_output=True, text=True, timeout=timeout)
             # rsync 23/24: a file vanished or changed mid-copy, which a live tree does.
             if done.returncode not in (0, 23, 24):
-                raise RuntimeError(f"{argv[0]} failed ({done.returncode}): {done.stderr.strip()[:300]}")
+                raise RuntimeError(
+                    f"{argv[0]} failed ({done.returncode}): {done.stderr.strip()[:300]}"
+                )
     return len(records)
