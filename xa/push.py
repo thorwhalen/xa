@@ -29,7 +29,9 @@ from typing import Callable, Iterator
 
 #: The stamp's name. crowsnest reads the same name (crowsnest.registry.MIRROR_STAMP).
 MIRROR_STAMP = ".mirrored-at"
-DFLT_REMOTE_CACHE = "~/.cache/xa/remotes"
+#: Relative to the remote home: ssh and rsync both start there, and a quoted ``~`` would
+#: not be expanded by the remote shell.
+DFLT_REMOTE_CACHE = ".cache/xa/remotes"
 DFLT_KEEP_DAYS = 7
 
 
@@ -125,6 +127,7 @@ def push(
     """
     home = Path(home).expanduser()
     records = list(live_records(home))
+    remote_cache = remote_cache[2:] if remote_cache.startswith("~/") else remote_cache
     dest = f"{remote_cache.rstrip('/')}/{as_name}"
     with tempfile.TemporaryDirectory(prefix="xa-push-") as tmp:
         cmds = push_commands(

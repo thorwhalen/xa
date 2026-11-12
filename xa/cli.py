@@ -766,7 +766,7 @@ def push_cmd(
     For a machine the hub cannot reach (a laptop behind NAT): the hub reads the mirror as a
     crowsnest home with ``liveness = "mirror"``. Run it every minute from a scheduler.
 
-    :param host: A configured SSH host to push to.
+    :param host: A configured SSH host, or any ssh target (``~/.ssh/config`` alias, ``user@host``).
     :param as_name: The name this machine has on the hub (default: this host's short name).
     :param home: The Claude home to mirror.
     :param keep_days: Prune ended sessions' transcripts on the hub after this many days.
@@ -775,14 +775,18 @@ def push_cmd(
 
     from xa.push import push
 
+    from xa.hosts.ssh import SSHHost
+
     hosts = _configured_hosts()
-    if host not in hosts or getattr(hosts[host], "kind", None) != "ssh":
-        ssh_hosts = [n for n, h in hosts.items() if getattr(h, "kind", None) == "ssh"]
-        print(f"error: '{host}' is not a configured ssh host; available: {ssh_hosts}", file=sys.stderr)
+    if host in hosts and getattr(hosts[host], "kind", None) != "ssh":
+        print(f"error: '{host}' is a {hosts[host].kind} host; push needs ssh", file=sys.stderr)
         sys.exit(1)
+    # A configured host, else a plain ssh target (an alias in ~/.ssh/config, user@host):
+    # pushing should not need a host entry that `xa list` would then start querying.
+    target = hosts.get(host) or SSHHost(name=host, host=host)
     name = as_name or socket.gethostname().split(".")[0].lower()
     try:
-        n = push(hosts[host], as_name=name, home=home, keep_days=keep_days)
+        n = push(target, as_name=name, home=home, keep_days=keep_days)
     except Exception as e:
         print(f"error: push to {host} failed: {e}", file=sys.stderr)
         sys.exit(1)
