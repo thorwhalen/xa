@@ -2,8 +2,11 @@
 
 import json
 import os
+import shutil
 import subprocess
 import time
+
+import pytest
 
 from xa.push import MIRROR_STAMP, live_records, push_commands
 
@@ -25,6 +28,7 @@ def test_live_records_keep_only_live_pids(tmp_path):
     assert found[0].transcript == home / "projects" / "-w" / "live-a.jsonl"
 
 
+@pytest.mark.skipif(shutil.which("rsync") is None, reason="needs rsync (not on Windows runners)")
 def test_push_mirrors_live_sessions_and_drops_ended_ones(tmp_path):
     """Runs the real rsync, with a local directory standing in for the hub."""
     home = _home(tmp_path)
