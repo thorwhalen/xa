@@ -755,6 +755,44 @@ def sync_cmd(host: "Optional[str]" = None, force: bool = False) -> None:
             print(f"  warn: {err}", file=sys.stderr)
 
 
+def push_cmd(
+    host: str,
+    as_name: "Optional[str]" = None,
+    home: str = "~/.claude",
+    keep_days: int = 7,
+) -> None:
+    """Mirror this machine's live sessions into ``host``'s xa cache (the reverse of sync).
+
+    For a machine the hub cannot reach (a laptop behind NAT): the hub reads the mirror as a
+    crowsnest home with ``liveness = "mirror"``. Run it every minute from a scheduler.
+
+    :param host: A configured SSH host, or any ssh target (``~/.ssh/config`` alias, ``user@host``).
+    :param as_name: The name this machine has on the hub (default: this host's short name).
+    :param home: The Claude home to mirror.
+    :param keep_days: Prune ended sessions' transcripts on the hub after this many days.
+    """
+    import socket
+
+    from xa.push import push
+
+    from xa.hosts.ssh import SSHHost
+
+    hosts = _configured_hosts()
+    if host in hosts and getattr(hosts[host], "kind", None) != "ssh":
+        print(f"error: '{host}' is a {hosts[host].kind} host; push needs ssh", file=sys.stderr)
+        sys.exit(1)
+    # A configured host, else a plain ssh target (an alias in ~/.ssh/config, user@host):
+    # pushing should not need a host entry that `xa list` would then start querying.
+    target = hosts.get(host) or SSHHost(name=host, host=host)
+    name = as_name or socket.gethostname().split(".")[0].lower()
+    try:
+        n = push(target, as_name=name, home=home, keep_days=keep_days)
+    except Exception as e:
+        print(f"error: push to {host} failed: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"pushed {n} live session(s) to {host} as {name}")
+
+
 def pick_cmd(
     project: "Optional[str]" = None,
     limit: int = 30,
@@ -1116,6 +1154,7 @@ TOP_COMMANDS = {
     "kill": kill_cmd,
     "serve": serve_cmd,
     "sync": sync_cmd,
+    "push": push_cmd,
     "pick": pick_cmd,
     "gen-secret": gen_secret_cmd,
     "revive": revive_cmd,
