@@ -24,6 +24,7 @@ TOP_LEVEL = {
     "kill",
     "serve",
     "sync",
+    "push",
     "pick",
     "gen-secret",
     "revive",

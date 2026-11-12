@@ -755,6 +755,40 @@ def sync_cmd(host: "Optional[str]" = None, force: bool = False) -> None:
             print(f"  warn: {err}", file=sys.stderr)
 
 
+def push_cmd(
+    host: str,
+    as_name: "Optional[str]" = None,
+    home: str = "~/.claude",
+    keep_days: int = 7,
+) -> None:
+    """Mirror this machine's live sessions into ``host``'s xa cache (the reverse of sync).
+
+    For a machine the hub cannot reach (a laptop behind NAT): the hub reads the mirror as a
+    crowsnest home with ``liveness = "mirror"``. Run it every minute from a scheduler.
+
+    :param host: A configured SSH host to push to.
+    :param as_name: The name this machine has on the hub (default: this host's short name).
+    :param home: The Claude home to mirror.
+    :param keep_days: Prune ended sessions' transcripts on the hub after this many days.
+    """
+    import socket
+
+    from xa.push import push
+
+    hosts = _configured_hosts()
+    if host not in hosts or getattr(hosts[host], "kind", None) != "ssh":
+        ssh_hosts = [n for n, h in hosts.items() if getattr(h, "kind", None) == "ssh"]
+        print(f"error: '{host}' is not a configured ssh host; available: {ssh_hosts}", file=sys.stderr)
+        sys.exit(1)
+    name = as_name or socket.gethostname().split(".")[0].lower()
+    try:
+        n = push(hosts[host], as_name=name, home=home, keep_days=keep_days)
+    except Exception as e:
+        print(f"error: push to {host} failed: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"pushed {n} live session(s) to {host} as {name}")
+
+
 def pick_cmd(
     project: "Optional[str]" = None,
     limit: int = 30,
@@ -1116,6 +1150,7 @@ TOP_COMMANDS = {
     "kill": kill_cmd,
     "serve": serve_cmd,
     "sync": sync_cmd,
+    "push": push_cmd,
     "pick": pick_cmd,
     "gen-secret": gen_secret_cmd,
     "revive": revive_cmd,
