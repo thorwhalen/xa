@@ -7,6 +7,8 @@ allowed-tools: Bash(xa revive:*), Bash(ssh tw:*), Bash(priv print-live-sessions-
 Find running Claude Code sessions that are no longer reachable from
 claude.ai, and reconnect the ones it is safe to reconnect.
 
+Unreachable also means invisible in the Claude app's Code tab and to any assistant that reads it (Claude Duet, if its reported session view is confirmed: [equerry docs/research/claude-duet.md](https://github.com/thorwhalen/equerry/blob/main/docs/research/claude-duet.md)), so a session waiting on the user with Remote Control off reaches the phone only through the fleet's own roster.
+
 ## Do this
 
 1. **Report first, on every machine that hosts panes.** Remote Control is
